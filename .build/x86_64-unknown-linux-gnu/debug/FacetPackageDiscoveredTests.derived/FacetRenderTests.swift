@@ -27,10 +27,21 @@ fileprivate extension SVGRendererTests {
         ("testRendersGaugeAsStrokedCircles", testRendersGaugeAsStrokedCircles)
     ]
 }
+
+fileprivate extension StarterTemplateTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static nonisolated(unsafe) let __allTests__StarterTemplateTests = [
+        ("testAllTemplatesResolveCleanlyEverywhere", asyncTest(testAllTemplatesResolveCleanlyEverywhere)),
+        ("testTemplateIDsAreUnique", testTemplateIDsAreUnique),
+        ("testTemplateSourcesAreOnlyKnownSampleSources", testTemplateSourcesAreOnlyKnownSampleSources),
+        ("testTemplatesRoundTripThroughFacetFile", testTemplatesRoundTripThroughFacetFile)
+    ]
+}
 @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
 func __FacetRenderTests__allTests() -> [XCTestCaseEntry] {
     return [
         testCase(ResolverTests.__allTests__ResolverTests),
-        testCase(SVGRendererTests.__allTests__SVGRendererTests)
+        testCase(SVGRendererTests.__allTests__SVGRendererTests),
+        testCase(StarterTemplateTests.__allTests__StarterTemplateTests)
     ]
 }

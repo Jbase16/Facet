@@ -1,0 +1,110 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000003A",
+  "name" : "Minimal Clock",
+  "overrides" : {
+
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.34,
+            "width" : 0.9,
+            "x" : 0.5,
+            "y" : 0.42
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000031",
+          "name" : "Time",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{time.hour12}:{pad(time.minute, 2)}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.14,
+            "width" : 0.9,
+            "x" : 0.5,
+            "y" : 0.66
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000032",
+          "name" : "Date",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "{time.weekdayName}, {time.monthName} {time.day}"
+          },
+          "type" : "text"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000003B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 1,
+  "sources" : [
+    "time"
+  ],
+  "tokens" : {
+    "colors" : {
+      "background" : {
+        "dark" : "#111111",
+        "light" : "#111111"
+      },
+      "primary" : {
+        "dark" : "#FFFFFF",
+        "light" : "#FFFFFF"
+      },
+      "secondary" : {
+        "dark" : "#9A9AA0",
+        "light" : "#9A9AA0"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "default",
+        "size" : 12,
+        "weight" : "regular"
+      },
+      "display" : {
+        "design" : "serif",
+        "size" : 40,
+        "weight" : "light"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000001A",
+  "name" : "Weather Glance",
+  "overrides" : {
+    "accessoryRectangular" : [
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000014"
+      },
+      {
+        "fontSize" : 20,
+        "frame" : {
+          "height" : 0.7,
+          "width" : 0.24,
+          "x" : 0.14,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000011"
+      },
+      {
+        "fontSize" : 22,
+        "frame" : {
+          "height" : 0.5,
+          "width" : 0.6,
+          "x" : 0.6,
+          "y" : 0.34
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000012"
+      },
+      {
+        "fontSize" : 11,
+        "frame" : {
+          "height" : 0.36,
+          "width" : 0.66,
+          "x" : 0.6,
+          "y" : 0.74
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000013"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.4,
+            "width" : 0.32,
+            "x" : 0.22,
+            "y" : 0.32
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000011",
+          "name" : "Icon",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "symbol" : {
+            "color" : "token:accent",
+            "size" : 36,
+            "systemName" : "cloud.sun.fill",
+            "weight" : "regular"
+          },
+          "type" : "symbol"
+        },
+        {
+          "frame" : {
+            "height" : 0.34,
+            "width" : 0.5,
+            "x" : 0.68,
+            "y" : 0.32
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000012",
+          "name" : "Temperature",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{round(weather.temperature)}°"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.14,
+            "width" : 0.9,
+            "x" : 0.5,
+            "y" : 0.66
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000013",
+          "name" : "Condition",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "body",
+            "text" : "{weather.condition}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.12,
+            "width" : 0.9,
+            "x" : 0.5,
+            "y" : 0.84
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000014",
+          "name" : "Range",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "H {round(weather.high)}°  L {round(weather.low)}°"
+          },
+          "type" : "text"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000001B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 1,
+  "sources" : [
+    "weather"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#FFC94D",
+        "light" : "#F5A623"
+      },
+      "background" : {
+        "dark" : "#101D2C",
+        "light" : "#EAF4FF"
+      },
+      "primary" : {
+        "dark" : "#EAF4FF",
+        "light" : "#0A2540"
+      },
+      "secondary" : {
+        "dark" : "#8FA9C4",
+        "light" : "#5C7A99"
+      }
+    },
+    "fonts" : {
+      "body" : {
+        "design" : "default",
+        "size" : 13,
+        "weight" : "medium"
+      },
+      "caption" : {
+        "design" : "default",
+        "size" : 11,
+        "weight" : "regular"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 32,
+        "weight" : "semibold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

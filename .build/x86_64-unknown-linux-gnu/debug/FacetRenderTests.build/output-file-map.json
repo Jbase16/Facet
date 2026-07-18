@@ -13,5 +13,11 @@
     "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o",
     "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests~partial.swiftmodule",
     "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swiftdeps"
+  },
+  "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swiftdeps"
   }
 }

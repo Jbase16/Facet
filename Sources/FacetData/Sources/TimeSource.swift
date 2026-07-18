@@ -82,6 +82,11 @@ public struct StaticSource: DataSourceProvider {
     }
 
     public func fetch() async throws -> DataSnapshot {
+        snapshot()
+    }
+
+    /// Synchronous capture — static payloads have nothing to await.
+    public func snapshot() -> DataSnapshot {
         DataSnapshot(sourceID: descriptor.id, values: values)
     }
 }
@@ -136,5 +141,16 @@ public enum SampleData {
 
     public static var all: [any DataSourceProvider] {
         [TimeSource(), battery, weather, health, calendar]
+    }
+
+    /// The full sample snapshot set, synchronously — for previews, template
+    /// thumbnails, and tools.
+    public static func snapshotSet(now: Date = Date()) -> SnapshotSet {
+        var set = SnapshotSet()
+        set.insert(TimeSource().snapshot(at: now))
+        for source in [battery, weather, health, calendar] {
+            set.insert(source.snapshot())
+        }
+        return set
     }
 }

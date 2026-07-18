@@ -1,0 +1,156 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000000A",
+  "name" : "Battery Ring",
+  "overrides" : {
+    "accessoryCircular" : [
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000003"
+      },
+      {
+        "fontSize" : 18,
+        "frame" : {
+          "height" : 0.4,
+          "width" : 0.7,
+          "x" : 0.5,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000002"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.82,
+            "width" : 0.82,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "gauge" : {
+            "lineWidth" : 10,
+            "style" : "ring",
+            "tint" : "token:accent",
+            "track" : "token:track",
+            "value" : "battery.level"
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000001",
+          "name" : "Ring",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "gauge"
+        },
+        {
+          "frame" : {
+            "height" : 0.24,
+            "width" : 0.7,
+            "x" : 0.5,
+            "y" : 0.46
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000002",
+          "name" : "Percent",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{round(battery.level * 100)}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.12,
+            "width" : 0.7,
+            "x" : 0.5,
+            "y" : 0.62
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000003",
+          "name" : "Caption",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "{battery.state == 'charging' ? '⚡ charging' : 'battery'}"
+          },
+          "type" : "text"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000000B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 1,
+  "sources" : [
+    "battery"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#30D158",
+        "light" : "#34C759"
+      },
+      "background" : {
+        "dark" : "#1C1C1E",
+        "light" : "#FFFFFF"
+      },
+      "primary" : {
+        "dark" : "#FFFFFF",
+        "light" : "#000000"
+      },
+      "secondary" : {
+        "dark" : "#98989E",
+        "light" : "#6C6C70"
+      },
+      "track" : {
+        "dark" : "#3A3A3C",
+        "light" : "#E5E5EA"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "rounded",
+        "size" : 11,
+        "weight" : "medium"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 34,
+        "weight" : "bold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

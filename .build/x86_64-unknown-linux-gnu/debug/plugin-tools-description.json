@@ -801,11 +801,19 @@
         },
         {
           "kind" : "file",
+          "name" : "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/swift-version-6A52383ED409C6A7.txt"
         },
         {
           "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetRender.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetTemplates.swiftmodule"
         },
         {
           "kind" : "file",
@@ -817,7 +825,8 @@
       "moduleOutputPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetRenderTests.swiftmodule",
       "objects" : [
         "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/ResolverTests.swift.o",
-        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o"
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o",
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
       ],
       "otherArguments" : [
         "-target",
@@ -860,15 +869,181 @@
         },
         {
           "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetRenderTests.swiftmodule"
         }
       ],
       "prepareForIndexing" : false,
       "sources" : [
         "/home/user/Develop/Tests/FacetRenderTests/ResolverTests.swift",
-        "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift"
+        "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift",
+        "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift"
       ],
       "tempsPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.FacetTemplates-x86_64-unknown-linux-gnu-debug.module" : {
+      "executable" : "/opt/swift/usr/bin/swiftc",
+      "fileList" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/sources",
+      "importPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/Sources/FacetTemplates/StarterTemplates.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/swift-version-6A52383ED409C6A7.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetCore.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "FacetTemplates",
+      "moduleOutputPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetTemplates.swiftmodule",
+      "objects" : [
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/StarterTemplates.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-unknown-linux-gnu",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j4",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "6",
+        "-g",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "develop",
+        "-Xcc",
+        "-fno-omit-frame-pointer"
+      ],
+      "outputFileMapPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/StarterTemplates.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetTemplates.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/home/user/Develop/Sources/FacetTemplates/StarterTemplates.swift"
+      ],
+      "tempsPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.facet-preview-x86_64-unknown-linux-gnu-debug.module" : {
+      "executable" : "/opt/swift/usr/bin/swiftc",
+      "fileList" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/sources",
+      "importPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/Sources/facet-preview/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/swift-version-6A52383ED409C6A7.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetCore.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetData.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetRender.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/FacetTemplates.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "facet_preview",
+      "moduleOutputPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/facet_preview.swiftmodule",
+      "objects" : [
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-unknown-linux-gnu",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j4",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "facet_preview_main",
+        "-swift-version",
+        "6",
+        "-g",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "develop",
+        "-Xcc",
+        "-fno-omit-frame-pointer"
+      ],
+      "outputFileMapPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules/facet_preview.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/home/user/Develop/Sources/facet-preview/main.swift"
+      ],
+      "tempsPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build",
       "wholeModuleOptimization" : false
     }
   },
@@ -1186,6 +1361,7 @@
       "-c",
       "/home/user/Develop/Tests/FacetRenderTests/ResolverTests.swift",
       "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift",
+      "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift",
       "-I",
       "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules",
       "-target",
@@ -1204,6 +1380,87 @@
       "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/ModuleCache",
       "-parseable-output",
       "-parse-as-library",
+      "-swift-version",
+      "6",
+      "-g",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "develop",
+      "-Xcc",
+      "-fno-omit-frame-pointer",
+      "-driver-use-frontend-path",
+      "/opt/swift/usr/bin/swiftc"
+    ],
+    "FacetTemplates" : [
+      "/opt/swift/usr/bin/swiftc",
+      "-module-name",
+      "FacetTemplates",
+      "-package-name",
+      "develop",
+      "-incremental",
+      "-c",
+      "/home/user/Develop/Sources/FacetTemplates/StarterTemplates.swift",
+      "-I",
+      "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules",
+      "-target",
+      "x86_64-unknown-linux-gnu",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j4",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "6",
+      "-g",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "develop",
+      "-Xcc",
+      "-fno-omit-frame-pointer",
+      "-driver-use-frontend-path",
+      "/opt/swift/usr/bin/swiftc"
+    ],
+    "facet_preview" : [
+      "/opt/swift/usr/bin/swiftc",
+      "-module-name",
+      "facet_preview",
+      "-package-name",
+      "develop",
+      "-incremental",
+      "-c",
+      "/home/user/Develop/Sources/facet-preview/main.swift",
+      "-I",
+      "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules",
+      "-target",
+      "x86_64-unknown-linux-gnu",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j4",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "facet_preview_main",
       "-swift-version",
       "6",
       "-g",
@@ -1237,6 +1494,7 @@
       "FacetCoreTests",
       "FacetDataTests",
       "FacetRenderTests",
+      "FacetTemplates",
       "FacetRender",
       "FacetData",
       "FacetCore"
@@ -1246,6 +1504,7 @@
       "FacetCoreTests",
       "FacetDataTests",
       "FacetRenderTests",
+      "FacetTemplates",
       "FacetRender",
       "FacetData",
       "FacetCore"
@@ -1255,6 +1514,16 @@
       "FacetCore"
     ],
     "FacetRenderTests" : [
+      "FacetTemplates",
+      "FacetRender",
+      "FacetData",
+      "FacetCore"
+    ],
+    "FacetTemplates" : [
+      "FacetCore"
+    ],
+    "facet_preview" : [
+      "FacetTemplates",
       "FacetRender",
       "FacetData",
       "FacetCore"
@@ -1290,6 +1559,10 @@
         {
           "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
         }
       ],
       "outputs" : [
@@ -1658,6 +1931,18 @@
         {
           "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/FacetTemplates.swiftmodule.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/StarterTemplates.swift.o"
         }
       ],
       "outputFilePath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.product/Objects.LinkFileList"
@@ -1706,9 +1991,159 @@
         {
           "kind" : "file",
           "name" : "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift"
         }
       ],
       "outputFilePath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/sources"
+    },
+    "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/Sources/FacetTemplates/StarterTemplates.swift"
+        }
+      ],
+      "outputFilePath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/sources"
+    },
+    "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet-preview.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Builtins.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Evaluator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/FacetCore.swiftmodule.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Layer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Lexer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Parser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Rendition.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Template.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Tokens.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/Value.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetCore.build/WidgetDocument.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/DataSource.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/FacetData.swiftmodule.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/RefreshPlanner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotValue.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/TimeSource.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRender.build/DocumentResolver.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRender.build/FacetRender.swiftmodule.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRender.build/FacetWidgetView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRender.build/RenderEnvironment.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRender.build/RenderNode.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRender.build/SVGRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/FacetTemplates.swiftmodule.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetTemplates.build/StarterTemplates.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/facet_preview.swiftmodule.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/main.swift.o"
+        }
+      ],
+      "outputFilePath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet-preview.product/Objects.LinkFileList"
+    },
+    "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/Sources/facet-preview/main.swift"
+        }
+      ],
+      "outputFilePath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/facet_preview.build/sources"
     },
     "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/swift-version-6A52383ED409C6A7.txt" : {
       "alwaysOutOfDate" : true,

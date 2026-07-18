@@ -1,0 +1,141 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000002A",
+  "name" : "Steps Dashboard",
+  "overrides" : {
+
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.3,
+            "width" : 0.86,
+            "x" : 0.5,
+            "y" : 0.34
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000022",
+          "name" : "Count",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{health.steps}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.12,
+            "width" : 0.86,
+            "x" : 0.5,
+            "y" : 0.56
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000023",
+          "name" : "Label",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "of {health.stepsGoal} steps · {percent(clamp(health.steps \/ health.stepsGoal, 0, 1))}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.09,
+            "width" : 0.84,
+            "x" : 0.5,
+            "y" : 0.78
+          },
+          "gauge" : {
+            "lineWidth" : 6,
+            "style" : "bar",
+            "tint" : "token:accent",
+            "track" : "token:track",
+            "value" : "clamp(health.steps \/ health.stepsGoal, 0, 1)"
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000021",
+          "name" : "Progress",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "gauge"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000002B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 1,
+  "sources" : [
+    "health"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#FF9F0A",
+        "light" : "#FF9500"
+      },
+      "background" : {
+        "dark" : "#221A10",
+        "light" : "#FFF7ED"
+      },
+      "primary" : {
+        "dark" : "#FFF3E3",
+        "light" : "#3D2E1E"
+      },
+      "secondary" : {
+        "dark" : "#B3A18B",
+        "light" : "#8A7A66"
+      },
+      "track" : {
+        "dark" : "#3A2F22",
+        "light" : "#EFE3D3"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "rounded",
+        "size" : 11,
+        "weight" : "medium"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 30,
+        "weight" : "bold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}
