@@ -1,0 +1,29 @@
+{
+  "": {
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/master.swiftdeps"
+  },
+  "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.derived/FacetCoreTests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetCoreTests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetCoreTests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetCoreTests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetCoreTests.swiftdeps"
+  },
+  "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.derived/FacetDataTests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetDataTests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetDataTests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetDataTests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetDataTests.swiftdeps"
+  },
+  "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.derived/FacetRenderTests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetRenderTests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetRenderTests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetRenderTests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/FacetRenderTests.swiftdeps"
+  },
+  "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.derived/all-discovered-tests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/all-discovered-tests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/all-discovered-tests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/all-discovered-tests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageDiscoveredTests.build/all-discovered-tests.swiftdeps"
+  }
+}

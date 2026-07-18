@@ -1,0 +1,35 @@
+{
+  "": {
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/master.swiftdeps"
+  },
+  "/home/user/Develop/Sources/FacetData/DataSource.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/DataSource.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/DataSource.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/DataSource~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/DataSource.swiftdeps"
+  },
+  "/home/user/Develop/Sources/FacetData/RefreshPlanner.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/RefreshPlanner.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/RefreshPlanner.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/RefreshPlanner~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/RefreshPlanner.swiftdeps"
+  },
+  "/home/user/Develop/Sources/FacetData/SnapshotStore.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotStore.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotStore.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotStore~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotStore.swiftdeps"
+  },
+  "/home/user/Develop/Sources/FacetData/SnapshotValue.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotValue.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotValue.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotValue~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/SnapshotValue.swiftdeps"
+  },
+  "/home/user/Develop/Sources/FacetData/Sources/TimeSource.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/TimeSource.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/TimeSource.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/TimeSource~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetData.build/TimeSource.swiftdeps"
+  }
+}

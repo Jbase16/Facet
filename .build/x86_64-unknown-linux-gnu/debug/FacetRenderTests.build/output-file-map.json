@@ -1,0 +1,17 @@
+{
+  "": {
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/master.swiftdeps"
+  },
+  "/home/user/Develop/Tests/FacetRenderTests/ResolverTests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/ResolverTests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/ResolverTests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/ResolverTests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/ResolverTests.swiftdeps"
+  },
+  "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swiftdeps"
+  }
+}

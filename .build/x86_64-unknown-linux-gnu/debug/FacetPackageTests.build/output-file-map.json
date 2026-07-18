@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.build/master.swiftdeps"
+  },
+  "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.derived/runner.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.build/runner.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.build/runner.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetPackageTests.build/runner.swiftdeps"
+  }
+}
