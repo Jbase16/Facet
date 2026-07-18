@@ -2,7 +2,7 @@
 #   brew install xcodegen && cd App && xcodegen generate
 name: Facet
 options:
-  bundleIdPrefix: com.facet.app
+  bundleIdPrefix: com.JasonPhillips
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -30,7 +30,7 @@ targets:
       - target: FacetWidgets
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.facet.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.JasonPhillips.app
         CODE_SIGN_ENTITLEMENTS: Facet/Facet.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -53,5 +53,5 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.facet.app.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.JasonPhillips.app.widgets
         CODE_SIGN_ENTITLEMENTS: FacetWidgets/FacetWidgets.entitlements
