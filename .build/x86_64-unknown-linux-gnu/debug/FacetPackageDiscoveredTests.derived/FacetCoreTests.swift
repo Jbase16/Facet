@@ -11,7 +11,8 @@ fileprivate extension DocumentTests {
         ("testFutureSchemaVersionRejected", testFutureSchemaVersionRejected),
         ("testPatchLookup", testPatchLookup),
         ("testRoundTrip", testRoundTrip),
-        ("testUnknownLayerTypeFailsCleanly", testUnknownLayerTypeFailsCleanly)
+        ("testUnknownLayerTypeFailsCleanly", testUnknownLayerTypeFailsCleanly),
+        ("testUpdateFirstLayerMutatesDeepChild", testUpdateFirstLayerMutatesDeepChild)
     ]
 }
 

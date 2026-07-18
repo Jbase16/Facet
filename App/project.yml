@@ -1,0 +1,56 @@
+# XcodeGen project spec. Generate the Xcode project with:
+#   brew install xcodegen && cd App && xcodegen generate
+name: Facet
+options:
+  bundleIdPrefix: com.facet.app
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  FacetKit:
+    path: ..
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+
+targets:
+  Facet:
+    type: application
+    platform: iOS
+    sources:
+      - Facet
+      - Shared
+    dependencies:
+      - package: FacetKit
+        products: [FacetCore, FacetData, FacetRender, FacetTemplates]
+      - target: FacetWidgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.facet.app
+        CODE_SIGN_ENTITLEMENTS: Facet/Facet.entitlements
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Facet
+
+  FacetWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - FacetWidgets
+      - Shared
+    dependencies:
+      - package: FacetKit
+        products: [FacetCore, FacetData, FacetRender, FacetTemplates]
+    info:
+      path: FacetWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Facet Widgets
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.facet.app.widgets
+        CODE_SIGN_ENTITLEMENTS: FacetWidgets/FacetWidgets.entitlements

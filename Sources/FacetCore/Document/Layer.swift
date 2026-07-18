@@ -235,6 +235,25 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         return nil
     }
 
+    /// In-place mutation of the first layer matching `id`, anywhere in the
+    /// tree. Returns false if no layer matched. This is the editor's write
+    /// path: value semantics keep undo/redo as simple as keeping old copies.
+    @discardableResult
+    public mutating func updateFirstLayer(withID id: UUID, _ mutate: (inout Layer) -> Void) -> Bool {
+        if self.id == id {
+            mutate(&self)
+            return true
+        }
+        guard case .container(var container) = content else { return false }
+        for index in container.children.indices {
+            if container.children[index].updateFirstLayer(withID: id, mutate) {
+                content = .container(container)
+                return true
+            }
+        }
+        return false
+    }
+
     private enum CodingKeys: String, CodingKey {
         case id, name, frame, style, isHidden, type
         case text, symbol, shape, image, gauge, container

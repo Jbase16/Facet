@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="158" height="158" viewBox="0 0 158 158">
+<defs>
+<clipPath id="canvas"><rect x="0" y="0" width="158" height="158" rx="20"/></clipPath>
+</defs>
+<g clip-path="url(#canvas)">
+  <g>
+    <rect x="0" y="0" width="158" height="158" rx="0" fill="#111111"/>
+    <g>
+      <text x="79" y="66.36" text-anchor="middle" dominant-baseline="central" font-family="ui-serif, Georgia, serif" font-size="40" font-weight="300" fill="#FFFFFF">4:08</text>
+    </g>
+    <g>
+      <text x="79" y="104.28" text-anchor="middle" dominant-baseline="central" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="400" fill="#9A9AA0">Saturday, July 18</text>
+    </g>
+  </g>
+</g>
+</svg>

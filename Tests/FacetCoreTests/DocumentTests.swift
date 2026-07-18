@@ -106,6 +106,23 @@ final class DocumentTests: XCTestCase {
         XCTAssertNil(document.root.firstLayer(withID: UUID()))
     }
 
+    func testUpdateFirstLayerMutatesDeepChild() {
+        var document = sampleDocument()
+        guard case .container(let container) = document.root.content else {
+            return XCTFail("Root should be a container")
+        }
+        let targetID = container.children[1].id
+        let updated = document.root.updateFirstLayer(withID: targetID) { layer in
+            layer.frame.x = 0.25
+            layer.isHidden = true
+        }
+        XCTAssertTrue(updated)
+        let found = document.root.firstLayer(withID: targetID)
+        XCTAssertEqual(found?.frame.x, 0.25)
+        XCTAssertEqual(found?.isHidden, true)
+        XCTAssertFalse(document.root.updateFirstLayer(withID: UUID()) { _ in })
+    }
+
     func testPatchLookup() {
         let document = sampleDocument()
         guard case .container(let container) = document.root.content else {
