@@ -801,6 +801,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/home/user/Develop/Tests/FacetRenderTests/SchemaV2Tests.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift"
         },
         {
@@ -826,6 +830,7 @@
       "objects" : [
         "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/ResolverTests.swift.o",
         "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o",
+        "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.swift.o",
         "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
       ],
       "otherArguments" : [
@@ -869,6 +874,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
         },
         {
@@ -880,6 +889,7 @@
       "sources" : [
         "/home/user/Develop/Tests/FacetRenderTests/ResolverTests.swift",
         "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift",
+        "/home/user/Develop/Tests/FacetRenderTests/SchemaV2Tests.swift",
         "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift"
       ],
       "tempsPath" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build",
@@ -1361,6 +1371,7 @@
       "-c",
       "/home/user/Develop/Tests/FacetRenderTests/ResolverTests.swift",
       "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift",
+      "/home/user/Develop/Tests/FacetRenderTests/SchemaV2Tests.swift",
       "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift",
       "-I",
       "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/Modules",
@@ -1559,6 +1570,10 @@
         {
           "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.swift.o"
         },
         {
           "kind" : "file",
@@ -1934,6 +1949,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o"
         },
         {
@@ -1991,6 +2010,10 @@
         {
           "kind" : "file",
           "name" : "/home/user/Develop/Tests/FacetRenderTests/SVGRendererTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/user/Develop/Tests/FacetRenderTests/SchemaV2Tests.swift"
         },
         {
           "kind" : "file",

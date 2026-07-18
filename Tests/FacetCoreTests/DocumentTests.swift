@@ -55,7 +55,7 @@ final class DocumentTests: XCTestCase {
     func testEncodedFormIsStableAndReadable() throws {
         let document = sampleDocument()
         let json = String(data: try FacetFile.encode(document), encoding: .utf8)!
-        XCTAssertTrue(json.contains("\"schemaVersion\" : 1"))
+        XCTAssertTrue(json.contains("\"schemaVersion\" : 2"))
         XCTAssertTrue(json.contains("\"type\" : \"container\""))
         XCTAssertTrue(json.contains("\"type\" : \"gauge\""))
         XCTAssertTrue(json.contains("token:accent"), "Color token refs serialize as token:name")

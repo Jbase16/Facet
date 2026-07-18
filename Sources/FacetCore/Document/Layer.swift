@@ -56,6 +56,10 @@ public enum TextAlignment: String, Codable, Sendable {
     case leading, center, trailing
 }
 
+public enum TextCase: String, Codable, Sendable {
+    case uppercase, lowercase
+}
+
 /// Text content. `text` is a template string: `{...}` spans are expressions
 /// evaluated against the data snapshot (e.g. `"{battery.level * 100}%"`).
 /// Use `{{` and `}}` for literal braces.
@@ -65,19 +69,26 @@ public struct TextContent: Codable, Hashable, Sendable {
     public var color: ColorRef
     public var alignment: TextAlignment
     public var maxLines: Int?
+    /// Tracking in points. Optional so v1 documents decode unchanged.
+    public var letterSpacing: Double?
+    public var textCase: TextCase?
 
     public init(
         text: String,
         font: FontRef,
         color: ColorRef,
         alignment: TextAlignment = .center,
-        maxLines: Int? = nil
+        maxLines: Int? = nil,
+        letterSpacing: Double? = nil,
+        textCase: TextCase? = nil
     ) {
         self.text = text
         self.font = font
         self.color = color
         self.alignment = alignment
         self.maxLines = maxLines
+        self.letterSpacing = letterSpacing
+        self.textCase = textCase
     }
 }
 
@@ -105,15 +116,56 @@ public enum ShapeKind: String, Codable, Sendable {
 
 public struct ShapeContent: Codable, Hashable, Sendable {
     public var kind: ShapeKind
-    public var fill: ColorRef
+    public var fill: Fill
     public var strokeColor: ColorRef?
     public var strokeWidth: Double
 
-    public init(kind: ShapeKind, fill: ColorRef, strokeColor: ColorRef? = nil, strokeWidth: Double = 0) {
+    public init(kind: ShapeKind, fill: Fill, strokeColor: ColorRef? = nil, strokeWidth: Double = 0) {
         self.kind = kind
         self.fill = fill
         self.strokeColor = strokeColor
         self.strokeWidth = strokeWidth
+    }
+
+    public init(kind: ShapeKind, fill: ColorRef, strokeColor: ColorRef? = nil, strokeWidth: Double = 0) {
+        self.init(kind: kind, fill: .color(fill), strokeColor: strokeColor, strokeWidth: strokeWidth)
+    }
+}
+
+/// A straight line across the layer's rect, through its center. Rotate the
+/// layer for diagonals; use as dividers, tick marks, and decoration.
+public struct LineContent: Codable, Hashable, Sendable {
+    public var color: ColorRef
+    public var thickness: Double
+    /// SVG-style dash pattern in points (`[on, off]`); nil for solid.
+    public var dash: [Double]?
+
+    public init(color: ColorRef, thickness: Double = 2, dash: [Double]? = nil) {
+        self.color = color
+        self.thickness = thickness
+        self.dash = dash
+    }
+}
+
+public enum ChartStyle: String, Codable, Sendable {
+    case line
+    case area
+    case bars
+}
+
+/// A mini-chart over a list from the data snapshot. `dataPath` addresses a
+/// list of numbers (e.g. `weather.hourly`); values are min/max-normalized.
+public struct ChartContent: Codable, Hashable, Sendable {
+    public var dataPath: String
+    public var style: ChartStyle
+    public var color: ColorRef
+    public var lineWidth: Double
+
+    public init(dataPath: String, style: ChartStyle = .line, color: ColorRef, lineWidth: Double = 2) {
+        self.dataPath = dataPath
+        self.style = style
+        self.color = color
+        self.lineWidth = lineWidth
     }
 }
 
@@ -165,25 +217,34 @@ public enum ContainerLayout: String, Codable, Sendable {
     case overlay
 }
 
+/// Cross-axis placement for stacked children (e.g. top/center/bottom within
+/// a horizontal stack). Optional in serialized form; nil means center.
+public enum StackAlignment: String, Codable, Sendable {
+    case start, center, end
+}
+
 public struct ContainerContent: Codable, Sendable, Hashable {
     public var layout: ContainerLayout
     /// Spacing between stacked children, in points.
     public var spacing: Double
     /// Inner padding, in points.
     public var padding: Double
-    public var background: ColorRef?
+    public var alignment: StackAlignment?
+    public var background: Fill?
     public var children: [Layer]
 
     public init(
         layout: ContainerLayout = .absolute,
         spacing: Double = 0,
         padding: Double = 0,
-        background: ColorRef? = nil,
+        alignment: StackAlignment? = nil,
+        background: Fill? = nil,
         children: [Layer] = []
     ) {
         self.layout = layout
         self.spacing = spacing
         self.padding = padding
+        self.alignment = alignment
         self.background = background
         self.children = children
     }
@@ -197,6 +258,8 @@ public enum LayerContent: Sendable, Hashable {
     case shape(ShapeContent)
     case image(ImageContent)
     case gauge(GaugeContent)
+    case line(LineContent)
+    case chart(ChartContent)
     case container(ContainerContent)
 }
 
@@ -256,7 +319,7 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, frame, style, isHidden, type
-        case text, symbol, shape, image, gauge, container
+        case text, symbol, shape, image, gauge, line, chart, container
     }
 
     public init(from decoder: Decoder) throws {
@@ -273,6 +336,8 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         case "shape": content = .shape(try container.decode(ShapeContent.self, forKey: .shape))
         case "image": content = .image(try container.decode(ImageContent.self, forKey: .image))
         case "gauge": content = .gauge(try container.decode(GaugeContent.self, forKey: .gauge))
+        case "line": content = .line(try container.decode(LineContent.self, forKey: .line))
+        case "chart": content = .chart(try container.decode(ChartContent.self, forKey: .chart))
         case "container": content = .container(try container.decode(ContainerContent.self, forKey: .container))
         default:
             throw DecodingError.dataCorruptedError(
@@ -306,6 +371,12 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         case .gauge(let value):
             try container.encode("gauge", forKey: .type)
             try container.encode(value, forKey: .gauge)
+        case .line(let value):
+            try container.encode("line", forKey: .type)
+            try container.encode(value, forKey: .line)
+        case .chart(let value):
+            try container.encode("chart", forKey: .type)
+            try container.encode(value, forKey: .chart)
         case .container(let value):
             try container.encode("container", forKey: .type)
             try container.encode(value, forKey: .container)

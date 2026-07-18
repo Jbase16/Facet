@@ -37,7 +37,7 @@ private struct NodeView: View {
             ZStack(alignment: .topLeading) {
                 if let background {
                     RoundedRectangle(cornerRadius: node.cornerRadius, style: .continuous)
-                        .fill(Color(background))
+                        .fill(shapeStyle(background))
                         .frame(width: node.rect.width, height: node.rect.height)
                         .offset(x: node.rect.x, y: node.rect.y)
                 }
@@ -48,6 +48,7 @@ private struct NodeView: View {
         case .text(let text):
             Text(text.text)
                 .font(font(for: text.font))
+                .kerning(text.letterSpacing)
                 .foregroundStyle(Color(text.color))
                 .multilineTextAlignment(alignment(text.alignment))
                 .lineLimit(text.maxLines)
@@ -74,12 +75,97 @@ private struct NodeView: View {
             gaugeView(gauge)
                 .frame(width: node.rect.width, height: node.rect.height)
                 .offset(x: node.rect.x, y: node.rect.y)
+        case .line(let line):
+            Path { path in
+                path.move(to: CGPoint(x: 0, y: node.rect.height / 2))
+                path.addLine(to: CGPoint(x: node.rect.width, y: node.rect.height / 2))
+            }
+            .stroke(
+                Color(line.color),
+                style: StrokeStyle(lineWidth: line.thickness, lineCap: .round, dash: line.dash ?? [])
+            )
+            .frame(width: node.rect.width, height: node.rect.height)
+            .offset(x: node.rect.x, y: node.rect.y)
+        case .chart(let chart):
+            chartView(chart)
+                .frame(width: node.rect.width, height: node.rect.height)
+                .offset(x: node.rect.x, y: node.rect.y)
+        }
+    }
+
+    @ViewBuilder
+    private func chartView(_ chart: ResolvedChart) -> some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let count = chart.normalized.count
+            if count >= 2 {
+                switch chart.style {
+                case .bars:
+                    let gap = size.width * 0.15 / Double(count)
+                    let barWidth = (size.width - gap * Double(count - 1)) / Double(count)
+                    ForEach(Array(chart.normalized.enumerated()), id: \.offset) { index, value in
+                        let height = max(size.height * value, barWidth * 0.5)
+                        RoundedRectangle(cornerRadius: barWidth / 3, style: .continuous)
+                            .fill(Color(chart.color))
+                            .frame(width: barWidth, height: height)
+                            .position(
+                                x: Double(index) * (barWidth + gap) + barWidth / 2,
+                                y: size.height - height / 2
+                            )
+                    }
+                case .line, .area:
+                    let step = size.width / Double(count - 1)
+                    let points = chart.normalized.enumerated().map { index, value in
+                        CGPoint(x: Double(index) * step, y: size.height * (1 - value))
+                    }
+                    if chart.style == .area {
+                        Path { path in
+                            path.move(to: CGPoint(x: 0, y: size.height))
+                            for point in points { path.addLine(to: point) }
+                            path.addLine(to: CGPoint(x: size.width, y: size.height))
+                            path.closeSubpath()
+                        }
+                        .fill(Color(chart.color).opacity(0.25))
+                    }
+                    Path { path in
+                        path.move(to: points[0])
+                        for point in points.dropFirst() { path.addLine(to: point) }
+                    }
+                    .stroke(
+                        Color(chart.color),
+                        style: StrokeStyle(lineWidth: chart.lineWidth, lineCap: .round, lineJoin: .round)
+                    )
+                }
+            }
+        }
+    }
+
+    private func shapeStyle(_ fill: ResolvedFill) -> AnyShapeStyle {
+        switch fill {
+        case .solid(let color):
+            return AnyShapeStyle(Color(color))
+        case .linearGradient(let stops, let angle):
+            let radians = angle * .pi / 180
+            let dx = cos(radians) / 2
+            let dy = sin(radians) / 2
+            return AnyShapeStyle(LinearGradient(
+                stops: stops.map { .init(color: Color($0.color), location: $0.position) },
+                startPoint: UnitPoint(x: 0.5 - dx, y: 0.5 - dy),
+                endPoint: UnitPoint(x: 0.5 + dx, y: 0.5 + dy)
+            ))
+        case .radialGradient(let stops):
+            return AnyShapeStyle(RadialGradient(
+                stops: stops.map { .init(color: Color($0.color), location: $0.position) },
+                center: .center,
+                startRadius: 0,
+                endRadius: max(node.rect.width, node.rect.height) / 2
+            ))
         }
     }
 
     @ViewBuilder
     private func shapeView(_ shape: ResolvedShape) -> some View {
-        let fill = Color(shape.fill)
+        let fill = shapeStyle(shape.fill)
         let stroke = shape.strokeColor.map(Color.init)
         switch shape.kind {
         case .rectangle:

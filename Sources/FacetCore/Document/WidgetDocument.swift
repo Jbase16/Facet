@@ -3,8 +3,10 @@ import Foundation
 /// The portable `.facet` document: a layer tree, its design tokens, the data
 /// sources it depends on, and per-rendition overrides.
 public struct WidgetDocument: Codable, Identifiable, Sendable, Hashable {
-    /// Bump when the serialized format changes; see `DocumentMigrator`.
-    public static let currentSchemaVersion = 1
+    /// Bump when the serialized format changes. v2 added fills (gradients),
+    /// line and chart layers, text tracking/case, and stack alignment — all
+    /// strictly additive, so v1 documents decode without migration.
+    public static let currentSchemaVersion = 2
 
     public var schemaVersion: Int
     public var id: UUID

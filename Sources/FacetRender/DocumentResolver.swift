@@ -75,7 +75,7 @@ public struct DocumentResolver {
         case .shape(let content):
             kind = .shape(ResolvedShape(
                 kind: content.kind,
-                fill: resolveColor(content.fill),
+                fill: resolveFill(content.fill),
                 strokeColor: content.strokeColor.map { resolveColor($0) },
                 strokeWidth: content.strokeWidth
             ))
@@ -83,8 +83,14 @@ public struct DocumentResolver {
             kind = .image(ResolvedImage(assetName: content.assetName, contentMode: content.contentMode))
         case .gauge(let content):
             kind = .gauge(resolveGauge(content, layer: layer))
+        case .line(let content):
+            var color = resolveColor(content.color)
+            if environment.rendition.isAccessory { color = accessoryColor(color) }
+            kind = .line(ResolvedLine(color: color, thickness: content.thickness, dash: content.dash))
+        case .chart(let content):
+            kind = .chart(resolveChart(content, layer: layer))
         case .container(let content):
-            kind = .group(background: content.background.map { resolveColor($0) })
+            kind = .group(background: content.background.map { resolveFill($0) })
             children = resolveChildren(content, in: rect)
         }
 
@@ -137,6 +143,13 @@ public struct DocumentResolver {
             let totalMain = mainSizes.reduce(0, +) + container.spacing * Double(visible.count - 1)
             var cursor = (mainAvailable - totalMain) / 2
 
+            let crossFactor: Double
+            switch container.alignment ?? .center {
+            case .start: crossFactor = 0
+            case .center: crossFactor = 0.5
+            case .end: crossFactor = 1
+            }
+
             var nodes: [RenderNode] = []
             for (child, mainSize) in zip(visible, mainSizes) {
                 let crossSize = (isHorizontal ? child.frame.height * content.height
@@ -145,13 +158,13 @@ public struct DocumentResolver {
                 if isHorizontal {
                     cell = Rect(
                         x: content.x + cursor,
-                        y: content.y + (content.height - crossSize) / 2,
+                        y: content.y + (content.height - crossSize) * crossFactor,
                         width: mainSize,
                         height: crossSize
                     )
                 } else {
                     cell = Rect(
-                        x: content.x + (content.width - crossSize) / 2,
+                        x: content.x + (content.width - crossSize) * crossFactor,
                         y: content.y + cursor,
                         width: crossSize,
                         height: mainSize
@@ -184,6 +197,11 @@ public struct DocumentResolver {
             report(layer, "\(error)")
             text = "⚠︎"
         }
+        switch content.textCase {
+        case .uppercase: text = text.uppercased()
+        case .lowercase: text = text.lowercased()
+        case nil: break
+        }
         var font = resolveFont(content.font)
         if let fontSizeOverride { font.size = fontSizeOverride }
         var color = resolveColor(content.color)
@@ -193,7 +211,30 @@ public struct DocumentResolver {
             font: font,
             color: color,
             alignment: content.alignment,
-            maxLines: content.maxLines
+            maxLines: content.maxLines,
+            letterSpacing: content.letterSpacing ?? 0
+        )
+    }
+
+    private mutating func resolveChart(_ content: ChartContent, layer: Layer) -> ResolvedChart {
+        var color = resolveColor(content.color)
+        if environment.rendition.isAccessory { color = accessoryColor(color) }
+        guard let values = context.snapshots.numberList(forVariable: content.dataPath),
+              values.count >= 2 else {
+            report(layer, "No list of numbers at '\(content.dataPath)'")
+            return ResolvedChart(normalized: [], style: content.style, color: color, lineWidth: content.lineWidth)
+        }
+        let low = values.min()!
+        let high = values.max()!
+        let span = high - low
+        let normalized = span == 0
+            ? values.map { _ in 0.5 }
+            : values.map { ($0 - low) / span }
+        return ResolvedChart(
+            normalized: normalized,
+            style: content.style,
+            color: color,
+            lineWidth: content.lineWidth
         )
     }
 
@@ -222,6 +263,35 @@ public struct DocumentResolver {
     }
 
     // MARK: - Token resolution
+
+    private func resolveFill(_ fill: Fill) -> ResolvedFill {
+        // Accessory surfaces are monochrome; collapse gradients to vibrant white.
+        if environment.rendition.isAccessory {
+            return .solid(accessoryColor(primaryColor(of: fill)))
+        }
+        switch fill {
+        case .color(let ref):
+            return .solid(resolveColor(ref))
+        case .linearGradient(let gradient):
+            return .linearGradient(stops: resolveStops(gradient.stops), angle: gradient.angle)
+        case .radialGradient(let gradient):
+            return .radialGradient(stops: resolveStops(gradient.stops))
+        }
+    }
+
+    private func resolveStops(_ stops: [GradientStop]) -> [ResolvedGradientStop] {
+        stops
+            .sorted { $0.position < $1.position }
+            .map { ResolvedGradientStop(position: $0.position, color: resolveColor($0.color)) }
+    }
+
+    private func primaryColor(of fill: Fill) -> ColorValue {
+        switch fill {
+        case .color(let ref): return resolveColor(ref)
+        case .linearGradient(let gradient), .radialGradient(let gradient):
+            return gradient.stops.first.map { resolveColor($0.color) } ?? .black
+        }
+    }
 
     private func resolveColor(_ ref: ColorRef) -> ColorValue {
         switch ref {

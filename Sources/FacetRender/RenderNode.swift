@@ -38,12 +38,41 @@ public struct ResolvedShadow: Sendable, Equatable {
     public var offsetY: Double
 }
 
+/// A gradient stop with its color already resolved for the color scheme.
+public struct ResolvedGradientStop: Sendable, Equatable {
+    public var position: Double
+    public var color: ColorValue
+
+    public init(position: Double, color: ColorValue) {
+        self.position = position
+        self.color = color
+    }
+}
+
+/// A paint with all token/scheme resolution done.
+public enum ResolvedFill: Sendable, Equatable {
+    case solid(ColorValue)
+    case linearGradient(stops: [ResolvedGradientStop], angle: Double)
+    case radialGradient(stops: [ResolvedGradientStop])
+
+    /// A representative color, used where a gradient can't render
+    /// (accessory monochrome conversion, fallbacks).
+    public var primaryColor: ColorValue {
+        switch self {
+        case .solid(let color): return color
+        case .linearGradient(let stops, _), .radialGradient(let stops):
+            return stops.first?.color ?? .black
+        }
+    }
+}
+
 public struct ResolvedText: Sendable, Equatable {
     public var text: String
     public var font: FontToken
     public var color: ColorValue
     public var alignment: TextAlignment
     public var maxLines: Int?
+    public var letterSpacing: Double
 }
 
 public struct ResolvedSymbol: Sendable, Equatable {
@@ -55,9 +84,24 @@ public struct ResolvedSymbol: Sendable, Equatable {
 
 public struct ResolvedShape: Sendable, Equatable {
     public var kind: ShapeKind
-    public var fill: ColorValue
+    public var fill: ResolvedFill
     public var strokeColor: ColorValue?
     public var strokeWidth: Double
+}
+
+public struct ResolvedLine: Sendable, Equatable {
+    public var color: ColorValue
+    public var thickness: Double
+    public var dash: [Double]?
+}
+
+public struct ResolvedChart: Sendable, Equatable {
+    /// Values normalized to 0...1 (min → 0, max → 1). Empty when the data
+    /// path was missing; the renderer draws nothing and a diagnostic is set.
+    public var normalized: [Double]
+    public var style: ChartStyle
+    public var color: ColorValue
+    public var lineWidth: Double
 }
 
 public struct ResolvedImage: Sendable, Equatable {
@@ -79,12 +123,14 @@ public struct ResolvedGauge: Sendable, Equatable {
 /// and no decisions — which is what keeps the widget extension trivial.
 public struct RenderNode: Sendable, Equatable {
     public enum Kind: Sendable, Equatable {
-        case group(background: ColorValue?)
+        case group(background: ResolvedFill?)
         case text(ResolvedText)
         case symbol(ResolvedSymbol)
         case shape(ResolvedShape)
         case image(ResolvedImage)
         case gauge(ResolvedGauge)
+        case line(ResolvedLine)
+        case chart(ResolvedChart)
     }
 
     public var layerID: UUID

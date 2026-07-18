@@ -154,6 +154,96 @@ public enum ColorRef: Codable, Hashable, Sendable {
     }
 }
 
+// MARK: - Fills
+
+public struct GradientStop: Codable, Hashable, Sendable {
+    /// 0...1 along the gradient axis.
+    public var position: Double
+    public var color: ColorRef
+
+    public init(position: Double, color: ColorRef) {
+        self.position = position
+        self.color = color
+    }
+}
+
+public struct GradientFill: Codable, Hashable, Sendable {
+    public var stops: [GradientStop]
+    /// Direction of the gradient vector in degrees: 0 points right, 90 down.
+    /// Ignored for radial gradients (center-out).
+    public var angle: Double
+
+    public init(stops: [GradientStop], angle: Double = 90) {
+        self.stops = stops
+        self.angle = angle
+    }
+}
+
+/// A paint: solid color or gradient. Solid fills serialize as the same plain
+/// string as `ColorRef`, so every schema-v1 document decodes unchanged.
+public enum Fill: Codable, Hashable, Sendable {
+    case color(ColorRef)
+    case linearGradient(GradientFill)
+    case radialGradient(GradientFill)
+
+    /// Conveniences mirroring ColorRef so call sites read identically.
+    public static func token(_ name: String) -> Fill { .color(.token(name)) }
+    public static func literal(_ color: ColorValue) -> Fill { .color(.literal(color)) }
+
+    private enum CodingKeys: String, CodingKey {
+        case type, gradient
+    }
+
+    public init(from decoder: Decoder) throws {
+        if let container = try? decoder.singleValueContainer(),
+           let raw = try? container.decode(String.self) {
+            if raw.hasPrefix("token:") {
+                self = .color(.token(String(raw.dropFirst("token:".count))))
+                return
+            }
+            if let color = ColorValue(hex: raw) {
+                self = .color(.literal(color))
+                return
+            }
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Invalid fill: \(raw)"
+            )
+        }
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "linearGradient":
+            self = .linearGradient(try container.decode(GradientFill.self, forKey: .gradient))
+        case "radialGradient":
+            self = .radialGradient(try container.decode(GradientFill.self, forKey: .gradient))
+        default:
+            throw DecodingError.dataCorruptedError(
+                forKey: .type, in: container, debugDescription: "Unknown fill type: \(type)"
+            )
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .color(let ref):
+            var container = encoder.singleValueContainer()
+            switch ref {
+            case .token(let name): try container.encode("token:" + name)
+            case .literal(let color): try container.encode(color.hexString)
+            }
+        case .linearGradient(let gradient):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode("linearGradient", forKey: .type)
+            try container.encode(gradient, forKey: .gradient)
+        case .radialGradient(let gradient):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode("radialGradient", forKey: .type)
+            try container.encode(gradient, forKey: .gradient)
+        }
+    }
+}
+
 /// A font reference: either a token name or an inline font description.
 public enum FontRef: Codable, Hashable, Sendable {
     case token(String)

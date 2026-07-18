@@ -4,9 +4,9 @@ import XCTest
 public func __allDiscoveredTests() -> [XCTestCaseEntry] {
     var tests = [XCTestCaseEntry]()
 
+    tests += __FacetDataTests__allTests()
     tests += __FacetCoreTests__allTests()
     tests += __FacetRenderTests__allTests()
-    tests += __FacetDataTests__allTests()
 
     return tests
 }

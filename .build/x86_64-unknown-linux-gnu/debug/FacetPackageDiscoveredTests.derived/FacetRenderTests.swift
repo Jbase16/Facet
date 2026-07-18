@@ -28,6 +28,24 @@ fileprivate extension SVGRendererTests {
     ]
 }
 
+fileprivate extension SchemaV2Tests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static nonisolated(unsafe) let __allTests__SchemaV2Tests = [
+        ("testAccessoryCollapsesGradientToMonochrome", testAccessoryCollapsesGradientToMonochrome),
+        ("testChartFlatSeriesCentersAndMissingPathDegrades", testChartFlatSeriesCentersAndMissingPathDegrades),
+        ("testChartNormalizesValues", testChartNormalizesValues),
+        ("testGradientFillRoundTrips", testGradientFillRoundTrips),
+        ("testGradientResolvesAndSortsStops", testGradientResolvesAndSortsStops),
+        ("testNewBuiltins", testNewBuiltins),
+        ("testSVGEmitsGradientDefsLineAndChart", testSVGEmitsGradientDefsLineAndChart),
+        ("testSnapshotSetNumberList", testSnapshotSetNumberList),
+        ("testSolidFillDecodesFromV1StringForm", testSolidFillDecodesFromV1StringForm),
+        ("testStackAlignmentStart", testStackAlignmentStart),
+        ("testTextCaseAndLetterSpacing", testTextCaseAndLetterSpacing),
+        ("testV1DocumentDecodesUnderV2", testV1DocumentDecodesUnderV2)
+    ]
+}
+
 fileprivate extension StarterTemplateTests {
     @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
     static nonisolated(unsafe) let __allTests__StarterTemplateTests = [
@@ -42,6 +60,7 @@ func __FacetRenderTests__allTests() -> [XCTestCaseEntry] {
     return [
         testCase(ResolverTests.__allTests__ResolverTests),
         testCase(SVGRendererTests.__allTests__SVGRendererTests),
+        testCase(SchemaV2Tests.__allTests__SchemaV2Tests),
         testCase(StarterTemplateTests.__allTests__StarterTemplateTests)
     ]
 }

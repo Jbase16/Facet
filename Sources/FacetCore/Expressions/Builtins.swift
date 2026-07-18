@@ -118,6 +118,17 @@ enum Builtins {
             return .string(text.count >= width ? text : String(repeating: "0", count: width - text.count) + text)
         },
 
+        BuiltinFunction("sign", arity: 1...1) { args, _ in
+            let x = try args[0].asNumber()
+            return .number(x > 0 ? 1 : (x < 0 ? -1 : 0))
+        },
+        BuiltinFunction("lerp", arity: 3...3) { args, _ in
+            let a = try args[0].asNumber()
+            let b = try args[1].asNumber()
+            let t = try args[2].asNumber()
+            return .number(a + (b - a) * t)
+        },
+
         // Strings
         BuiltinFunction("upper", arity: 1...1) { args, _ in .string(try args[0].asString().uppercased()) },
         BuiltinFunction("lower", arity: 1...1) { args, _ in .string(try args[0].asString().lowercased()) },
@@ -127,6 +138,21 @@ enum Builtins {
         BuiltinFunction("len", arity: 1...1) { args, _ in .number(Double(try args[0].asString().count)) },
         BuiltinFunction("contains", arity: 2...2) { args, _ in
             .bool(try args[0].asString().contains(try args[1].asString()))
+        },
+        BuiltinFunction("startsWith", arity: 2...2) { args, _ in
+            .bool(try args[0].asString().hasPrefix(try args[1].asString()))
+        },
+        BuiltinFunction("endsWith", arity: 2...2) { args, _ in
+            .bool(try args[0].asString().hasSuffix(try args[1].asString()))
+        },
+        BuiltinFunction("substr", arity: 3...3) { args, _ in
+            let text = try args[0].asString()
+            let start = max(0, Int(try args[1].asNumber().rounded()))
+            let length = max(0, Int(try args[2].asNumber().rounded()))
+            guard start < text.count else { return .string("") }
+            let from = text.index(text.startIndex, offsetBy: start)
+            let to = text.index(from, offsetBy: min(length, text.count - start))
+            return .string(String(text[from..<to]))
         },
         BuiltinFunction("replace", arity: 3...3) { args, _ in
             .string(try args[0].asString().replacingOccurrences(

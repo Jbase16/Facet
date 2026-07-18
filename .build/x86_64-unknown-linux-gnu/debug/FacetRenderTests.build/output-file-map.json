@@ -14,6 +14,12 @@
     "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests~partial.swiftmodule",
     "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SVGRendererTests.swiftdeps"
   },
+  "/home/user/Develop/Tests/FacetRenderTests/SchemaV2Tests.swift": {
+    "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.d",
+    "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.swift.o",
+    "swiftmodule": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests~partial.swiftmodule",
+    "swift-dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/SchemaV2Tests.swiftdeps"
+  },
   "/home/user/Develop/Tests/FacetRenderTests/StarterTemplateTests.swift": {
     "dependencies": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.d",
     "object": "/home/user/Develop/.build/x86_64-unknown-linux-gnu/debug/FacetRenderTests.build/StarterTemplateTests.swift.o",

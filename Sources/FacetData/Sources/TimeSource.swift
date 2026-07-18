@@ -115,6 +115,7 @@ public enum SampleData {
             "high": .number(24),
             "low": .number(16),
             "humidity": .number(0.48),
+            "hourly": .list([16, 17, 19, 21, 22, 24, 23, 21, 19, 18, 17, 16].map(SnapshotValue.number)),
         ])
     )
 
@@ -126,6 +127,7 @@ public enum SampleData {
             "stepsGoal": .number(10000),
             "activeEnergy": .number(423),
             "standHours": .number(9),
+            "weekSteps": .list([9204, 11321, 6480, 8032, 12440, 5210, 7482].map(SnapshotValue.number)),
         ])
     )
 

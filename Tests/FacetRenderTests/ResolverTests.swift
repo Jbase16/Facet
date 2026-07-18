@@ -106,7 +106,7 @@ final class ResolverTests: XCTestCase {
         guard case .group(let background) = widget.root.kind else {
             return XCTFail("Root should be a group")
         }
-        XCTAssertEqual(background, .black)
+        XCTAssertEqual(background, .solid(.black))
     }
 
     func testLayoutGeometry() {
@@ -224,12 +224,12 @@ final class ResolverTests: XCTestCase {
         let left = Layer(
             name: "Left",
             frame: LayerFrame(width: 0.25, height: 0.5),
-            content: .shape(ShapeContent(kind: .circle, fill: .literal(.black)))
+            content: .shape(ShapeContent(kind: .circle, fill: Fill.literal(.black)))
         )
         let right = Layer(
             name: "Right",
             frame: LayerFrame(width: 0.25, height: 0.5),
-            content: .shape(ShapeContent(kind: .circle, fill: .literal(.black)))
+            content: .shape(ShapeContent(kind: .circle, fill: Fill.literal(.black)))
         )
         let document = WidgetDocument(
             name: "Stack",

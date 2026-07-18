@@ -9,12 +9,14 @@ public enum SVGRenderer {
     public static func render(_ widget: ResolvedWidget, cornerRadius: Double = 20) -> String {
         let canvas = widget.canvas
         var body = ""
-        emit(widget.root, into: &body, indent: "  ")
+        var defs: [String] = []
+        emit(widget.root, into: &body, defs: &defs, indent: "  ")
         return """
         <svg xmlns="http://www.w3.org/2000/svg" width="\(format(canvas.width))" height="\(format(canvas.height))" \
         viewBox="0 0 \(format(canvas.width)) \(format(canvas.height))">
         <defs>
         <clipPath id="canvas"><rect x="0" y="0" width="\(format(canvas.width))" height="\(format(canvas.height))" rx="\(format(cornerRadius))"/></clipPath>
+        \(defs.joined(separator: "\n"))
         </defs>
         <g clip-path="url(#canvas)">
         \(body)</g>
@@ -22,7 +24,39 @@ public enum SVGRenderer {
         """
     }
 
-    private static func emit(_ node: RenderNode, into output: inout String, indent: String) {
+    /// The paint attribute value for a fill: a color literal, or a `url(#…)`
+    /// reference to a gradient definition appended to `defs`.
+    private static func paint(_ fill: ResolvedFill, defs: inout [String]) -> String {
+        switch fill {
+        case .solid(let color):
+            return cssColor(color)
+        case .linearGradient(let stops, let angle):
+            let id = "grad\(defs.count)"
+            let radians = angle * .pi / 180
+            let dx = Darwin_cos(radians) / 2
+            let dy = Darwin_sin(radians) / 2
+            let stopElements = stops.map {
+                "<stop offset=\"\(format($0.position * 100))%\" stop-color=\"\(cssColor($0.color))\"/>"
+            }.joined()
+            defs.append(
+                "<linearGradient id=\"\(id)\" x1=\"\(format(0.5 - dx))\" y1=\"\(format(0.5 - dy))\" x2=\"\(format(0.5 + dx))\" y2=\"\(format(0.5 + dy))\">\(stopElements)</linearGradient>"
+            )
+            return "url(#\(id))"
+        case .radialGradient(let stops):
+            let id = "grad\(defs.count)"
+            let stopElements = stops.map {
+                "<stop offset=\"\(format($0.position * 100))%\" stop-color=\"\(cssColor($0.color))\"/>"
+            }.joined()
+            defs.append("<radialGradient id=\"\(id)\">\(stopElements)</radialGradient>")
+            return "url(#\(id))"
+        }
+    }
+
+    // Foundation on Linux exposes cos/sin through Glibc; alias for clarity.
+    private static func Darwin_cos(_ x: Double) -> Double { Foundation.cos(x) }
+    private static func Darwin_sin(_ x: Double) -> Double { Foundation.sin(x) }
+
+    private static func emit(_ node: RenderNode, into output: inout String, defs: inout [String], indent: String) {
         var attributes = ""
         if node.opacity < 1 {
             attributes += " opacity=\"\(format(node.opacity))\""
@@ -38,10 +72,18 @@ public enum SVGRenderer {
         switch node.kind {
         case .group(let background):
             if let background {
-                output += "\(indent)  <rect x=\"\(format(node.rect.x))\" y=\"\(format(node.rect.y))\" width=\"\(format(node.rect.width))\" height=\"\(format(node.rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(cssColor(background))\"/>\n"
+                output += "\(indent)  <rect x=\"\(format(node.rect.x))\" y=\"\(format(node.rect.y))\" width=\"\(format(node.rect.width))\" height=\"\(format(node.rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(paint(background, defs: &defs))\"/>\n"
             }
         case .shape(let shape):
-            output += indent + "  " + shapeElement(shape, in: node) + "\n"
+            output += indent + "  " + shapeElement(shape, in: node, defs: &defs) + "\n"
+        case .line(let line):
+            var dashAttribute = ""
+            if let dash = line.dash, !dash.isEmpty {
+                dashAttribute = " stroke-dasharray=\"\(dash.map(format).joined(separator: " "))\""
+            }
+            output += "\(indent)  <line x1=\"\(format(node.rect.x))\" y1=\"\(format(node.rect.midY))\" x2=\"\(format(node.rect.maxX))\" y2=\"\(format(node.rect.midY))\" stroke=\"\(cssColor(line.color))\" stroke-width=\"\(format(line.thickness))\" stroke-linecap=\"round\"\(dashAttribute)/>\n"
+        case .chart(let chart):
+            output += chartElements(chart, in: node.rect, indent: indent + "  ")
         case .text(let text):
             output += indent + "  " + textElement(text, in: node.rect) + "\n"
         case .symbol(let symbol):
@@ -59,13 +101,14 @@ public enum SVGRenderer {
         }
 
         for child in node.children {
-            emit(child, into: &output, indent: indent + "  ")
+            emit(child, into: &output, defs: &defs, indent: indent + "  ")
         }
         output += "\(indent)</g>\n"
     }
 
-    private static func shapeElement(_ shape: ResolvedShape, in node: RenderNode) -> String {
+    private static func shapeElement(_ shape: ResolvedShape, in node: RenderNode, defs: inout [String]) -> String {
         let rect = node.rect
+        let fill = paint(shape.fill, defs: &defs)
         var stroke = ""
         if let strokeColor = shape.strokeColor, shape.strokeWidth > 0 {
             stroke = " stroke=\"\(cssColor(strokeColor))\" stroke-width=\"\(format(shape.strokeWidth))\""
@@ -73,13 +116,43 @@ public enum SVGRenderer {
         switch shape.kind {
         case .circle:
             let radius = min(rect.width, rect.height) / 2
-            return "<circle cx=\"\(format(rect.midX))\" cy=\"\(format(rect.midY))\" r=\"\(format(radius))\" fill=\"\(cssColor(shape.fill))\"\(stroke)/>"
+            return "<circle cx=\"\(format(rect.midX))\" cy=\"\(format(rect.midY))\" r=\"\(format(radius))\" fill=\"\(fill)\"\(stroke)/>"
         case .capsule:
             let radius = min(rect.width, rect.height) / 2
-            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"\(cssColor(shape.fill))\"\(stroke)/>"
+            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"\(fill)\"\(stroke)/>"
         case .rectangle:
-            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(cssColor(shape.fill))\"\(stroke)/>"
+            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(fill)\"\(stroke)/>"
         }
+    }
+
+    private static func chartElements(_ chart: ResolvedChart, in rect: Rect, indent: String) -> String {
+        guard chart.normalized.count >= 2 else { return "" }
+        let count = chart.normalized.count
+
+        if chart.style == .bars {
+            var output = ""
+            let gap = rect.width * 0.15 / Double(count)
+            let barWidth = (rect.width - gap * Double(count - 1)) / Double(count)
+            for (index, value) in chart.normalized.enumerated() {
+                let height = max(rect.height * value, barWidth * 0.5)
+                let x = rect.x + Double(index) * (barWidth + gap)
+                output += "\(indent)<rect x=\"\(format(x))\" y=\"\(format(rect.maxY - height))\" width=\"\(format(barWidth))\" height=\"\(format(height))\" rx=\"\(format(barWidth / 3))\" fill=\"\(cssColor(chart.color))\"/>\n"
+            }
+            return output
+        }
+
+        let step = rect.width / Double(count - 1)
+        let points = chart.normalized.enumerated().map { index, value in
+            "\(format(rect.x + Double(index) * step)),\(format(rect.maxY - rect.height * value))"
+        }
+        var output = ""
+        if chart.style == .area {
+            let areaPoints = points.joined(separator: " ")
+                + " \(format(rect.maxX)),\(format(rect.maxY)) \(format(rect.x)),\(format(rect.maxY))"
+            output += "\(indent)<polygon points=\"\(areaPoints)\" fill=\"\(cssColor(chart.color))\" fill-opacity=\"0.25\"/>\n"
+        }
+        output += "\(indent)<polyline points=\"\(points.joined(separator: " "))\" fill=\"none\" stroke=\"\(cssColor(chart.color))\" stroke-width=\"\(format(chart.lineWidth))\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n"
+        return output
     }
 
     private static func textElement(_ text: ResolvedText, in rect: Rect) -> String {
@@ -97,7 +170,8 @@ public enum SVGRenderer {
         case .serif: family = "ui-serif, Georgia, serif"
         case .standard: family = text.font.family ?? "system-ui, -apple-system, sans-serif"
         }
-        return "<text x=\"\(format(x))\" y=\"\(format(rect.midY))\" text-anchor=\"\(anchor)\" dominant-baseline=\"central\" font-family=\"\(family)\" font-size=\"\(format(text.font.size))\" font-weight=\"\(cssWeight(text.font.weight))\" fill=\"\(cssColor(text.color))\">\(escape(text.text))</text>"
+        let spacing = text.letterSpacing != 0 ? " letter-spacing=\"\(format(text.letterSpacing))\"" : ""
+        return "<text x=\"\(format(x))\" y=\"\(format(rect.midY))\" text-anchor=\"\(anchor)\" dominant-baseline=\"central\" font-family=\"\(family)\" font-size=\"\(format(text.font.size))\" font-weight=\"\(cssWeight(text.font.weight))\"\(spacing) fill=\"\(cssColor(text.color))\">\(escape(text.text))</text>"
     }
 
     private static func gaugeElements(_ gauge: ResolvedGauge, in rect: Rect, indent: String) -> String {

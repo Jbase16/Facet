@@ -106,9 +106,25 @@ public struct SnapshotSet: EvaluationContext, Sendable, Equatable {
     }
 
     public func value(forVariable path: String) -> Value? {
+        snapshotValue(forVariable: path)?.scalar
+    }
+
+    /// The raw snapshot value at a dotted path — lists and objects included.
+    /// Chart layers read lists through this.
+    public func snapshotValue(forVariable path: String) -> SnapshotValue? {
         let segments = path.split(separator: ".", maxSplits: 1)
         guard let first = segments.first, let snapshot = snapshots[String(first)] else { return nil }
         let rest = segments.count > 1 ? String(segments[1]) : ""
-        return snapshot.values.value(atPath: rest)?.scalar
+        return snapshot.values.value(atPath: rest)
+    }
+
+    /// The numbers in the list at `path`; nil when the path isn't a list.
+    /// Non-numeric elements are skipped.
+    public func numberList(forVariable path: String) -> [Double]? {
+        guard case .list(let items)? = snapshotValue(forVariable: path) else { return nil }
+        return items.compactMap {
+            if case .number(let value) = $0 { return value }
+            return nil
+        }
     }
 }
