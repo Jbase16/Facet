@@ -6,7 +6,7 @@ import FacetCore
 /// Deterministic UUIDs keep encoded output stable across builds.
 public enum StarterTemplates {
     public static var all: [WidgetDocument] {
-        [batteryRing, weatherGlance, stepsDashboard, minimalClock]
+        [batteryRing, weatherGlance, stepsDashboard, minimalClock] + wave2
     }
 
     public static func template(named name: String) -> WidgetDocument? {

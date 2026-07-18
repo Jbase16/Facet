@@ -151,7 +151,7 @@
     },
     "type" : "container"
   },
-  "schemaVersion" : 1,
+  "schemaVersion" : 2,
   "sources" : [
     "weather"
   ],

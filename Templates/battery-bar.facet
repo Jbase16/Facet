@@ -1,0 +1,186 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000009A",
+  "name" : "Battery Bar",
+  "overrides" : {
+    "accessoryRectangular" : [
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000092"
+      },
+      {
+        "fontSize" : 20,
+        "frame" : {
+          "height" : 0.5,
+          "width" : 0.9,
+          "x" : 0.5,
+          "y" : 0.32
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000091"
+      },
+      {
+        "frame" : {
+          "height" : 0.16,
+          "width" : 0.9,
+          "x" : 0.5,
+          "y" : 0.74
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000093"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : {
+        "gradient" : {
+          "angle" : 135,
+          "stops" : [
+            {
+              "color" : "token:card1",
+              "position" : 0
+            },
+            {
+              "color" : "token:card2",
+              "position" : 1
+            }
+          ]
+        },
+        "type" : "linearGradient"
+      },
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.28,
+            "width" : 0.86,
+            "x" : 0.5,
+            "y" : 0.32
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000091",
+          "name" : "Percent",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{percent(battery.level)}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.1,
+            "width" : 0.86,
+            "x" : 0.5,
+            "y" : 0.52
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000092",
+          "name" : "State",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "letterSpacing" : 1.5,
+            "text" : "{battery.state}",
+            "textCase" : "uppercase"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.1,
+            "width" : 0.82,
+            "x" : 0.5,
+            "y" : 0.72
+          },
+          "gauge" : {
+            "lineWidth" : 6,
+            "style" : "bar",
+            "tint" : "token:accent",
+            "track" : "token:track",
+            "value" : "battery.level"
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000093",
+          "name" : "Bar",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "gauge"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000009B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "battery"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#30D158",
+        "light" : "#28A05C"
+      },
+      "card1" : {
+        "dark" : "#0D1F16",
+        "light" : "#EAFBF1"
+      },
+      "card2" : {
+        "dark" : "#132A1E",
+        "light" : "#D3F2E0"
+      },
+      "primary" : {
+        "dark" : "#D9F5E6",
+        "light" : "#0B3D24"
+      },
+      "secondary" : {
+        "dark" : "#7FBF9E",
+        "light" : "#4E8B6B"
+      },
+      "track" : {
+        "dark" : "#24382E",
+        "light" : "#C4E5D2"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "default",
+        "size" : 9,
+        "weight" : "semibold"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 30,
+        "weight" : "bold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

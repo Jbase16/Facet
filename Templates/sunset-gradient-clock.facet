@@ -1,0 +1,154 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000004A",
+  "name" : "Sunset Gradient Clock",
+  "overrides" : {
+    "accessoryRectangular" : [
+      {
+        "fontSize" : 26,
+        "frame" : {
+          "height" : 0.7,
+          "width" : 0.94,
+          "x" : 0.5,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000041"
+      },
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000042"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : {
+        "gradient" : {
+          "angle" : 105,
+          "stops" : [
+            {
+              "color" : "token:sky1",
+              "position" : 0
+            },
+            {
+              "color" : "token:sky2",
+              "position" : 0.55
+            },
+            {
+              "color" : "token:sky3",
+              "position" : 1
+            }
+          ]
+        },
+        "type" : "linearGradient"
+      },
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.34,
+            "width" : 0.94,
+            "x" : 0.5,
+            "y" : 0.44
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000041",
+          "name" : "Time",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{time.hour12}:{pad(time.minute, 2)}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.12,
+            "width" : 0.94,
+            "x" : 0.5,
+            "y" : 0.68
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000042",
+          "name" : "Date",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "letterSpacing" : 2.5,
+            "text" : "{time.weekdayName} {time.monthName} {time.day}",
+            "textCase" : "uppercase"
+          },
+          "type" : "text"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000004B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "time"
+  ],
+  "tokens" : {
+    "colors" : {
+      "primary" : {
+        "dark" : "#FFF0E0",
+        "light" : "#FFF8F0"
+      },
+      "secondary" : {
+        "dark" : "#E8C0A0",
+        "light" : "#FFE0C8"
+      },
+      "sky1" : {
+        "dark" : "#B34700",
+        "light" : "#FF9A5A"
+      },
+      "sky2" : {
+        "dark" : "#5A1140",
+        "light" : "#C0397F"
+      },
+      "sky3" : {
+        "dark" : "#1E0A30",
+        "light" : "#4A1E6E"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "default",
+        "size" : 10,
+        "weight" : "semibold"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 42,
+        "weight" : "thin"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

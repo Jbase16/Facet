@@ -1,0 +1,187 @@
+{
+  "id" : "FACE7000-0000-4000-8000-0000000000AA",
+  "name" : "Next Up",
+  "overrides" : {
+    "accessoryRectangular" : [
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-0000000000A1"
+      },
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-0000000000A4"
+      },
+      {
+        "frame" : {
+          "height" : 0.5,
+          "width" : 0.96,
+          "x" : 0.5,
+          "y" : 0.32
+        },
+        "layerID" : "FACE7000-0000-4000-8000-0000000000A2"
+      },
+      {
+        "frame" : {
+          "height" : 0.3,
+          "width" : 0.96,
+          "x" : 0.5,
+          "y" : 0.76
+        },
+        "layerID" : "FACE7000-0000-4000-8000-0000000000A3"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.2,
+            "width" : 0.2,
+            "x" : 0.16,
+            "y" : 0.2
+          },
+          "id" : "FACE7000-0000-4000-8000-0000000000A1",
+          "name" : "Icon",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "symbol" : {
+            "color" : "token:accent",
+            "size" : 18,
+            "systemName" : "calendar",
+            "weight" : "regular"
+          },
+          "type" : "symbol"
+        },
+        {
+          "frame" : {
+            "height" : 0.3,
+            "width" : 0.86,
+            "x" : 0.55,
+            "y" : 0.42
+          },
+          "id" : "FACE7000-0000-4000-8000-0000000000A2",
+          "name" : "Title",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "leading",
+            "color" : "token:primary",
+            "font" : "title",
+            "maxLines" : 2,
+            "text" : "{calendar.nextTitle}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.12,
+            "width" : 0.86,
+            "x" : 0.55,
+            "y" : 0.64
+          },
+          "id" : "FACE7000-0000-4000-8000-0000000000A3",
+          "name" : "Countdown",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "leading",
+            "color" : "token:accent",
+            "font" : "caption",
+            "text" : "in {round((calendar.nextStart - time.timestamp) \/ 60)} min"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.1,
+            "width" : 0.86,
+            "x" : 0.55,
+            "y" : 0.84
+          },
+          "id" : "FACE7000-0000-4000-8000-0000000000A4",
+          "name" : "Today",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "leading",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "{calendar.todayCount} events today"
+          },
+          "type" : "text"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-0000000000AB",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "calendar",
+    "time"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#FF7A50",
+        "light" : "#E4572E"
+      },
+      "background" : {
+        "dark" : "#17171A",
+        "light" : "#FFFFFF"
+      },
+      "primary" : {
+        "dark" : "#F2F2F6",
+        "light" : "#141418"
+      },
+      "secondary" : {
+        "dark" : "#8A8A92",
+        "light" : "#95959C"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "default",
+        "size" : 11,
+        "weight" : "medium"
+      },
+      "title" : {
+        "design" : "default",
+        "size" : 16,
+        "weight" : "semibold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

@@ -9,14 +9,17 @@ layer tree + design tokens + data bindings. The same document renders on the
 Home Screen, Lock Screen, and (eventually) StandBy and watchOS, adapted per
 rendition by sparse overrides rather than rebuilt per size.
 
-| | |
-|---|---|
-| ![Battery Ring](docs/previews/battery-ring-dark.svg) | ![Weather Glance](docs/previews/weather-glance-light.svg) |
-| ![Steps Dashboard](docs/previews/steps-dashboard-light.svg) | ![Minimal Clock](docs/previews/minimal-clock-dark.svg) |
+| | | |
+|---|---|---|
+| ![Battery Ring](docs/previews/battery-ring-dark.svg) | ![Weather Glance](docs/previews/weather-glance-light.svg) | ![Steps Dashboard](docs/previews/steps-dashboard-light.svg) |
+| ![Minimal Clock](docs/previews/minimal-clock-dark.svg) | ![Sunset Gradient Clock](docs/previews/sunset-gradient-clock-light.svg) | ![Step Week](docs/previews/step-week-dark.svg) |
+| ![Battery Bar](docs/previews/battery-bar-light.svg) | ![Next Up](docs/previews/next-up-light.svg) | ![Humidity Ring](docs/previews/humidity-ring-dark.svg) |
+| ![Big Minimal Time](docs/previews/big-minimal-time-dark.svg) | ![Hourly Temps](docs/previews/hourly-temps-dark.svg) | ![Focus Dashboard](docs/previews/focus-dashboard-light.svg) |
 
-*Starter templates rendered by `facet-preview` on Linux — through the exact
-resolver the iOS widget extension uses. (SF Symbols draw as placeholder tiles
-off-device.)*
+*The 12 starter templates rendered by `facet-preview` on Linux — through the
+exact resolver the iOS widget extension uses. Gradients, area/bar charts,
+dashed lines, and letter-spaced type are all schema v2 document features.
+(SF Symbols draw as placeholder tiles off-device.)*
 
 ## Layout
 

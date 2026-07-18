@@ -1,0 +1,186 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000005A",
+  "name" : "Hourly Temps",
+  "overrides" : {
+    "accessoryRectangular" : [
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000052"
+      },
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000053"
+      },
+      {
+        "fontSize" : 22,
+        "frame" : {
+          "height" : 0.7,
+          "width" : 0.34,
+          "x" : 0.2,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000051"
+      },
+      {
+        "frame" : {
+          "height" : 0.72,
+          "width" : 0.58,
+          "x" : 0.68,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000054"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.3,
+            "width" : 0.4,
+            "x" : 0.24,
+            "y" : 0.26
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000051",
+          "name" : "Temperature",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "leading",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{round(weather.temperature)}°"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.14,
+            "width" : 0.4,
+            "x" : 0.76,
+            "y" : 0.22
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000052",
+          "name" : "Range",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "trailing",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "H {round(weather.high)}°  L {round(weather.low)}°"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.12,
+            "width" : 0.4,
+            "x" : 0.76,
+            "y" : 0.36
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000053",
+          "name" : "Condition",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "trailing",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "text" : "{weather.condition}"
+          },
+          "type" : "text"
+        },
+        {
+          "chart" : {
+            "color" : "token:accent",
+            "dataPath" : "weather.hourly",
+            "lineWidth" : 2.5,
+            "style" : "area"
+          },
+          "frame" : {
+            "height" : 0.34,
+            "width" : 0.88,
+            "x" : 0.5,
+            "y" : 0.72
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000054",
+          "name" : "Hourly",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "chart"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000005B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "weather"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#64B5F6",
+        "light" : "#1E88E5"
+      },
+      "background" : {
+        "dark" : "#0E1722",
+        "light" : "#F2F7FC"
+      },
+      "primary" : {
+        "dark" : "#EAF2FA",
+        "light" : "#12263A"
+      },
+      "secondary" : {
+        "dark" : "#8FA9C4",
+        "light" : "#5C7A99"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "default",
+        "size" : 11,
+        "weight" : "medium"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 34,
+        "weight" : "semibold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

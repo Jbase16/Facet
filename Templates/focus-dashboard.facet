@@ -1,0 +1,313 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000007A",
+  "name" : "Focus Dashboard",
+  "overrides" : {
+
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "container" : {
+            "children" : [
+              {
+                "frame" : {
+                  "height" : 0.4,
+                  "width" : 1,
+                  "x" : 0.5,
+                  "y" : 0.4
+                },
+                "id" : "FACE7000-0000-4000-8000-000000000072",
+                "name" : "steps value",
+                "style" : {
+                  "cornerRadius" : 0,
+                  "opacity" : 1,
+                  "rotation" : 0
+                },
+                "text" : {
+                  "alignment" : "center",
+                  "color" : "token:primary",
+                  "font" : "value",
+                  "text" : "{health.steps}"
+                },
+                "type" : "text"
+              },
+              {
+                "frame" : {
+                  "height" : 0.2,
+                  "width" : 1,
+                  "x" : 0.5,
+                  "y" : 0.72
+                },
+                "id" : "FACE7000-0000-4000-8000-000000000073",
+                "name" : "steps label",
+                "style" : {
+                  "cornerRadius" : 0,
+                  "opacity" : 1,
+                  "rotation" : 0
+                },
+                "text" : {
+                  "alignment" : "center",
+                  "color" : "token:secondary",
+                  "font" : "label",
+                  "letterSpacing" : 1.2,
+                  "text" : "steps",
+                  "textCase" : "uppercase"
+                },
+                "type" : "text"
+              }
+            ],
+            "layout" : "absolute",
+            "padding" : 0,
+            "spacing" : 0
+          },
+          "frame" : {
+            "height" : 1,
+            "width" : 0.3,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000071",
+          "name" : "steps column",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "container"
+        },
+        {
+          "frame" : {
+            "height" : 0.5,
+            "width" : 0.01,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000078",
+          "line" : {
+            "color" : "token:secondary",
+            "thickness" : 0.5
+          },
+          "name" : "Divider",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 90
+          },
+          "type" : "line"
+        },
+        {
+          "container" : {
+            "children" : [
+              {
+                "frame" : {
+                  "height" : 0.4,
+                  "width" : 1,
+                  "x" : 0.5,
+                  "y" : 0.4
+                },
+                "id" : "FACE7000-0000-4000-8000-000000000082",
+                "name" : "kcal value",
+                "style" : {
+                  "cornerRadius" : 0,
+                  "opacity" : 1,
+                  "rotation" : 0
+                },
+                "text" : {
+                  "alignment" : "center",
+                  "color" : "token:primary",
+                  "font" : "value",
+                  "text" : "{round(health.activeEnergy)}"
+                },
+                "type" : "text"
+              },
+              {
+                "frame" : {
+                  "height" : 0.2,
+                  "width" : 1,
+                  "x" : 0.5,
+                  "y" : 0.72
+                },
+                "id" : "FACE7000-0000-4000-8000-000000000083",
+                "name" : "kcal label",
+                "style" : {
+                  "cornerRadius" : 0,
+                  "opacity" : 1,
+                  "rotation" : 0
+                },
+                "text" : {
+                  "alignment" : "center",
+                  "color" : "token:secondary",
+                  "font" : "label",
+                  "letterSpacing" : 1.2,
+                  "text" : "kcal",
+                  "textCase" : "uppercase"
+                },
+                "type" : "text"
+              }
+            ],
+            "layout" : "absolute",
+            "padding" : 0,
+            "spacing" : 0
+          },
+          "frame" : {
+            "height" : 1,
+            "width" : 0.3,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000081",
+          "name" : "kcal column",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "container"
+        },
+        {
+          "frame" : {
+            "height" : 0.5,
+            "width" : 0.01,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000089",
+          "line" : {
+            "color" : "token:secondary",
+            "thickness" : 0.5
+          },
+          "name" : "Divider",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 90
+          },
+          "type" : "line"
+        },
+        {
+          "container" : {
+            "children" : [
+              {
+                "frame" : {
+                  "height" : 0.4,
+                  "width" : 1,
+                  "x" : 0.5,
+                  "y" : 0.4
+                },
+                "id" : "FACE7000-0000-4000-8000-000000000092",
+                "name" : "stand value",
+                "style" : {
+                  "cornerRadius" : 0,
+                  "opacity" : 1,
+                  "rotation" : 0
+                },
+                "text" : {
+                  "alignment" : "center",
+                  "color" : "token:primary",
+                  "font" : "value",
+                  "text" : "{health.standHours}"
+                },
+                "type" : "text"
+              },
+              {
+                "frame" : {
+                  "height" : 0.2,
+                  "width" : 1,
+                  "x" : 0.5,
+                  "y" : 0.72
+                },
+                "id" : "FACE7000-0000-4000-8000-000000000093",
+                "name" : "stand label",
+                "style" : {
+                  "cornerRadius" : 0,
+                  "opacity" : 1,
+                  "rotation" : 0
+                },
+                "text" : {
+                  "alignment" : "center",
+                  "color" : "token:secondary",
+                  "font" : "label",
+                  "letterSpacing" : 1.2,
+                  "text" : "stand",
+                  "textCase" : "uppercase"
+                },
+                "type" : "text"
+              }
+            ],
+            "layout" : "absolute",
+            "padding" : 0,
+            "spacing" : 0
+          },
+          "frame" : {
+            "height" : 1,
+            "width" : 0.3,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000091",
+          "name" : "stand column",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "container"
+        }
+      ],
+      "layout" : "horizontal",
+      "padding" : 10,
+      "spacing" : 4
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000007B",
+    "name" : "Row",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "health"
+  ],
+  "tokens" : {
+    "colors" : {
+      "background" : {
+        "dark" : "#141416",
+        "light" : "#F7F7F9"
+      },
+      "primary" : {
+        "dark" : "#F2F2F5",
+        "light" : "#111114"
+      },
+      "secondary" : {
+        "dark" : "#8A8A90",
+        "light" : "#9999A0"
+      }
+    },
+    "fonts" : {
+      "label" : {
+        "design" : "default",
+        "size" : 9,
+        "weight" : "semibold"
+      },
+      "value" : {
+        "design" : "rounded",
+        "size" : 24,
+        "weight" : "bold"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

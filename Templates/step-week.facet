@@ -1,0 +1,190 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000006A",
+  "name" : "Step Week",
+  "overrides" : {
+    "accessoryRectangular" : [
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000062"
+      },
+      {
+        "isHidden" : true,
+        "layerID" : "FACE7000-0000-4000-8000-000000000064"
+      },
+      {
+        "fontSize" : 20,
+        "frame" : {
+          "height" : 0.6,
+          "width" : 0.44,
+          "x" : 0.26,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000061"
+      },
+      {
+        "frame" : {
+          "height" : 0.7,
+          "width" : 0.5,
+          "x" : 0.72,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-000000000063"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.24,
+            "width" : 0.88,
+            "x" : 0.5,
+            "y" : 0.2
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000061",
+          "name" : "Count",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{health.steps}"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.1,
+            "width" : 0.88,
+            "x" : 0.5,
+            "y" : 0.38
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000062",
+          "name" : "Caption",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:secondary",
+            "font" : "caption",
+            "letterSpacing" : 1.5,
+            "text" : "steps this week",
+            "textCase" : "uppercase"
+          },
+          "type" : "text"
+        },
+        {
+          "frame" : {
+            "height" : 0.02,
+            "width" : 0.84,
+            "x" : 0.5,
+            "y" : 0.55
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000064",
+          "line" : {
+            "color" : "token:secondary",
+            "dash" : [
+              3,
+              3
+            ],
+            "thickness" : 1
+          },
+          "name" : "Goal",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "line"
+        },
+        {
+          "chart" : {
+            "color" : "token:accent",
+            "dataPath" : "health.weekSteps",
+            "lineWidth" : 2,
+            "style" : "bars"
+          },
+          "frame" : {
+            "height" : 0.36,
+            "width" : 0.84,
+            "x" : 0.5,
+            "y" : 0.72
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000063",
+          "name" : "Week",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "type" : "chart"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000006B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "health"
+  ],
+  "tokens" : {
+    "colors" : {
+      "accent" : {
+        "dark" : "#FF453A",
+        "light" : "#FF3B30"
+      },
+      "background" : {
+        "dark" : "#161616",
+        "light" : "#FFFFFF"
+      },
+      "primary" : {
+        "dark" : "#F5F5F5",
+        "light" : "#101010"
+      },
+      "secondary" : {
+        "dark" : "#98989E",
+        "light" : "#8E8E93"
+      }
+    },
+    "fonts" : {
+      "caption" : {
+        "design" : "default",
+        "size" : 9,
+        "weight" : "semibold"
+      },
+      "display" : {
+        "design" : "rounded",
+        "size" : 30,
+        "weight" : "heavy"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

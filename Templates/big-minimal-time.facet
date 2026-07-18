@@ -1,0 +1,96 @@
+{
+  "id" : "FACE7000-0000-4000-8000-00000000008A",
+  "name" : "Big Minimal Time",
+  "overrides" : {
+    "accessoryCircular" : [
+      {
+        "fontSize" : 16,
+        "layerID" : "FACE7000-0000-4000-8000-000000000081"
+      }
+    ],
+    "accessoryInline" : [
+      {
+        "fontSize" : 14,
+        "layerID" : "FACE7000-0000-4000-8000-000000000081"
+      }
+    ],
+    "accessoryRectangular" : [
+      {
+        "fontSize" : 26,
+        "layerID" : "FACE7000-0000-4000-8000-000000000081"
+      }
+    ]
+  },
+  "root" : {
+    "container" : {
+      "background" : "token:background",
+      "children" : [
+        {
+          "frame" : {
+            "height" : 0.5,
+            "width" : 0.96,
+            "x" : 0.5,
+            "y" : 0.5
+          },
+          "id" : "FACE7000-0000-4000-8000-000000000081",
+          "name" : "Time",
+          "style" : {
+            "cornerRadius" : 0,
+            "opacity" : 1,
+            "rotation" : 0
+          },
+          "text" : {
+            "alignment" : "center",
+            "color" : "token:primary",
+            "font" : "display",
+            "text" : "{time.hour12}:{pad(time.minute, 2)}"
+          },
+          "type" : "text"
+        }
+      ],
+      "layout" : "absolute",
+      "padding" : 0,
+      "spacing" : 0
+    },
+    "frame" : {
+      "height" : 1,
+      "width" : 1,
+      "x" : 0.5,
+      "y" : 0.5
+    },
+    "id" : "FACE7000-0000-4000-8000-00000000008B",
+    "name" : "Canvas",
+    "style" : {
+      "cornerRadius" : 0,
+      "opacity" : 1,
+      "rotation" : 0
+    },
+    "type" : "container"
+  },
+  "schemaVersion" : 2,
+  "sources" : [
+    "time"
+  ],
+  "tokens" : {
+    "colors" : {
+      "background" : {
+        "dark" : "#0A0A0A",
+        "light" : "#0A0A0A"
+      },
+      "primary" : {
+        "dark" : "#F5F5F0",
+        "light" : "#F5F5F0"
+      }
+    },
+    "fonts" : {
+      "display" : {
+        "design" : "rounded",
+        "size" : 52,
+        "weight" : "heavy"
+      }
+    },
+    "spacing" : {
+
+    }
+  }
+}

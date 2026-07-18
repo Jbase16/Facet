@@ -1,43 +1,67 @@
 {
-  "id" : "FACE7000-0000-4000-8000-00000000000A",
-  "name" : "Battery Ring",
+  "id" : "FACE7000-0000-4000-8000-0000000000BA",
+  "name" : "Humidity Ring",
   "overrides" : {
     "accessoryCircular" : [
       {
         "isHidden" : true,
-        "layerID" : "FACE7000-0000-4000-8000-000000000003"
+        "layerID" : "FACE7000-0000-4000-8000-0000000000B3"
       },
       {
-        "fontSize" : 18,
+        "fontSize" : 15,
         "frame" : {
-          "height" : 0.4,
+          "height" : 0.36,
           "width" : 0.7,
           "x" : 0.5,
           "y" : 0.5
         },
-        "layerID" : "FACE7000-0000-4000-8000-000000000002"
+        "layerID" : "FACE7000-0000-4000-8000-0000000000B2"
+      },
+      {
+        "frame" : {
+          "height" : 0.94,
+          "width" : 0.94,
+          "x" : 0.5,
+          "y" : 0.5
+        },
+        "layerID" : "FACE7000-0000-4000-8000-0000000000B1"
       }
     ]
   },
   "root" : {
     "container" : {
-      "background" : "token:background",
+      "background" : {
+        "gradient" : {
+          "angle" : 90,
+          "stops" : [
+            {
+              "color" : "token:deep",
+              "position" : 0
+            },
+            {
+              "color" : "token:edge",
+              "position" : 1
+            }
+          ]
+        },
+        "type" : "radialGradient"
+      },
       "children" : [
         {
           "frame" : {
-            "height" : 0.82,
-            "width" : 0.82,
+            "height" : 0.78,
+            "width" : 0.78,
             "x" : 0.5,
             "y" : 0.5
           },
           "gauge" : {
-            "lineWidth" : 10,
+            "lineWidth" : 9,
             "style" : "ring",
             "tint" : "token:accent",
             "track" : "token:track",
-            "value" : "battery.level"
+            "value" : "weather.humidity"
           },
-          "id" : "FACE7000-0000-4000-8000-000000000001",
+          "id" : "FACE7000-0000-4000-8000-0000000000B1",
           "name" : "Ring",
           "style" : {
             "cornerRadius" : 0,
@@ -48,12 +72,12 @@
         },
         {
           "frame" : {
-            "height" : 0.24,
-            "width" : 0.7,
+            "height" : 0.2,
+            "width" : 0.6,
             "x" : 0.5,
             "y" : 0.46
           },
-          "id" : "FACE7000-0000-4000-8000-000000000002",
+          "id" : "FACE7000-0000-4000-8000-0000000000B2",
           "name" : "Percent",
           "style" : {
             "cornerRadius" : 0,
@@ -64,18 +88,18 @@
             "alignment" : "center",
             "color" : "token:primary",
             "font" : "display",
-            "text" : "{round(battery.level * 100)}"
+            "text" : "{percent(weather.humidity)}"
           },
           "type" : "text"
         },
         {
           "frame" : {
-            "height" : 0.12,
-            "width" : 0.7,
+            "height" : 0.1,
+            "width" : 0.6,
             "x" : 0.5,
-            "y" : 0.62
+            "y" : 0.6
           },
-          "id" : "FACE7000-0000-4000-8000-000000000003",
+          "id" : "FACE7000-0000-4000-8000-0000000000B3",
           "name" : "Caption",
           "style" : {
             "cornerRadius" : 0,
@@ -86,7 +110,9 @@
             "alignment" : "center",
             "color" : "token:secondary",
             "font" : "caption",
-            "text" : "{battery.state == 'charging' ? '⚡ charging' : 'battery'}"
+            "letterSpacing" : 1.8,
+            "text" : "humidity",
+            "textCase" : "uppercase"
           },
           "type" : "text"
         }
@@ -101,7 +127,7 @@
       "x" : 0.5,
       "y" : 0.5
     },
-    "id" : "FACE7000-0000-4000-8000-00000000000B",
+    "id" : "FACE7000-0000-4000-8000-0000000000BB",
     "name" : "Canvas",
     "style" : {
       "cornerRadius" : 0,
@@ -112,40 +138,44 @@
   },
   "schemaVersion" : 2,
   "sources" : [
-    "battery"
+    "weather"
   ],
   "tokens" : {
     "colors" : {
       "accent" : {
-        "dark" : "#30D158",
-        "light" : "#34C759"
+        "dark" : "#409CFF",
+        "light" : "#0A84FF"
       },
-      "background" : {
-        "dark" : "#1C1C1E",
-        "light" : "#FFFFFF"
+      "deep" : {
+        "dark" : "#0A1B28",
+        "light" : "#E8F4FD"
+      },
+      "edge" : {
+        "dark" : "#132C40",
+        "light" : "#C9E4F8"
       },
       "primary" : {
-        "dark" : "#FFFFFF",
-        "light" : "#000000"
+        "dark" : "#E4F1FB",
+        "light" : "#0E2A40"
       },
       "secondary" : {
-        "dark" : "#98989E",
-        "light" : "#6C6C70"
+        "dark" : "#7FA6C4",
+        "light" : "#5E86A6"
       },
       "track" : {
-        "dark" : "#3A3A3C",
-        "light" : "#E5E5EA"
+        "dark" : "#1C3A52",
+        "light" : "#CFE3F2"
       }
     },
     "fonts" : {
       "caption" : {
-        "design" : "rounded",
-        "size" : 11,
-        "weight" : "medium"
+        "design" : "default",
+        "size" : 8,
+        "weight" : "semibold"
       },
       "display" : {
         "design" : "rounded",
-        "size" : 34,
+        "size" : 22,
         "weight" : "bold"
       }
     },

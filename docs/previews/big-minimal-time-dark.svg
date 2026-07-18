@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="158" height="158" viewBox="0 0 158 158">
+<defs>
+<clipPath id="canvas"><rect x="0" y="0" width="158" height="158" rx="20"/></clipPath>
+
+</defs>
+<g clip-path="url(#canvas)">
+  <g>
+    <rect x="0" y="0" width="158" height="158" rx="0" fill="#0A0A0A"/>
+    <g>
+      <text x="79" y="79" text-anchor="middle" dominant-baseline="central" font-family="ui-rounded, system-ui, sans-serif" font-size="52" font-weight="800" fill="#F5F5F0">9:47</text>
+    </g>
+  </g>
+</g>
+</svg>
