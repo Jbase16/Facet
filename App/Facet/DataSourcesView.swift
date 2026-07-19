@@ -11,6 +11,7 @@ struct DataSourcesView: View {
 
     @State private var refreshing = false
     @State private var locationAuthorized = LocationProvider.shared.isAuthorized
+    @State private var healthPrompted = true
 
     var body: some View {
         NavigationStack {
@@ -32,7 +33,10 @@ struct DataSourcesView: View {
 
                 Section {
                     sourceRow(id: "health", name: "Health", detail: "Steps, energy, stand hours")
-                    if HealthSource.isAvailable {
+                    // HealthKit hides read-grant status by design; "the prompt
+                    // has been shown" is the strongest signal there is, so the
+                    // button disappears after the user has answered it once.
+                    if HealthSource.isAvailable && !healthPrompted {
                         Button("Connect Apple Health") {
                             connect { try await HealthSource.requestAuthorization() }
                         }
@@ -72,6 +76,9 @@ struct DataSourcesView: View {
                 // Permission dialogs foreground over the app; re-check on return.
                 locationAuthorized = LocationProvider.shared.isAuthorized
             }
+            .task {
+                healthPrompted = await HealthSource.authorizationStatusKnown()
+            }
         }
     }
 
@@ -83,6 +90,7 @@ struct DataSourcesView: View {
             try? await request()
             await store.refreshData()
             locationAuthorized = LocationProvider.shared.isAuthorized
+            healthPrompted = await HealthSource.authorizationStatusKnown()
             refreshing = false
         }
     }
