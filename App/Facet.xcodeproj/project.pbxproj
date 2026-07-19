@@ -11,16 +11,20 @@
 		07AD7D60E75F3013D27F8B9B /* DeviceDataSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */; };
 		16128EB90DD9D12892DC4AEB /* FacetTemplates in Frameworks */ = {isa = PBXBuildFile; productRef = 0E2DA78162E32EE6613B1831 /* FacetTemplates */; };
 		1853D459686F54EB3437A058 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */; };
+		1AF1EDC69F2AB164048C8D6C /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */; };
 		265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493883341D6B22D1F294A1E /* ThemeEditorView.swift */; };
+		2867A9D383219166875CEDF8 /* DataSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */; };
 		3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E1F7508053F63AC77BC8A0 /* EditorView.swift */; };
 		6D1B7841CD3B72D88876B202 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = F9F468B849C3525792800F83 /* FacetData */; };
 		75BF8C13A5C3014A2697C6FE /* FacetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6FC15447F6267AC8764F938F /* FacetCore */; };
 		77B68205C54F8006F521B6A7 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = 0F2B255918F965DD203B453F /* FacetData */; };
 		77DDCF69899FD743134FF0CE /* FacetRender in Frameworks */ = {isa = PBXBuildFile; productRef = 0187F4ED6530EF2E65586359 /* FacetRender */; };
 		81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DA8915E10ABBF586F49CD /* FacetApp.swift */; };
+		8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A5CCA0565292A65A784FC56 /* WeatherSource.swift */; };
 		8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */; };
 		A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */; };
 		B39CE1E925ED7136181F7E47 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */; };
+		B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC05E333F65932D292DD4D47 /* HealthSource.swift */; };
 		B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AF056977F3F074F99FBAA99 /* LayerListView.swift */; };
 		B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8FD5ED9865C55FCAC59ADE /* InspectorView.swift */; };
 		B9DC2ABDCB134093E6D0E873 /* FacetTemplates in Frameworks */ = {isa = PBXBuildFile; productRef = 5F9764CB47CC3255E1DAAFA4 /* FacetTemplates */; };
@@ -59,13 +63,17 @@
 		3493883341D6B22D1F294A1E /* ThemeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeEditorView.swift; sourceTree = "<group>"; };
 		36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorRefPicker.swift; sourceTree = "<group>"; };
 		402DA8915E10ABBF586F49CD /* FacetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetApp.swift; sourceTree = "<group>"; };
+		5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSource.swift; sourceTree = "<group>"; };
 		68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetWidgets.swift; sourceTree = "<group>"; };
 		6D8FD5ED9865C55FCAC59ADE /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
 		7AF056977F3F074F99FBAA99 /* LayerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerListView.swift; sourceTree = "<group>"; };
 		7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditing.swift; sourceTree = "<group>"; };
 		92E1F7508053F63AC77BC8A0 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		973EC022838148FEC7718A70 /* Facet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Facet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9A5CCA0565292A65A784FC56 /* WeatherSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSource.swift; sourceTree = "<group>"; };
 		AAF7B56A34AE22CC18F1CCF1 /* Facet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Facet.entitlements; sourceTree = "<group>"; };
+		AC05E333F65932D292DD4D47 /* HealthSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSource.swift; sourceTree = "<group>"; };
+		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		CBF7C1B69A0A6822442E0685 /* Develop */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Develop; path = ..; sourceTree = SOURCE_ROOT; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
@@ -120,6 +128,7 @@
 		2BEB9A8BADA9F735BCE0E221 /* Facet */ = {
 			isa = PBXGroup;
 			children = (
+				C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */,
 				F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */,
 				7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */,
 				92E1F7508053F63AC77BC8A0 /* EditorView.swift */,
@@ -128,6 +137,7 @@
 				CAEBEADC60946A4516B04197 /* GalleryView.swift */,
 				7AF056977F3F074F99FBAA99 /* LayerListView.swift */,
 				3493883341D6B22D1F294A1E /* ThemeEditorView.swift */,
+				7D1509DF44996F46192BF65B /* DataSources */,
 				0D90168BB99EE3761DB5C82C /* Inspector */,
 			);
 			path = Facet;
@@ -139,6 +149,16 @@
 				D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		7D1509DF44996F46192BF65B /* DataSources */ = {
+			isa = PBXGroup;
+			children = (
+				5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */,
+				AC05E333F65932D292DD4D47 /* HealthSource.swift */,
+				9A5CCA0565292A65A784FC56 /* WeatherSource.swift */,
+			);
+			path = DataSources;
 			sourceTree = "<group>";
 		};
 		86825C1AE434587491EF87A5 /* FacetWidgets */ = {
@@ -258,15 +278,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				B39CE1E925ED7136181F7E47 /* AppGroupStore.swift in Sources */,
+				1AF1EDC69F2AB164048C8D6C /* CalendarSource.swift in Sources */,
 				DE2AF1799F3C8518DCC6572F /* ColorRefPicker.swift in Sources */,
+				2867A9D383219166875CEDF8 /* DataSourcesView.swift in Sources */,
 				07AD7D60E75F3013D27F8B9B /* DeviceDataSources.swift in Sources */,
 				A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */,
 				3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */,
 				81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */,
 				BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */,
+				B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */,
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */,
+				8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,6 +322,9 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Facet;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Facet reads your calendar to show upcoming events in your widgets.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Facet reads steps, energy, and stand hours to show them in your widgets.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Facet uses your location to show local weather in your widgets.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -472,6 +499,9 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Facet;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Facet reads your calendar to show upcoming events in your widgets.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Facet reads steps, energy, and stand hours to show them in your widgets.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Facet uses your location to show local weather in your widgets.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

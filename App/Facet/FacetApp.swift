@@ -81,6 +81,7 @@ final class DocumentStore {
     /// then let widgets re-render from the shared cache.
     func refreshData() async {
         let store = AppGroup.snapshotStore
+        DeviceDataSources.seedSampleSnapshotsIfNeeded(store: store)
         let providers = DeviceDataSources.providers
         let descriptors = providers.map { $0.descriptor }
         let planner = RefreshPlanner(store: store)

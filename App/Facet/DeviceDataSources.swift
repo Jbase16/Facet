@@ -1,19 +1,33 @@
 import Foundation
 import UIKit
+import FacetCore
 import FacetData
 
-/// The on-device data source providers. Battery is real hardware data;
-/// weather, health, and calendar currently serve the bundled sample payloads
-/// until their WeatherKit/HealthKit/EventKit providers land (see SPEC §4.3 —
-/// the pipeline, cache, and cadence handling are already the real thing).
+/// The on-device data source providers. Battery, weather, health, and
+/// calendar are all real hardware/framework data now; each throws
+/// `DataSourceError.unavailable` until its permission is granted, and the
+/// refresh pipeline keeps the last cached snapshot on failure.
 enum DeviceDataSources {
     static var providers: [any DataSourceProvider] {
         [
             DeviceBatterySource(),
-            SampleData.weather,
-            SampleData.health,
-            SampleData.calendar,
+            WeatherSource(),
+            HealthSource(),
+            CalendarSource(),
         ]
+    }
+
+    /// Seed the cache with backdated sample snapshots for any source that has
+    /// never fetched. Templates keep rendering something believable before
+    /// permissions are granted, and because the seeds are already stale the
+    /// planner tries the real fetch on the very next pass.
+    static func seedSampleSnapshotsIfNeeded(store: SnapshotStore) {
+        let samples: [StaticSource] = [SampleData.weather, SampleData.health, SampleData.calendar]
+        for sample in samples where store.load(sourceID: sample.descriptor.id) == nil {
+            var snapshot = sample.snapshot()
+            snapshot.fetchedAt = .distantPast
+            try? store.save(snapshot)
+        }
     }
 }
 

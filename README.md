@@ -103,8 +103,9 @@ that one layer — never the whole widget.
 
 ## Status
 
-Milestones from [docs/SPEC.md](docs/SPEC.md): **M1 (core model) and M2
-(renderer) are done**; M3 (editor) is scaffolded in `App/`; M4 (data) has the
-full pipeline with battery live and the remaining device providers stubbed;
-M5 (polish/TestFlight) is open. Custom URL sources, interactive widgets,
+Milestones from [docs/SPEC.md](docs/SPEC.md): **M1 (core model), M2
+(renderer), and M4 (data) are done** — battery, weather (WeatherKit),
+health (HealthKit), and calendar (EventKit) are all live device providers,
+with stale-seeded sample data standing in until each permission is granted;
+M3 (editor) is scaffolded in `App/`; M5 (polish/TestFlight) is open. Custom URL sources, interactive widgets,
 Live Activities, AI generation, and the community gallery are v1.x per spec.

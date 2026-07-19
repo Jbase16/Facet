@@ -53,7 +53,11 @@ README.md has the current status and build instructions.
 ## Roadmap (from docs/SPEC.md; not yet built)
 
 Interactive button layers (App Intents), Live Activities, Widgy JSON
-importer, WeatherKit/HealthKit/EventKit real providers (battery is real,
-others serve sample data), photo/image asset bundles, AI widget generation,
-community gallery. Custom URL sources exist in FacetData but have no editor
-UI yet.
+importer, photo/image asset bundles, AI widget generation, community
+gallery. Custom URL sources exist in FacetData but have no editor UI yet.
+Device providers (battery/weather/health/calendar) are real as of M4 —
+they live in App/Facet/DataSources/, throw `.unavailable` until their
+permission is granted, and the cache keeps stale-seeded sample data so
+templates always render. WeatherKit additionally needs the WeatherKit
+service enabled on the App ID in the developer portal; without it the
+weather fetch fails (by design, non-fatally).

@@ -13,6 +13,7 @@ struct GalleryView: View {
     @State private var renameText = ""
     @State private var importing = false
     @State private var importError: String?
+    @State private var showingSources = false
 
     private let columns = [GridItem(.adaptive(minimum: 158), spacing: 20)]
     private static let facetType = UTType(filenameExtension: "facet", conformingTo: .json) ?? .json
@@ -34,6 +35,11 @@ struct GalleryView: View {
             .navigationTitle("Facet")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showingSources = true
+                    } label: {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                    }
                     Button {
                         importing = true
                     } label: {
@@ -78,6 +84,16 @@ struct GalleryView: View {
             }
             .fileImporter(isPresented: $importing, allowedContentTypes: [Self.facetType, .json]) { result in
                 importDocument(result)
+            }
+            .sheet(isPresented: $showingSources) {
+                DataSourcesView()
+            }
+            .onAppear {
+                // Headless smoke tests can open the sources sheet directly:
+                // simctl launch booted com.JasonPhillips.app -facet-show-sources
+                if ProcessInfo.processInfo.arguments.contains("-facet-show-sources") {
+                    showingSources = true
+                }
             }
         }
     }
