@@ -82,7 +82,11 @@ private struct NodeView: View {
             }
             .stroke(
                 Color(line.color),
-                style: StrokeStyle(lineWidth: line.thickness, lineCap: .round, dash: line.dash ?? [])
+                style: StrokeStyle(
+                    lineWidth: line.thickness,
+                    lineCap: .round,
+                    dash: (line.dash ?? []).map { CGFloat($0) }
+                )
             )
             .frame(width: node.rect.width, height: node.rect.height)
             .offset(x: node.rect.x, y: node.rect.y)
@@ -289,7 +293,7 @@ public struct ImageAssetView: View {
     let contentMode: ImageContent.ContentMode
 
     public var body: some View {
-        if let image = provider?(assetName) {
+        if let image = provider?.load(assetName) {
             image
                 .resizable()
                 .aspectRatio(contentMode: contentMode == .fit ? .fit : .fill)
@@ -299,8 +303,30 @@ public struct ImageAssetView: View {
     }
 }
 
+// A manual environment key rather than @Entry: the macro flags stored
+// closures as always-invalidating; identity comparison via a reference
+// wrapper keeps environment updates cheap.
+public final class FacetImageProvider: Equatable, Sendable {
+    public let load: @Sendable (String) -> Image?
+
+    public init(_ load: @escaping @Sendable (String) -> Image?) {
+        self.load = load
+    }
+
+    public static func == (lhs: FacetImageProvider, rhs: FacetImageProvider) -> Bool {
+        lhs === rhs
+    }
+}
+
+private struct FacetImageProviderKey: EnvironmentKey {
+    static let defaultValue: FacetImageProvider? = nil
+}
+
 public extension EnvironmentValues {
-    @Entry var facetImageProvider: (@Sendable (String) -> Image?)? = nil
+    var facetImageProvider: FacetImageProvider? {
+        get { self[FacetImageProviderKey.self] }
+        set { self[FacetImageProviderKey.self] = newValue }
+    }
 }
 
 public extension Color {
