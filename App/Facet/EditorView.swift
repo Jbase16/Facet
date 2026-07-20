@@ -44,9 +44,16 @@ struct EditorView: View {
         VStack(spacing: 0) {
             canvasArea
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemGroupedBackground))
+                .background {
+                    ZStack {
+                        FacetUI.bg
+                        DotGrid()
+                    }
+                    .ignoresSafeArea()
+                }
             controls
         }
+        .background(FacetUI.bg)
         .navigationTitle(document.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -294,7 +301,7 @@ struct EditorView: View {
     // MARK: - Controls
 
     private var controls: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Picker("Rendition", selection: $rendition) {
                 Text("Small").tag(RenditionKind.systemSmall)
                 Text("Medium").tag(RenditionKind.systemMedium)
@@ -304,13 +311,13 @@ struct EditorView: View {
             }
             .pickerStyle(.segmented)
 
-            HStack(spacing: 14) {
+            HStack(spacing: 10) {
                 Picker("Scheme", selection: $scheme) {
                     Text("Light").tag(FacetCore.ColorScheme.light)
                     Text("Dark").tag(FacetCore.ColorScheme.dark)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 130)
+                .frame(width: 124)
 
                 Spacer()
 
@@ -323,23 +330,29 @@ struct EditorView: View {
                 } label: {
                     Image(systemName: "square.3.layers.3d")
                 }
+                .buttonStyle(FacetToolButton())
 
                 Button {
                     activeSheet = .theme
                 } label: {
                     Image(systemName: "paintpalette")
                 }
+                .buttonStyle(FacetToolButton())
 
                 Button {
                     activeSheet = .inspector
                 } label: {
                     Image(systemName: "slider.horizontal.3")
                 }
+                .buttonStyle(FacetToolButton())
                 .disabled(selectedLayerID == nil)
+                .opacity(selectedLayerID == nil ? 0.35 : 1)
             }
         }
-        .padding()
-        .background(.bar)
+        .padding(14)
+        .facetPanel(radius: 20)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 6)
     }
 
     // MARK: - Editing machinery
@@ -463,7 +476,13 @@ struct AddLayerMenu: View {
                 }
             }
         } label: {
-            Image(systemName: "plus.circle.fill")
+            // Menus ignore ButtonStyle; the label carries the chrome itself.
+            Image(systemName: "plus")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(FacetUI.bg)
+                .frame(width: 34, height: 34)
+                .background(FacetUI.accent)
+                .clipShape(Circle())
         }
     }
 }

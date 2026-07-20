@@ -15,61 +15,92 @@ struct DataSourcesView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    sourceRow(id: "battery", name: "Battery", detail: "No permission needed")
-                } footer: {
-                    Text("Battery reads directly from the device.")
-                }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Connections").facetEyebrow()
+                        Text("Data Sources")
+                            .font(FacetUI.title(26))
+                            .kerning(-0.3)
+                            .foregroundStyle(FacetUI.ink)
+                    }
+                    .padding(.top, 8)
 
-                Section {
-                    sourceRow(id: "weather", name: "Weather", detail: "Apple Weather via your location")
-                    if !locationAuthorized {
-                        Button("Allow Location Access") {
-                            LocationProvider.shared.requestPermission()
+                    VStack(spacing: 12) {
+                        sourceCard(
+                            id: "battery", icon: "battery.75percent",
+                            name: "Battery", detail: "Reads directly from the device"
+                        )
+                        sourceCard(
+                            id: "weather", icon: "cloud.sun.fill",
+                            name: "Weather", detail: "Apple Weather via your location"
+                        ) {
+                            if !locationAuthorized {
+                                connectButton("Allow Location Access") {
+                                    LocationProvider.shared.requestPermission()
+                                }
+                            }
+                        }
+                        sourceCard(
+                            id: "health", icon: "heart.fill",
+                            name: "Health", detail: "Steps, energy, stand hours"
+                        ) {
+                            // HealthKit hides read-grant status by design;
+                            // "the prompt has been shown" is the strongest
+                            // signal there is, so the button disappears after
+                            // the user has answered it once.
+                            if HealthSource.isAvailable && !healthPrompted {
+                                connectButton("Connect Apple Health") {
+                                    connect { try await HealthSource.requestAuthorization() }
+                                }
+                            }
+                        }
+                        sourceCard(
+                            id: "calendar", icon: "calendar",
+                            name: "Calendar", detail: "Next event and today's count"
+                        ) {
+                            if !CalendarSource.authorizationGranted {
+                                connectButton("Allow Calendar Access") {
+                                    connect { _ = try await CalendarSource.requestAccess() }
+                                }
+                            }
                         }
                     }
-                }
 
-                Section {
-                    sourceRow(id: "health", name: "Health", detail: "Steps, energy, stand hours")
-                    // HealthKit hides read-grant status by design; "the prompt
-                    // has been shown" is the strongest signal there is, so the
-                    // button disappears after the user has answered it once.
-                    if HealthSource.isAvailable && !healthPrompted {
-                        Button("Connect Apple Health") {
-                            connect { try await HealthSource.requestAuthorization() }
-                        }
-                    }
+                    Text("Sources marked Sample show designed placeholder data until their permission is granted. Widgets update from the shared cache on the system's refresh budget.")
+                        .font(FacetUI.caption)
+                        .foregroundStyle(FacetUI.inkTertiary)
+                        .padding(.horizontal, 4)
                 }
-
-                Section {
-                    sourceRow(id: "calendar", name: "Calendar", detail: "Next event and today's count")
-                    if !CalendarSource.authorizationGranted {
-                        Button("Allow Calendar Access") {
-                            connect { _ = try await CalendarSource.requestAccess() }
-                        }
-                    }
-                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 32)
             }
-            .navigationTitle("Data Sources")
+            .background(FacetUI.bg)
+            .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Done") { dismiss() }
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .buttonStyle(FacetToolButton())
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         connect {}
                     } label: {
                         if refreshing {
-                            ProgressView()
+                            ProgressView().tint(FacetUI.ink)
                         } else {
                             Image(systemName: "arrow.clockwise")
                         }
                     }
+                    .buttonStyle(FacetToolButton())
                     .disabled(refreshing)
                 }
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
             .onReceive(NotificationCenter.default.publisher(
                 for: UIApplication.didBecomeActiveNotification
             )) { _ in
@@ -80,6 +111,7 @@ struct DataSourcesView: View {
                 healthPrompted = await HealthSource.authorizationStatusKnown()
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     /// Run a permission request, then refresh so newly granted sources go
@@ -96,35 +128,61 @@ struct DataSourcesView: View {
     }
 
     @ViewBuilder
-    private func sourceRow(id: String, name: String, detail: String) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(name)
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+    private func sourceCard(
+        id: String, icon: String, name: String, detail: String,
+        @ViewBuilder action: () -> some View = { EmptyView() }
+    ) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(FacetUI.inkSecondary)
+                    .frame(width: 38, height: 38)
+                    .background(FacetUI.raised)
+                    .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(name)
+                        .font(FacetUI.label)
+                        .foregroundStyle(FacetUI.ink)
+                    Text(detail)
+                        .font(FacetUI.caption)
+                        .foregroundStyle(FacetUI.inkTertiary)
+                }
+                Spacer(minLength: 8)
+                statusBadge(for: id)
             }
-            Spacer()
-            statusBadge(for: id)
+            .padding(14)
+
+            action()
         }
+        .facetPanel()
+    }
+
+    private func connectButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(FacetUI.label)
+                .foregroundStyle(FacetUI.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(FacetUI.accentDim)
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
     private func statusBadge(for sourceID: String) -> some View {
         let snapshot = AppGroup.snapshotStore.load(sourceID: sourceID)
         if let snapshot, snapshot.fetchedAt > .distantPast {
-            VStack(alignment: .trailing, spacing: 2) {
-                Label("Live", systemImage: "checkmark.circle.fill")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.green)
+            VStack(alignment: .trailing, spacing: 3) {
+                FacetPill(text: "Live", color: FacetUI.live, icon: "checkmark")
                 Text(snapshot.fetchedAt, style: .relative)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkTertiary)
             }
         } else {
-            Label("Sample", systemImage: "sparkles")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.orange)
+            FacetPill(text: "Sample", color: FacetUI.sample, icon: "sparkles")
         }
     }
 }

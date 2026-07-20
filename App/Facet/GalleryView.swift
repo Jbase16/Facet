@@ -4,7 +4,8 @@ import FacetCore
 import FacetData
 import FacetRender
 
-/// The home screen: your widgets, live-previewed with current data.
+/// The home screen: your widgets, live-previewed with current data, on the
+/// dark workspace surface the whole app lives on.
 struct GalleryView: View {
     @Environment(DocumentStore.self) private var store
     @Environment(\.colorScheme) private var colorScheme
@@ -14,25 +15,31 @@ struct GalleryView: View {
     @State private var importing = false
     @State private var importError: String?
     @State private var showingSources = false
+    @State private var path: [UUID] = []
 
-    private let columns = [GridItem(.adaptive(minimum: 158), spacing: 20)]
+    private let columns = [GridItem(.adaptive(minimum: 158), spacing: 18)]
     private static let facetType = UTType(filenameExtension: "facet", conformingTo: .json) ?? .json
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 24) {
-                    ForEach(store.documents) { document in
-                        NavigationLink(value: document.id) {
-                            GalleryCell(document: document)
+                VStack(alignment: .leading, spacing: 18) {
+                    header
+                    LazyVGrid(columns: columns, spacing: 18) {
+                        ForEach(store.documents) { document in
+                            NavigationLink(value: document.id) {
+                                GalleryCell(document: document)
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu { contextMenu(for: document) }
                         }
-                        .buttonStyle(.plain)
-                        .contextMenu { contextMenu(for: document) }
                     }
                 }
-                .padding(20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 32)
             }
-            .navigationTitle("Facet")
+            .background(FacetUI.bg)
+            .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
@@ -40,18 +47,24 @@ struct GalleryView: View {
                     } label: {
                         Image(systemName: "antenna.radiowaves.left.and.right")
                     }
+                    .buttonStyle(FacetToolButton())
+
                     Button {
                         importing = true
                     } label: {
                         Image(systemName: "square.and.arrow.down")
                     }
+                    .buttonStyle(FacetToolButton())
+
                     Button {
                         store.save(Self.blankDocument())
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .buttonStyle(FacetToolButton(prominent: true))
                 }
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationDestination(for: UUID.self) { id in
                 if let document = store.documents.first(where: { $0.id == id }) {
                     EditorView(document: document)
@@ -94,8 +107,32 @@ struct GalleryView: View {
                 if ProcessInfo.processInfo.arguments.contains("-facet-show-sources") {
                     showingSources = true
                 }
+                // Likewise for the editor (first document), after seeding.
+                if ProcessInfo.processInfo.arguments.contains("-facet-open-editor") {
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(700))
+                        if let first = store.documents.first { path = [first.id] }
+                    }
+                }
             }
         }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Workspace").facetEyebrow()
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text("Facet")
+                    .font(FacetUI.title(30))
+                    .kerning(-0.4)
+                    .foregroundStyle(FacetUI.ink)
+                Text("\(store.documents.count) widgets")
+                    .font(FacetUI.label)
+                    .foregroundStyle(FacetUI.inkTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 6)
     }
 
     @ViewBuilder
@@ -199,25 +236,52 @@ struct GalleryCell: View {
     @Environment(\.colorScheme) private var colorScheme
     let document: WidgetDocument
 
-    var body: some View {
-        VStack(spacing: 10) {
-            WidgetPreview(
-                document: document,
-                rendition: .systemSmall,
-                colorScheme: colorScheme == .dark ? .dark : .light
-            )
-            .frame(width: 158, height: 158)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: .black.opacity(0.18), radius: 12, y: 6)
+    private var isOnWidget: Bool { store.selectedForWidget == document.id }
 
-            HStack(spacing: 4) {
-                Text(document.name)
-                    .font(.footnote.weight(.medium))
-                if store.selectedForWidget == document.id {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.caption2)
-                        .foregroundStyle(.tint)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack {
+                DotGrid(spacing: 16)
+                // Render at the true systemSmall canvas size, then scale the
+                // whole thing down — clipping a live render is a lie.
+                WidgetPreview(
+                    document: document,
+                    rendition: .systemSmall,
+                    colorScheme: colorScheme == .dark ? .dark : .light
+                )
+                .frame(width: 158, height: 158)
+                .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .strokeBorder(FacetUI.hairline, lineWidth: 1)
                 }
+                .scaleEffect(118.0 / 158.0)
+                .frame(width: 118, height: 118)
+            }
+            .frame(height: 148)
+            .frame(maxWidth: .infinity)
+            .background(FacetUI.raised.opacity(0.5))
+
+            Divider().overlay(FacetUI.hairline)
+
+            HStack(spacing: 6) {
+                Text(document.name)
+                    .font(FacetUI.label)
+                    .foregroundStyle(FacetUI.ink)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+                if isOnWidget {
+                    FacetPill(text: "On widget", color: FacetUI.accent)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+        }
+        .facetPanel()
+        .overlay {
+            if isOnWidget {
+                RoundedRectangle(cornerRadius: FacetUI.cornerRadius, style: .continuous)
+                    .strokeBorder(FacetUI.accent.opacity(0.55), lineWidth: 1.5)
             }
         }
     }

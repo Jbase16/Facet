@@ -20,6 +20,7 @@
 		77B68205C54F8006F521B6A7 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = 0F2B255918F965DD203B453F /* FacetData */; };
 		77DDCF69899FD743134FF0CE /* FacetRender in Frameworks */ = {isa = PBXBuildFile; productRef = 0187F4ED6530EF2E65586359 /* FacetRender */; };
 		81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DA8915E10ABBF586F49CD /* FacetApp.swift */; };
+		89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EA27D153D75EBEFECD233 /* FacetUI.swift */; };
 		8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A5CCA0565292A65A784FC56 /* WeatherSource.swift */; };
 		8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */; };
 		A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */; };
@@ -30,6 +31,7 @@
 		B9DC2ABDCB134093E6D0E873 /* FacetTemplates in Frameworks */ = {isa = PBXBuildFile; productRef = 5F9764CB47CC3255E1DAAFA4 /* FacetTemplates */; };
 		BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAEBEADC60946A4516B04197 /* GalleryView.swift */; };
 		BF0847FF88251983C70FF62C /* FacetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8C9D4A59B6640134536493C3 /* FacetCore */; };
+		C49BDA574C5A958CC0D5F8FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */; };
 		DE2AF1799F3C8518DCC6572F /* ColorRefPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */; };
 		F00F56280E15C1FECDBABED6 /* FacetWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -70,9 +72,11 @@
 		7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditing.swift; sourceTree = "<group>"; };
 		92E1F7508053F63AC77BC8A0 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		973EC022838148FEC7718A70 /* Facet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Facet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9A0EA27D153D75EBEFECD233 /* FacetUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetUI.swift; sourceTree = "<group>"; };
 		9A5CCA0565292A65A784FC56 /* WeatherSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSource.swift; sourceTree = "<group>"; };
 		AAF7B56A34AE22CC18F1CCF1 /* Facet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Facet.entitlements; sourceTree = "<group>"; };
 		AC05E333F65932D292DD4D47 /* HealthSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSource.swift; sourceTree = "<group>"; };
+		B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		CBF7C1B69A0A6822442E0685 /* Develop */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Develop; path = ..; sourceTree = SOURCE_ROOT; };
@@ -128,12 +132,14 @@
 		2BEB9A8BADA9F735BCE0E221 /* Facet */ = {
 			isa = PBXGroup;
 			children = (
+				B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */,
 				C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */,
 				F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */,
 				7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */,
 				92E1F7508053F63AC77BC8A0 /* EditorView.swift */,
 				AAF7B56A34AE22CC18F1CCF1 /* Facet.entitlements */,
 				402DA8915E10ABBF586F49CD /* FacetApp.swift */,
+				9A0EA27D153D75EBEFECD233 /* FacetUI.swift */,
 				CAEBEADC60946A4516B04197 /* GalleryView.swift */,
 				7AF056977F3F074F99FBAA99 /* LayerListView.swift */,
 				3493883341D6B22D1F294A1E /* ThemeEditorView.swift */,
@@ -221,6 +227,7 @@
 			buildConfigurationList = 841A699DF978FC9361B6805D /* Build configuration list for PBXNativeTarget "Facet" */;
 			buildPhases = (
 				330825BE49FC0BC64368D5FF /* Sources */,
+				28197F700256A5102D759BE7 /* Resources */,
 				589C3787BFB2B70A6A3C344A /* Frameworks */,
 				B4BED1A72BE435141F02AE59 /* Embed Foundation Extensions */,
 			);
@@ -272,6 +279,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		28197F700256A5102D759BE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C49BDA574C5A958CC0D5F8FB /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		330825BE49FC0BC64368D5FF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -285,6 +303,7 @@
 				A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */,
 				3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */,
 				81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */,
+				89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */,
 				BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */,
 				B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */,
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
@@ -318,6 +337,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Facet/Facet.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -495,6 +515,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Facet/Facet.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;

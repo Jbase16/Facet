@@ -12,6 +12,10 @@ struct FacetApp: App {
         WindowGroup {
             GalleryView()
                 .environment(store)
+                // A design tool lives on a dark workspace; the widgets being
+                // edited are the only things that get to be loud.
+                .preferredColorScheme(.dark)
+                .tint(FacetUI.accent)
                 .task {
                     store.seedStarterTemplatesIfNeeded()
                     await store.refreshData()
