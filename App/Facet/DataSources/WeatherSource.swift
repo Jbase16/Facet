@@ -67,6 +67,12 @@ final class LocationProvider: NSObject, CLLocationManagerDelegate {
         manager.desiredAccuracy = kCLLocationAccuracyKilometer
     }
 
+    /// The most recent fix CoreLocation has on hand, if any. Never prompts;
+    /// astronomy math tolerates kilometers of error, so stale is fine.
+    var lastKnownLocation: CLLocation? {
+        manager.location
+    }
+
     var isAuthorized: Bool {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways: return true

@@ -15,6 +15,7 @@ struct GalleryView: View {
     @State private var importing = false
     @State private var importError: String?
     @State private var showingSources = false
+    @State private var showingGenerate = false
     @State private var path: [UUID] = []
 
     private let columns = [GridItem(.adaptive(minimum: 158), spacing: 18)]
@@ -42,6 +43,13 @@ struct GalleryView: View {
             .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showingGenerate = true
+                    } label: {
+                        Image(systemName: "sparkles")
+                    }
+                    .buttonStyle(FacetToolButton())
+
                     Button {
                         showingSources = true
                     } label: {
@@ -100,6 +108,34 @@ struct GalleryView: View {
             }
             .sheet(isPresented: $showingSources) {
                 DataSourcesView()
+            }
+            .sheet(isPresented: $showingGenerate) {
+                if #available(iOS 26, *) {
+                    GenerateWidgetView { document in
+                        store.save(document)
+                        // Straight into the editor: the point is an editable
+                        // result, so land the user on the canvas, not a tile.
+                        path = [document.id]
+                    }
+                } else {
+                    // Honest floor: on-device generation needs the iOS 26
+                    // Foundation Models. No cloud fallback by design.
+                    VStack(spacing: 10) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 28))
+                            .foregroundStyle(FacetUI.inkTertiary)
+                        Text("AI generation needs iOS 26")
+                            .font(FacetUI.label)
+                            .foregroundStyle(FacetUI.ink)
+                        Text("Facet designs widgets with Apple's on-device model — nothing leaves your phone.")
+                            .font(FacetUI.caption)
+                            .foregroundStyle(FacetUI.inkSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(28)
+                    .presentationDetents([.height(220)])
+                    .presentationBackground(FacetUI.bg)
+                }
             }
             .onAppear {
                 // Headless smoke tests can open the sources sheet directly:

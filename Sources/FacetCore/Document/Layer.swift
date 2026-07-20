@@ -263,12 +263,28 @@ public enum LayerContent: Sendable, Hashable {
     case container(ContainerContent)
 }
 
+/// What tapping a layer does. URL templates may contain `{expression}`
+/// spans, so a deep link can carry live data:
+/// `"shortcuts://run-shortcut?name=Log{round(health.steps)}"`.
+public struct TapAction: Codable, Hashable, Sendable {
+    public var urlTemplate: String
+
+    public init(urlTemplate: String) {
+        self.urlTemplate = urlTemplate
+    }
+}
+
 public struct Layer: Codable, Identifiable, Sendable, Hashable {
     public var id: UUID
     public var name: String
     public var frame: LayerFrame
     public var style: LayerStyle
     public var isHidden: Bool
+    /// Expression gate: the layer renders only while this evaluates true
+    /// (e.g. `battery.level < 0.2`). nil means always visible. Evaluation
+    /// errors fail open — a broken condition shouldn't blank a widget.
+    public var visibleWhen: String?
+    public var tapAction: TapAction?
     public var content: LayerContent
 
     public init(
@@ -277,6 +293,8 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         frame: LayerFrame = .full,
         style: LayerStyle = .plain,
         isHidden: Bool = false,
+        visibleWhen: String? = nil,
+        tapAction: TapAction? = nil,
         content: LayerContent
     ) {
         self.id = id
@@ -284,6 +302,8 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         self.frame = frame
         self.style = style
         self.isHidden = isHidden
+        self.visibleWhen = visibleWhen
+        self.tapAction = tapAction
         self.content = content
     }
 
@@ -318,7 +338,7 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, frame, style, isHidden, type
+        case id, name, frame, style, isHidden, visibleWhen, tapAction, type
         case text, symbol, shape, image, gauge, line, chart, container
     }
 
@@ -329,6 +349,8 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         frame = try container.decodeIfPresent(LayerFrame.self, forKey: .frame) ?? .full
         style = try container.decodeIfPresent(LayerStyle.self, forKey: .style) ?? .plain
         isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
+        visibleWhen = try container.decodeIfPresent(String.self, forKey: .visibleWhen)
+        tapAction = try container.decodeIfPresent(TapAction.self, forKey: .tapAction)
         let type = try container.decode(String.self, forKey: .type)
         switch type {
         case "text": content = .text(try container.decode(TextContent.self, forKey: .text))
@@ -355,6 +377,8 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         try container.encode(frame, forKey: .frame)
         try container.encode(style, forKey: .style)
         if isHidden { try container.encode(isHidden, forKey: .isHidden) }
+        try container.encodeIfPresent(visibleWhen, forKey: .visibleWhen)
+        try container.encodeIfPresent(tapAction, forKey: .tapAction)
         switch content {
         case .text(let value):
             try container.encode("text", forKey: .type)

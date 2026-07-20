@@ -20,12 +20,17 @@ struct InspectorView: View {
     @State private var expressionValid = true
     @State private var symbolName: String = ""
     @State private var dataPath: String = ""
+    @State private var visibleWhenText: String = ""
+    @State private var visibleWhenValid = true
+    @State private var tapURLText: String = ""
+    @State private var tapURLValid = true
 
     var body: some View {
         NavigationStack {
             Form {
                 genericSection
                 contentSection
+                interactionSection
                 if hasOverride {
                     Section {
                         Button("Clear override for this size", role: .destructive, action: clearOverride)
@@ -42,12 +47,74 @@ struct InspectorView: View {
 
     private func load() {
         name = layer.name
+        visibleWhenText = layer.visibleWhen ?? ""
+        tapURLText = layer.tapAction?.urlTemplate ?? ""
         switch layer.content {
         case .text(let content): templateText = content.text
         case .gauge(let content): expressionText = content.value
         case .symbol(let content): symbolName = content.systemName
         case .chart(let content): dataPath = content.dataPath
         default: break
+        }
+    }
+
+    // MARK: - Interaction
+
+    private var interactionSection: some View {
+        Section {
+            TextField("Visible when — e.g. battery.level < 0.2", text: $visibleWhenText, axis: .vertical)
+                .font(.system(.footnote, design: .monospaced))
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .foregroundStyle(visibleWhenValid ? .primary : Color.red)
+                .onChange(of: visibleWhenText) {
+                    let trimmed = visibleWhenText.trimmingCharacters(in: .whitespaces)
+                    if trimmed.isEmpty {
+                        visibleWhenValid = true
+                        apply { $0.visibleWhen = nil }
+                    } else {
+                        visibleWhenValid = (try? Expression.parse(trimmed)) != nil
+                        if visibleWhenValid { apply { $0.visibleWhen = trimmed } }
+                    }
+                }
+
+            HStack {
+                TextField("Tap opens URL — supports {expressions}", text: $tapURLText, axis: .vertical)
+                    .font(.system(.footnote, design: .monospaced))
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .foregroundStyle(tapURLValid ? .primary : Color.red)
+                    .onChange(of: tapURLText) {
+                        let trimmed = tapURLText.trimmingCharacters(in: .whitespaces)
+                        if trimmed.isEmpty {
+                            tapURLValid = true
+                            apply { $0.tapAction = nil }
+                        } else {
+                            tapURLValid = (try? Template(parsing: trimmed)) != nil
+                            if tapURLValid { apply { $0.tapAction = TapAction(urlTemplate: trimmed) } }
+                        }
+                    }
+                Menu {
+                    Button("Run a Shortcut") { tapURLText = "shortcuts://run-shortcut?name=" }
+                    Button("Open today in Calendar") { tapURLText = "calshow:{calendar.nextStart}" }
+                    Button("Open Health") { tapURLText = "x-apple-health://" }
+                    Button("Open Reminders") { tapURLText = "x-apple-reminderkit://" }
+                    Button("Call a number") { tapURLText = "tel:" }
+                    Button("Open a website") { tapURLText = "https://" }
+                } label: {
+                    Image(systemName: "link.badge.plus")
+                }
+            }
+        } header: {
+            Text("Interaction")
+        } footer: {
+            if !visibleWhenValid {
+                Text("Visibility expression doesn't parse — the layer stays visible until it does.")
+            } else if !tapURLValid {
+                Text("Tap URL template doesn't parse.")
+            } else {
+                Text("Conditions and tap links can use live data: battery, weather, health, calendar, time, env.dark.")
+            }
         }
     }
 

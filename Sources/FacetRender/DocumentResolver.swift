@@ -50,6 +50,18 @@ public struct DocumentResolver {
         }
         guard !hidden else { return nil }
 
+        // Conditional visibility: expression-gated layers ("low battery
+        // warning", "weekend banner"). Errors fail open with a diagnostic —
+        // a typo in a condition must never blank the widget.
+        if let condition = layer.visibleWhen, !condition.isEmpty {
+            do {
+                let visible = try Evaluator.evaluate(condition, context: context).asBool()
+                guard visible else { return nil }
+            } catch {
+                report(layer, "visibleWhen: \(error)")
+            }
+        }
+
         let rect = Rect(
             x: parentRect.x + frame.x * parentRect.width - frame.width * parentRect.width / 2,
             y: parentRect.y + frame.y * parentRect.height - frame.height * parentRect.height / 2,
@@ -94,6 +106,16 @@ public struct DocumentResolver {
             children = resolveChildren(content, in: rect)
         }
 
+        // Tap deep links are templates too, so a link can carry live data.
+        var tapURL: String?
+        if let action = layer.tapAction, !action.urlTemplate.isEmpty {
+            do {
+                tapURL = try Template.render(action.urlTemplate, context: context)
+            } catch {
+                report(layer, "tapAction: \(error)")
+            }
+        }
+
         return RenderNode(
             layerID: layer.id,
             name: layer.name,
@@ -109,6 +131,7 @@ public struct DocumentResolver {
                     offsetY: $0.offsetY
                 )
             },
+            tapURL: tapURL,
             kind: kind,
             children: children
         )

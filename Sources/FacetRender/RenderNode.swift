@@ -140,6 +140,9 @@ public struct RenderNode: Sendable, Equatable {
     public var rotation: Double
     public var cornerRadius: Double
     public var shadow: ResolvedShadow?
+    /// Resolved tap destination (URL string — plain String so the resolver
+    /// stays Linux-portable; renderers that can act on it parse it).
+    public var tapURL: String?
     public var kind: Kind
     public var children: [RenderNode]
 
@@ -151,6 +154,7 @@ public struct RenderNode: Sendable, Equatable {
         rotation: Double = 0,
         cornerRadius: Double = 0,
         shadow: ResolvedShadow? = nil,
+        tapURL: String? = nil,
         kind: Kind,
         children: [RenderNode] = []
     ) {
@@ -161,6 +165,7 @@ public struct RenderNode: Sendable, Equatable {
         self.rotation = rotation
         self.cornerRadius = cornerRadius
         self.shadow = shadow
+        self.tapURL = tapURL
         self.kind = kind
         self.children = children
     }

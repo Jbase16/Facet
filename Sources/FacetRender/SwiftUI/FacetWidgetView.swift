@@ -1,14 +1,22 @@
 #if canImport(SwiftUI)
 import SwiftUI
 import FacetCore
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 /// Renders a resolved node tree in SwiftUI. Used verbatim by the editor
 /// preview and the widget extension: same resolver, same view, no drift.
+/// `interactive` arms tap actions (Links + widgetURL) — the widget extension
+/// passes true; the editor and gallery leave taps inert so canvas gestures
+/// keep working.
 public struct FacetWidgetView: View {
     private let widget: ResolvedWidget
+    private let interactive: Bool
 
-    public init(widget: ResolvedWidget) {
+    public init(widget: ResolvedWidget, interactive: Bool = false) {
         self.widget = widget
+        self.interactive = interactive
     }
 
     public var body: some View {
@@ -17,13 +25,61 @@ public struct FacetWidgetView: View {
         }
         .frame(width: widget.canvas.width, height: widget.canvas.height, alignment: .topLeading)
         .clipped()
+        .environment(\.facetInteractive, interactive)
+        .modifier(RootTapModifier(url: interactive ? firstTapURL(widget.root) : nil))
+    }
+
+    /// systemSmall widgets ignore per-view Links; the first tap action in
+    /// z-order becomes the whole-widget URL so small sizes still act.
+    private func firstTapURL(_ node: RenderNode) -> URL? {
+        if let raw = node.tapURL, let url = URL(string: raw) { return url }
+        for child in node.children {
+            if let found = firstTapURL(child) { return found }
+        }
+        return nil
+    }
+}
+
+private struct FacetInteractiveKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var facetInteractive: Bool {
+        get { self[FacetInteractiveKey.self] }
+        set { self[FacetInteractiveKey.self] = newValue }
+    }
+}
+
+/// `.widgetURL` lives in WidgetKit; outside a widget process it's absent,
+/// so the modifier degrades to a no-op.
+private struct RootTapModifier: ViewModifier {
+    let url: URL?
+
+    func body(content: Content) -> some View {
+        #if canImport(WidgetKit)
+        content.widgetURL(url)
+        #else
+        content
+        #endif
     }
 }
 
 private struct NodeView: View {
+    @Environment(\.facetInteractive) private var interactive
     let node: RenderNode
 
     var body: some View {
+        if interactive, let raw = node.tapURL, let url = URL(string: raw) {
+            // Medium/large widgets honor per-layer Links; small falls back
+            // to the root widgetURL applied above.
+            Link(destination: url) { styled }
+        } else {
+            styled
+        }
+    }
+
+    private var styled: some View {
         content
             .opacity(node.opacity)
             .rotationEffect(.degrees(node.rotation))

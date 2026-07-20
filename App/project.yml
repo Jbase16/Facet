@@ -40,6 +40,7 @@ targets:
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Facet uses your location to show local weather in your widgets.
         INFOPLIST_KEY_NSHealthShareUsageDescription: Facet reads steps, energy, and stand hours to show them in your widgets.
         INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: Facet reads your calendar to show upcoming events in your widgets.
+        INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: Facet reads your reminders to show due counts and the next item in your widgets.
 
   FacetWidgets:
     type: app-extension

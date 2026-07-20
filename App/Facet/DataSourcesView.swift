@@ -12,6 +12,14 @@ struct DataSourcesView: View {
     @State private var refreshing = false
     @State private var locationAuthorized = LocationProvider.shared.isAuthorized
     @State private var healthPrompted = true
+    @State private var customConfigs = CustomSourceStore().load()
+    @State private var editorTarget: EditorTarget?
+
+    /// Sheet routing: `config == nil` means "create new".
+    private struct EditorTarget: Identifiable {
+        var config: URLSourceConfig?
+        var id: String { config?.id ?? "new" }
+    }
 
     var body: some View {
         NavigationStack {
@@ -65,7 +73,27 @@ struct DataSourcesView: View {
                                 }
                             }
                         }
+                        sourceCard(
+                            id: "reminders", icon: "checklist",
+                            name: "Reminders", detail: "Due today, overdue, next due",
+                            missingText: "Pending", missingIcon: "clock"
+                        ) {
+                            if !RemindersSource.authorizationGranted {
+                                connectButton("Allow Reminders Access") {
+                                    connect { _ = try await RemindersSource.requestAccess() }
+                                }
+                            }
+                        }
+                        // No permission and no seeded sample: computed on
+                        // device, so it goes Live on the first refresh pass.
+                        sourceCard(
+                            id: "astronomy", icon: "moon.stars.fill",
+                            name: "Astronomy", detail: "Sunrise, sunset, moon phase",
+                            missingText: "Pending", missingIcon: "clock"
+                        )
                     }
+
+                    customSourcesSection
 
                     Text("Sources marked Sample show designed placeholder data until their permission is granted. Widgets update from the shared cache on the system's refresh budget.")
                         .font(FacetUI.caption)
@@ -110,6 +138,15 @@ struct DataSourcesView: View {
             .task {
                 healthPrompted = await HealthSource.authorizationStatusKnown()
             }
+            .sheet(item: $editorTarget) { target in
+                CustomSourceEditorView(existing: target.config) { config in
+                    CustomSourceStore().save(config)
+                    customConfigs = CustomSourceStore().load()
+                    // Refresh so the new source fetches now instead of at
+                    // the next cadence window.
+                    connect {}
+                }
+            }
         }
         .preferredColorScheme(.dark)
     }
@@ -130,6 +167,7 @@ struct DataSourcesView: View {
     @ViewBuilder
     private func sourceCard(
         id: String, icon: String, name: String, detail: String,
+        missingText: String = "Sample", missingIcon: String = "sparkles",
         @ViewBuilder action: () -> some View = { EmptyView() }
     ) -> some View {
         VStack(spacing: 0) {
@@ -150,13 +188,61 @@ struct DataSourcesView: View {
                         .foregroundStyle(FacetUI.inkTertiary)
                 }
                 Spacer(minLength: 8)
-                statusBadge(for: id)
+                statusBadge(for: id, missingText: missingText, missingIcon: missingIcon)
             }
             .padding(14)
 
             action()
         }
         .facetPanel()
+    }
+
+    // MARK: - Custom sources
+
+    private var customSourcesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Custom Sources").facetEyebrow()
+                Spacer()
+                Button {
+                    editorTarget = EditorTarget(config: nil)
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .buttonStyle(FacetToolButton())
+            }
+
+            if customConfigs.isEmpty {
+                Text("Turn any JSON API into widget data. Add a URL and Facet fetches it on the shared refresh budget.")
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .facetPanel()
+            } else {
+                ForEach(customConfigs) { config in
+                    sourceCard(
+                        id: config.id, icon: "link",
+                        name: config.displayName,
+                        detail: "\(config.url.host() ?? config.url.absoluteString) · \(config.cadence.displayName)",
+                        missingText: "Pending", missingIcon: "clock"
+                    )
+                    .contextMenu {
+                        Button {
+                            editorTarget = EditorTarget(config: config)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            CustomSourceStore().delete(id: config.id)
+                            customConfigs = CustomSourceStore().load()
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private func connectButton(_ title: String, action: @escaping () -> Void) -> some View {
@@ -171,8 +257,13 @@ struct DataSourcesView: View {
         .buttonStyle(.plain)
     }
 
+    /// Built-ins fall back to "Sample" (they're seeded with placeholder
+    /// data); sources with no seed fall back to "Pending" — nothing cached
+    /// yet is not the same as showing designed sample data.
     @ViewBuilder
-    private func statusBadge(for sourceID: String) -> some View {
+    private func statusBadge(
+        for sourceID: String, missingText: String = "Sample", missingIcon: String = "sparkles"
+    ) -> some View {
         let snapshot = AppGroup.snapshotStore.load(sourceID: sourceID)
         if let snapshot, snapshot.fetchedAt > .distantPast {
             VStack(alignment: .trailing, spacing: 3) {
@@ -182,7 +273,7 @@ struct DataSourcesView: View {
                     .foregroundStyle(FacetUI.inkTertiary)
             }
         } else {
-            FacetPill(text: "Sample", color: FacetUI.sample, icon: "sparkles")
+            FacetPill(text: missingText, color: FacetUI.sample, icon: missingIcon)
         }
     }
 }

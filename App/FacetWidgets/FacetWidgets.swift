@@ -88,16 +88,19 @@ struct FacetWidgetEntryView: View {
     var body: some View {
         if let document = entry.document {
             GeometryReader { proxy in
-                FacetWidgetView(widget: DocumentResolver.resolve(
-                    document: document,
-                    snapshots: entry.snapshots,
-                    environment: RenderEnvironment(
-                        rendition: rendition,
-                        colorScheme: colorScheme == .dark ? .dark : .light,
-                        canvasWidth: proxy.size.width,
-                        canvasHeight: proxy.size.height
-                    )
-                ))
+                FacetWidgetView(
+                    widget: DocumentResolver.resolve(
+                        document: document,
+                        snapshots: entry.snapshots,
+                        environment: RenderEnvironment(
+                            rendition: rendition,
+                            colorScheme: colorScheme == .dark ? .dark : .light,
+                            canvasWidth: proxy.size.width,
+                            canvasHeight: proxy.size.height
+                        )
+                    ),
+                    interactive: true
+                )
             }
             .containerBackground(.clear, for: .widget)
         } else {

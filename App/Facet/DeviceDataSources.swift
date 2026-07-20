@@ -3,18 +3,35 @@ import UIKit
 import FacetCore
 import FacetData
 
-/// The on-device data source providers. Battery, weather, health, and
-/// calendar are all real hardware/framework data now; each throws
+/// The on-device data source providers. Battery, weather, health, calendar,
+/// and reminders are all real hardware/framework data; each throws
 /// `DataSourceError.unavailable` until its permission is granted, and the
-/// refresh pipeline keeps the last cached snapshot on failure.
+/// refresh pipeline keeps the last cached snapshot on failure. Astronomy and
+/// user-defined URL sources need no permission at all.
 enum DeviceDataSources {
+    /// Main-actor because the astronomy coordinate comes from
+    /// LocationProvider; every caller (refresh, the sources sheet) already
+    /// lives there.
+    @MainActor
     static var providers: [any DataSourceProvider] {
-        [
+        var providers: [any DataSourceProvider] = [
             DeviceBatterySource(),
             WeatherSource(),
             HealthSource(),
             CalendarSource(),
+            RemindersSource(),
         ]
+        // Astronomy is pure math but needs a coordinate. Reuse the last
+        // CoreLocation fix when one exists — no prompt, no fetch. Without
+        // one, fall back to 0°/0°: sun times are generic but well-defined,
+        // and they correct themselves once Weather's location grant lands.
+        let coordinate = LocationProvider.shared.lastKnownLocation?.coordinate
+        providers.append(AstronomySource(
+            latitude: coordinate?.latitude ?? 0,
+            longitude: coordinate?.longitude ?? 0
+        ))
+        providers.append(contentsOf: CustomSourceStore().providers())
+        return providers
     }
 
     /// Seed the cache with backdated sample snapshots for any source that has
