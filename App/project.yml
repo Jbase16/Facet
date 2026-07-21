@@ -11,6 +11,29 @@ packages:
   FacetKit:
     path: ..
 
+# Without an explicit scheme, XcodeGen emits none and every `xcodegen
+# generate` wipes the ones Xcode auto-creates — leaving Run with nothing
+# to launch. This one is shared (committed), so it survives regeneration.
+schemes:
+  Facet:
+    build:
+      targets:
+        Facet: all
+        FacetWidgets: [run, profile, archive]
+    run:
+      config: Debug
+      # The widget extension is embedded in the app; running the app is
+      # always what you want. Never run the extension scheme directly.
+      askForAppToLaunch: false
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
 settings:
   base:
     SWIFT_VERSION: "6.0"

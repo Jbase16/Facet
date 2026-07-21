@@ -73,6 +73,7 @@
 		300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceStore.swift; sourceTree = "<group>"; };
 		3493883341D6B22D1F294A1E /* ThemeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeEditorView.swift; sourceTree = "<group>"; };
 		36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorRefPicker.swift; sourceTree = "<group>"; };
+		38EB12343C6EBC8EC972617E /* Facet */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Facet; path = ..; sourceTree = SOURCE_ROOT; };
 		3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGeneratorService.swift; sourceTree = "<group>"; };
 		402DA8915E10ABBF586F49CD /* FacetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetApp.swift; sourceTree = "<group>"; };
 		5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSource.swift; sourceTree = "<group>"; };
@@ -91,7 +92,6 @@
 		C62E5678109F5B19042F0E78 /* GenerateWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateWidgetView.swift; sourceTree = "<group>"; };
 		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
-		CBF7C1B69A0A6822442E0685 /* Develop */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Develop; path = ..; sourceTree = SOURCE_ROOT; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FacetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftMapper.swift; sourceTree = "<group>"; };
@@ -149,7 +149,7 @@
 		25C8F9F9D24BB793C165D9EB /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				CBF7C1B69A0A6822442E0685 /* Develop */,
+				38EB12343C6EBC8EC972617E /* Facet */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
