@@ -122,6 +122,7 @@ struct EditorView: View {
         let widget = resolved
         return ZStack(alignment: .topLeading) {
             FacetWidgetView(widget: widget)
+                .environment(\.facetImageProvider, FacetImageProviderFactory.make(documentID: document.id))
             snapGuides(widget)
             selectionOverlay(widget)
         }

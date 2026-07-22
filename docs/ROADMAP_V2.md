@@ -1,73 +1,115 @@
-# Facet — Widgy 2.0 Roadmap
+# Facet — the Scene thesis
 
-Written 2026-07-20, after the capability audit that found the app functionally
-far behind Widgy despite a solid architecture. This roadmap is ordered by
-"capability per week", and every pass ends with a push to main.
+Rewritten 2026-07-22, replacing a first draft that was a Widgy parity
+checklist wearing a "2.0" label. The correction came from two places: a
+capability audit of Widgy 26.1.1 (which already ships photos, a community
+gallery with search, iCloud backup, watch support, now-playing, and
+Control Center widgets), and a target design that made the real gap
+obvious.
 
-## Where we honestly stand
+## What the target design revealed
 
-**Have:** 8 layer kinds (text/symbol/shape/image/gauge/line/chart/container),
-expression engine (arithmetic, comparisons, ternary conditionals, 31
-functions, `{template}` spans), canvas editor (drag/snap/resize/undo,
-per-rendition overrides), 6 live data sources + custom URL sources, theme
-tokens, 12 templates, .facet import/export, layer interactivity
-(tapAction deep links + visibleWhen conditions), on-device AI generation
-(iOS 26 Foundation Models).
+The reference is a molten-volcano home screen: an organic blob-framed hero
+widget with clock, date, quote, weather and a five-chip status row; themed
+app icons flanking a mountain-path wallpaper; a matching dock.
 
-**Missing vs Widgy:** user photos/images, music/now-playing, stocks, RSS,
-network/storage/device stats, countdowns as first-class, per-layer blend
-modes/masks, animations-between-entries, timeline sequences, Widgy JSON
-import, community gallery, iCloud sync, watch faces, StandBy layouts,
-tap-to-configure per-widget-instance, multiple simultaneous widget slots.
+The insight is that **every element knows about every other element.** The
+widget's dark fill *is* the wallpaper's sky. The orange path winding
+through the mountains rhymes with the orange glow inside the widget. The
+icons speak the same visual language. It is one composition.
 
-## Pass 1 — Photos & assets (the #1 aesthetic gap)
-Image layers that load user photos: PhotosPicker in the editor, assets
-copied into the App Group (downsampled, budget-aware), per-document asset
-bundle that travels inside .facet export (base64 chunk), asset-aware
-ImageAssetProvider on both app and extension sides. Adds photo frames,
-masked shapes (circle/rounded/capsule), and opacity/blend of images.
+Widgy cannot express that, and not because of a missing feature: Widgy is
+architecturally a widget editor. You build a widget in a vacuum and hope
+it sits well on your wallpaper. **Every app in this category works that
+way.** That is the gap.
 
-## Pass 2 — Widget slots & instance configuration
-Today one document is "the widget". Ship N configurable slots
-(AppIntentConfiguration with a document picker parameter), so users run
-many Facet widgets at once — table stakes vs Widgy. Includes per-slot
-rendition preview in the gallery ("Small · Medium · Lock").
+## The thesis
 
-## Pass 3 — Data breadth
-- Now Playing (MPNowPlayingInfoCenter via app refresh; artwork to cache)
-- Device stats source: storage free/used, uptime, thermal state
-- Countdown source: user-defined target dates (UI in Data Sources)
-- Stocks/crypto via the custom-URL rails with curated presets
-  (no keys server-side; user pastes their endpoint)
-- RSS/JSON headlines preset on the same rails
+**Facet designs Scenes, not widgets.**
 
-## Pass 4 — Sequences & motion
-Timeline choreography inside the widget budget: a `sequence` container
-whose children rotate across timeline entries (minute/hour cadence),
-plus entry-relative time text (Widgy's "animated" clocks are this).
-Transitions rendered as WidgetKit timeline entries, honestly documented.
+A Scene is one portable document holding the wallpaper, the widgets placed
+where they will actually live, the launcher tiles, and one shared token
+palette. You edit against the real backdrop. Sharing a Scene reproduces an
+entire home screen from a single file — which is what people actually
+trade, not lone widgets.
 
-## Pass 5 — Widgy importer
-Best-effort `.widgy` JSON converter mapping their layer/formula model
-onto FacetCore (text, images, shapes, progress, battery/weather/health
-bindings, common formulas → expression rewrites). Import report listing
-what converted cleanly and what needs touch-up. Growth feature: bring
-your library with you.
+It also makes the AI story something Widgy structurally cannot answer: one
+prompt produces a coherent wallpaper, matching widgets, and a matching
+icon set, because they are all views of the same token set.
 
-## Pass 6 — Gallery & sync
-- iCloud Drive document sync (documents are already portable JSON)
-- Shared gallery v0: publish/import via .facet files + a curated feed
-  (static JSON index to start — no backend commitment yet)
-- Template remixing flow ("Duplicate & edit" from any imported design)
+## Shipped toward it
 
-## Pass 7 — AI deepening (the moat Widgy can't copy quickly)
-- "Restyle this widget" (keep layers, regenerate theme)
-- Image-to-widget: screenshot/inspiration photo → layout draft
-  (Foundation Models multimodal when available)
-- Natural-language edits in the inspector: "make the ring thicker and
-  orange" → targeted mutations, undoable
+- **Path shapes** — `ShapeKind.path` with an SVG-subset parser resolved
+  once in `DocumentResolver`, drawn by both the SwiftUI and SVG backends.
+  Organic silhouettes are now expressible.
+- **Blob generator** — procedural, deterministic, seed-driven; the editor
+  exposes sliders instead of asking anyone to author Béziers on a phone.
+- **Launcher tiles** — themed app tiles composed from ordinary layers
+  (container + glyph + label + `tapAction`), so they inherit theming,
+  shapes, glow, and per-rendition overrides for free. See "Why not
+  Web Clips" below.
+- **User images** — content-addressed, downsampled into the App Group so
+  the extension stays inside its ~30 MB budget; assets travel with the
+  document.
+- **Layer interactivity** — `tapAction` deep links and `visibleWhen`
+  expression gating, through the whole pipeline.
+- **On-device AI generation** — plain-language prompt to editable layers.
+- **Data breadth** — battery, weather (now unit-aware), health, calendar,
+  reminders, astronomy, focus, and arbitrary user JSON APIs.
 
-## Standing quality gates
-Buildable after every pass; template gate green in every rendition ×
-scheme; package tests on Linux stay green; every new capability reachable
-from the UI (no more dead code); push to main after each pass.
+## Why not Web Clips for icons
+
+A configuration-profile approach (base64 icons in a `.mobileconfig`,
+served over local loopback) installs a whole icon set in one confirmation
+and removes it in one action. It is genuinely clever, and it is the wrong
+default:
+
+- **App Review risk is severe.** Consumer theming is far outside the
+  intended use of profile installation, and an embedded HTTP server
+  compounds it.
+- **Fidelity is out of our hands.** iOS renders Web Clip icons with its
+  own masking. The whole point of a Scene is that the tile matches the
+  design exactly.
+- **Guideline 4.1c** — shipping other developers' brand names and icons is
+  its own legal exposure, independent of delivery mechanism.
+- **Web Clip + custom URL scheme is unverified** and may silently fail.
+
+Launcher tiles avoid all four: we render them, so they are pixel-exact;
+they are ordinary widget layers, so there is no platform risk; and there
+is no install step at all. The trade is that they live inside a widget's
+grid area rather than replacing springboard icons.
+
+If real springboard icons are wanted later, the defensible version is a
+`.mobileconfig` **exported through the share sheet** as a document — not
+an in-app installer with a loopback server — shipped as an explicitly
+experimental feature.
+
+## Next
+
+1. **Wallpaper-aware canvas** — import the wallpaper, position widgets in
+   their real slots, sample colors from behind them. The enabling feature
+   for everything above.
+2. **Scene document** — wallpaper + widget set + launcher set + palette in
+   one file, with export/import and an apply checklist.
+3. **Widget slots** — `AppIntentConfiguration` so several Facet widgets
+   run at once, each bound to a different document.
+4. **Scene AI** — one prompt, whole coherent set; restyle-in-place;
+   natural-language edits as undoable mutations.
+5. **Motion** — timeline-entry choreography inside the real refresh budget.
+6. **Widgy importer** — the migration wedge against their gallery moat.
+
+## Known platform limits (documented honestly)
+
+- **Focus mode names are unavailable.** `INFocusStatus` exposes exactly
+  one property, `isFocused: Bool?`. There is no API for "Deep Work" — a
+  widget can show On/Off, or the user types their own label. Sharing must
+  also be enabled per Focus in Settings, or the value reads nil forever.
+- **Springboard icons cannot be replaced programmatically.** See above.
+- **Wallpaper cannot be set programmatically** — a Scene export ends in a
+  user-performed apply step.
+
+## Standing gates
+
+Buildable after every pass. Template gate green in every rendition ×
+scheme. Package tests pass on Linux. Every capability reachable from the
+UI — no dead code. Push to main after each pass.

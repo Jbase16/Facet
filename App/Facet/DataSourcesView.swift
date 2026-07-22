@@ -12,6 +12,8 @@ struct DataSourcesView: View {
     @State private var refreshing = false
     @State private var locationAuthorized = LocationProvider.shared.isAuthorized
     @State private var healthPrompted = true
+    @State private var focusAuthorized = FocusSource.authorizationGranted
+    @State private var temperatureUnit = UnitPreferences.temperature
     @State private var customConfigs = CustomSourceStore().load()
     @State private var editorTarget: EditorTarget?
 
@@ -43,6 +45,7 @@ struct DataSourcesView: View {
                             id: "weather", icon: "cloud.sun.fill",
                             name: "Weather", detail: "Apple Weather via your location"
                         ) {
+                            temperatureUnitPicker
                             if !locationAuthorized {
                                 connectButton("Allow Location Access") {
                                     LocationProvider.shared.requestPermission()
@@ -81,6 +84,20 @@ struct DataSourcesView: View {
                             if !RemindersSource.authorizationGranted {
                                 connectButton("Allow Reminders Access") {
                                     connect { _ = try await RemindersSource.requestAccess() }
+                                }
+                            }
+                        }
+                        // Honest detail copy: iOS shares *that* a Focus is
+                        // on, never which one. Promising "Deep Work" here
+                        // would be a promise the API can't keep.
+                        sourceCard(
+                            id: "focus", icon: "moon.circle.fill",
+                            name: "Focus", detail: "Whether a Focus is on (not which one)",
+                            missingText: "Pending", missingIcon: "clock"
+                        ) {
+                            if !focusAuthorized {
+                                connectButton("Allow Focus Status") {
+                                    connect { _ = await FocusSource.requestAccess() }
                                 }
                             }
                         }
@@ -132,8 +149,11 @@ struct DataSourcesView: View {
             .onReceive(NotificationCenter.default.publisher(
                 for: UIApplication.didBecomeActiveNotification
             )) { _ in
-                // Permission dialogs foreground over the app; re-check on return.
+                // Permission dialogs foreground over the app; re-check on
+                // return. Focus is doubly worth re-reading — its grant can
+                // also be revoked from Settings while the app is backgrounded.
                 locationAuthorized = LocationProvider.shared.isAuthorized
+                focusAuthorized = FocusSource.authorizationGranted
             }
             .task {
                 healthPrompted = await HealthSource.authorizationStatusKnown()
@@ -159,8 +179,60 @@ struct DataSourcesView: View {
             try? await request()
             await store.refreshData()
             locationAuthorized = LocationProvider.shared.isAuthorized
+            focusAuthorized = FocusSource.authorizationGranted
             healthPrompted = await HealthSource.authorizationStatusKnown()
             refreshing = false
+        }
+    }
+
+    /// Temperature scale for the Weather card. Snapshots hold converted
+    /// numbers, so switching units can't be a re-render — the old reading is
+    /// aged out and refetched in the new scale on the spot, rather than
+    /// leaving the widget in the wrong unit until the next hourly window.
+    private var temperatureUnitPicker: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(FacetUI.hairline)
+                .frame(height: 1)
+
+            HStack(spacing: 8) {
+                Text("Units")
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkTertiary)
+                Spacer(minLength: 8)
+                ForEach(TemperatureUnit.allCases, id: \.self) { candidate in
+                    Button {
+                        guard candidate != temperatureUnit else { return }
+                        temperatureUnit = candidate
+                        UnitPreferences.temperature = candidate
+                        WeatherSource.invalidateCachedSnapshot()
+                        connect {}
+                    } label: {
+                        Text(candidate.symbol)
+                            .font(FacetUI.caption)
+                            .foregroundStyle(
+                                candidate == temperatureUnit ? FacetUI.accent : FacetUI.inkSecondary
+                            )
+                            .frame(minWidth: 34)
+                            .padding(.vertical, 7)
+                            .background(
+                                candidate == temperatureUnit ? FacetUI.accentDim : FacetUI.raised
+                            )
+                            .clipShape(Capsule())
+                            .overlay {
+                                Capsule().strokeBorder(
+                                    candidate == temperatureUnit
+                                        ? FacetUI.accent.opacity(0.4) : FacetUI.hairline,
+                                    lineWidth: 1
+                                )
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(refreshing)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
         }
     }
 

@@ -71,6 +71,9 @@ final class DocumentStore {
 
     func delete(_ document: WidgetDocument) {
         try? repository.delete(id: document.id)
+        // Assets are stored per document ID; without this the photos
+        // outlive the widget forever in the App Group container.
+        try? AssetStore().deleteAll(for: document.id)
         documents.removeAll { $0.id == document.id }
     }
 
@@ -78,7 +81,19 @@ final class DocumentStore {
         var copy = document
         copy.id = UUID()
         copy.name += " Copy"
+        // Asset names are scoped by document ID, so a copy needs its own
+        // set or every image layer in it would dangle.
+        copyAssets(from: document.id, to: copy.id)
         save(copy)
+    }
+
+    private func copyAssets(from source: UUID, to destination: UUID) {
+        let store = AssetStore()
+        for name in store.list(for: source) {
+            if let data = store.data(for: name, in: source) {
+                try? store.write(data, named: name, for: destination)
+            }
+        }
     }
 
     /// Fetch every source any document uses, respecting the refresh planner,

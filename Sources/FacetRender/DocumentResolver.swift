@@ -85,11 +85,23 @@ public struct DocumentResolver {
             if environment.rendition.isAccessory { resolved.color = accessoryColor(resolved.color) }
             kind = .symbol(resolved)
         case .shape(let content):
+            var outline: [PathCommand]?
+            if content.kind == .path {
+                do {
+                    outline = try PathData.parse(content.pathData ?? "")
+                } catch {
+                    // Fall back to a rectangle rather than dropping the
+                    // layer: a malformed path should be visible and
+                    // diagnosable, not silently absent.
+                    report(layer, "path: \(error)")
+                }
+            }
             kind = .shape(ResolvedShape(
-                kind: content.kind,
+                kind: outline == nil && content.kind == .path ? .rectangle : content.kind,
                 fill: resolveFill(content.fill),
                 strokeColor: content.strokeColor.map { resolveColor($0) },
-                strokeWidth: content.strokeWidth
+                strokeWidth: content.strokeWidth,
+                path: outline
             ))
         case .image(let content):
             kind = .image(ResolvedImage(assetName: content.assetName, contentMode: content.contentMode))

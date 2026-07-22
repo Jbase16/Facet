@@ -9,24 +9,33 @@
 /* Begin PBXBuildFile section */
 		00544F3818B06967D7ECF554 /* WidgetDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5BEC0697888C94C419A750 /* WidgetDraft.swift */; };
 		0368E84528A73DD37A788AF8 /* FacetRender in Frameworks */ = {isa = PBXBuildFile; productRef = B9DD2058D87C9670363A8E34 /* FacetRender */; };
+		0557A660C22A072805D58E2D /* AssetBundleCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */; };
 		07AD7D60E75F3013D27F8B9B /* DeviceDataSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */; };
+		094AD381D8E67A0078193473 /* AssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC6203D80540BB24BA295B /* AssetStore.swift */; };
 		16128EB90DD9D12892DC4AEB /* FacetTemplates in Frameworks */ = {isa = PBXBuildFile; productRef = 0E2DA78162E32EE6613B1831 /* FacetTemplates */; };
 		1853D459686F54EB3437A058 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */; };
+		18B366D8929C3D314A443997 /* UnitPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0CA8406D09B0D7574BED59D /* UnitPreferences.swift */; };
 		1AF1EDC69F2AB164048C8D6C /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */; };
 		265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493883341D6B22D1F294A1E /* ThemeEditorView.swift */; };
 		2867A9D383219166875CEDF8 /* DataSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */; };
+		2F2B009BD21403FBC863F968 /* AssetPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAABD07F00F6A8557E4248C /* AssetPickerView.swift */; };
 		3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E1F7508053F63AC77BC8A0 /* EditorView.swift */; };
+		49F0A851E07FBEF658AAE78E /* AppCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED98CA53137812BF667A5C2 /* AppCatalog.swift */; };
+		5EDD7A3B4448D21F485D4DF1 /* AssetBundleCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */; };
 		6D1B7841CD3B72D88876B202 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = F9F468B849C3525792800F83 /* FacetData */; };
 		75BF8C13A5C3014A2697C6FE /* FacetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6FC15447F6267AC8764F938F /* FacetCore */; };
 		77B68205C54F8006F521B6A7 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = 0F2B255918F965DD203B453F /* FacetData */; };
 		77DDCF69899FD743134FF0CE /* FacetRender in Frameworks */ = {isa = PBXBuildFile; productRef = 0187F4ED6530EF2E65586359 /* FacetRender */; };
 		7C20108989E04D30EF34B5C9 /* GenerateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62E5678109F5B19042F0E78 /* GenerateWidgetView.swift */; };
+		7D32B2B277022511E2CA8902 /* FacetImageProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */; };
 		81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DA8915E10ABBF586F49CD /* FacetApp.swift */; };
 		89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EA27D153D75EBEFECD233 /* FacetUI.swift */; };
 		8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A5CCA0565292A65A784FC56 /* WeatherSource.swift */; };
 		8E963D04A9098EEBCF7C55E0 /* DraftMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */; };
 		8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */; };
+		919A996A7E98875F4DB7D683 /* AssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC6203D80540BB24BA295B /* AssetStore.swift */; };
 		A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */; };
+		A6A131B69996C8C24FA68437 /* FacetImageProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */; };
 		A991B25B44E194B4DDA00455 /* WidgetGeneratorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */; };
 		B39CE1E925ED7136181F7E47 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */; };
 		B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC05E333F65932D292DD4D47 /* HealthSource.swift */; };
@@ -36,10 +45,12 @@
 		BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAEBEADC60946A4516B04197 /* GalleryView.swift */; };
 		BF0847FF88251983C70FF62C /* FacetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8C9D4A59B6640134536493C3 /* FacetCore */; };
 		C49BDA574C5A958CC0D5F8FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */; };
+		CB1F51102AE3813587CE4067 /* FocusSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F7D9E84D357AF552E47CB3 /* FocusSource.swift */; };
 		CE7A570D8F6A87D48F95806D /* CustomSourceEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA0CA5DC0BA9616B892486D /* CustomSourceEditorView.swift */; };
 		D42C371C1BE5EB7EFBB9E533 /* CustomSourceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */; };
 		DE2AF1799F3C8518DCC6572F /* ColorRefPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */; };
 		F00F56280E15C1FECDBABED6 /* FacetWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F830BB9675846D9D23605777 /* AppPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E46B8ACCA64942D839BC /* AppPickerView.swift */; };
 		F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCDD438B19B558DE0B8232F /* RemindersSource.swift */; };
 /* End PBXBuildFile section */
 
@@ -68,6 +79,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		13DC6203D80540BB24BA295B /* AssetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetStore.swift; sourceTree = "<group>"; };
 		1EA02B4A37A92738FF10C398 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2CA0CA5DC0BA9616B892486D /* CustomSourceEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceEditorView.swift; sourceTree = "<group>"; };
 		300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceStore.swift; sourceTree = "<group>"; };
@@ -76,24 +88,31 @@
 		38EB12343C6EBC8EC972617E /* Facet */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Facet; path = ..; sourceTree = SOURCE_ROOT; };
 		3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGeneratorService.swift; sourceTree = "<group>"; };
 		402DA8915E10ABBF586F49CD /* FacetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetApp.swift; sourceTree = "<group>"; };
+		4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetImageProviderFactory.swift; sourceTree = "<group>"; };
 		5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSource.swift; sourceTree = "<group>"; };
+		5ED98CA53137812BF667A5C2 /* AppCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCatalog.swift; sourceTree = "<group>"; };
 		68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetWidgets.swift; sourceTree = "<group>"; };
 		6D8FD5ED9865C55FCAC59ADE /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
 		7AF056977F3F074F99FBAA99 /* LayerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerListView.swift; sourceTree = "<group>"; };
 		7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditing.swift; sourceTree = "<group>"; };
+		8BAABD07F00F6A8557E4248C /* AssetPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetPickerView.swift; sourceTree = "<group>"; };
 		92E1F7508053F63AC77BC8A0 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
+		95A3E46B8ACCA64942D839BC /* AppPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPickerView.swift; sourceTree = "<group>"; };
 		973EC022838148FEC7718A70 /* Facet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Facet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A0EA27D153D75EBEFECD233 /* FacetUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetUI.swift; sourceTree = "<group>"; };
 		9A5CCA0565292A65A784FC56 /* WeatherSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSource.swift; sourceTree = "<group>"; };
 		9B5BEC0697888C94C419A750 /* WidgetDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDraft.swift; sourceTree = "<group>"; };
 		AAF7B56A34AE22CC18F1CCF1 /* Facet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Facet.entitlements; sourceTree = "<group>"; };
 		AC05E333F65932D292DD4D47 /* HealthSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSource.swift; sourceTree = "<group>"; };
+		B0CA8406D09B0D7574BED59D /* UnitPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitPreferences.swift; sourceTree = "<group>"; };
+		B0F7D9E84D357AF552E47CB3 /* FocusSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSource.swift; sourceTree = "<group>"; };
 		B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C62E5678109F5B19042F0E78 /* GenerateWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateWidgetView.swift; sourceTree = "<group>"; };
 		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FacetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetBundleCodec.swift; sourceTree = "<group>"; };
 		E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftMapper.swift; sourceTree = "<group>"; };
 		F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDataSources.swift; sourceTree = "<group>"; };
 		FDCDD438B19B558DE0B8232F /* RemindersSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersSource.swift; sourceTree = "<group>"; };
@@ -169,8 +188,10 @@
 				7AF056977F3F074F99FBAA99 /* LayerListView.swift */,
 				3493883341D6B22D1F294A1E /* ThemeEditorView.swift */,
 				20A889A124C755D755733C71 /* AI */,
+				D3584E435834C638BF5DABE8 /* Assets */,
 				7D1509DF44996F46192BF65B /* DataSources */,
 				0D90168BB99EE3761DB5C82C /* Inspector */,
+				FE8A1E074A857ED196C35C8B /* Launcher */,
 			);
 			path = Facet;
 			sourceTree = "<group>";
@@ -179,8 +200,19 @@
 			isa = PBXGroup;
 			children = (
 				D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */,
+				5BAE8323F8A46D8204007A7B /* Assets */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		5BAE8323F8A46D8204007A7B /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */,
+				13DC6203D80540BB24BA295B /* AssetStore.swift */,
+				4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */,
+			);
+			path = Assets;
 			sourceTree = "<group>";
 		};
 		7D1509DF44996F46192BF65B /* DataSources */ = {
@@ -189,8 +221,10 @@
 				5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */,
 				2CA0CA5DC0BA9616B892486D /* CustomSourceEditorView.swift */,
 				300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */,
+				B0F7D9E84D357AF552E47CB3 /* FocusSource.swift */,
 				AC05E333F65932D292DD4D47 /* HealthSource.swift */,
 				FDCDD438B19B558DE0B8232F /* RemindersSource.swift */,
+				B0CA8406D09B0D7574BED59D /* UnitPreferences.swift */,
 				9A5CCA0565292A65A784FC56 /* WeatherSource.swift */,
 			);
 			path = DataSources;
@@ -215,6 +249,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		D3584E435834C638BF5DABE8 /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				8BAABD07F00F6A8557E4248C /* AssetPickerView.swift */,
+			);
+			path = Assets;
+			sourceTree = "<group>";
+		};
 		EE29BE53BFE5BFE2252C03EF = {
 			isa = PBXGroup;
 			children = (
@@ -224,6 +266,15 @@
 				39BF147087D335224312B780 /* Shared */,
 				B1D22D4C52782EC8D4C4FABF /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		FE8A1E074A857ED196C35C8B /* Launcher */ = {
+			isa = PBXGroup;
+			children = (
+				5ED98CA53137812BF667A5C2 /* AppCatalog.swift */,
+				95A3E46B8ACCA64942D839BC /* AppPickerView.swift */,
+			);
+			path = Launcher;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -284,9 +335,10 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = A703D76E0FA6D3C1495ECD1F /* Build configuration list for PBXProject "Facet" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -299,6 +351,7 @@
 				5558E74B38376B4711398942 /* XCLocalSwiftPackageReference ".." */,
 			);
 			preferredProjectObjectVersion = 77;
+			productRefGroup = B1D22D4C52782EC8D4C4FABF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -324,7 +377,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49F0A851E07FBEF658AAE78E /* AppCatalog.swift in Sources */,
 				B39CE1E925ED7136181F7E47 /* AppGroupStore.swift in Sources */,
+				F830BB9675846D9D23605777 /* AppPickerView.swift in Sources */,
+				0557A660C22A072805D58E2D /* AssetBundleCodec.swift in Sources */,
+				2F2B009BD21403FBC863F968 /* AssetPickerView.swift in Sources */,
+				919A996A7E98875F4DB7D683 /* AssetStore.swift in Sources */,
 				1AF1EDC69F2AB164048C8D6C /* CalendarSource.swift in Sources */,
 				DE2AF1799F3C8518DCC6572F /* ColorRefPicker.swift in Sources */,
 				CE7A570D8F6A87D48F95806D /* CustomSourceEditorView.swift in Sources */,
@@ -335,7 +393,9 @@
 				8E963D04A9098EEBCF7C55E0 /* DraftMapper.swift in Sources */,
 				3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */,
 				81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */,
+				A6A131B69996C8C24FA68437 /* FacetImageProviderFactory.swift in Sources */,
 				89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */,
+				CB1F51102AE3813587CE4067 /* FocusSource.swift in Sources */,
 				BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */,
 				7C20108989E04D30EF34B5C9 /* GenerateWidgetView.swift in Sources */,
 				B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */,
@@ -343,6 +403,7 @@
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,
 				265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */,
+				18B366D8929C3D314A443997 /* UnitPreferences.swift in Sources */,
 				8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */,
 				00544F3818B06967D7ECF554 /* WidgetDraft.swift in Sources */,
 				A991B25B44E194B4DDA00455 /* WidgetGeneratorService.swift in Sources */,
@@ -354,6 +415,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1853D459686F54EB3437A058 /* AppGroupStore.swift in Sources */,
+				5EDD7A3B4448D21F485D4DF1 /* AssetBundleCodec.swift in Sources */,
+				094AD381D8E67A0078193473 /* AssetStore.swift in Sources */,
+				7D32B2B277022511E2CA8902 /* FacetImageProviderFactory.swift in Sources */,
 				8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -379,6 +443,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Facet;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Facet reads your calendar to show upcoming events in your widgets.";
+				INFOPLIST_KEY_NSFocusStatusUsageDescription = "Facet reads whether a Focus is active to show it in your widgets.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Facet reads steps, energy, and stand hours to show them in your widgets.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Facet uses your location to show local weather in your widgets.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Facet reads your reminders to show due counts and the next item in your widgets.";
@@ -558,6 +623,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Facet;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Facet reads your calendar to show upcoming events in your widgets.";
+				INFOPLIST_KEY_NSFocusStatusUsageDescription = "Facet reads whether a Focus is active to show it in your widgets.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Facet reads steps, energy, and stand hours to show them in your widgets.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Facet uses your location to show local weather in your widgets.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Facet reads your reminders to show due counts and the next item in your widgets.";

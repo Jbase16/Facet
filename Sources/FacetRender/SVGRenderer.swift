@@ -122,7 +122,28 @@ public enum SVGRenderer {
             return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"\(fill)\"\(stroke)/>"
         case .rectangle:
             return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(fill)\"\(stroke)/>"
+        case .path:
+            // Normalized commands scale into the node's rect, so the same
+            // outline works at every widget size.
+            let commands = shape.path ?? []
+            return "<path d=\"\(pathDescription(commands, in: rect))\" fill=\"\(fill)\"\(stroke)/>"
         }
+    }
+
+    private static func pathDescription(_ commands: [PathCommand], in rect: Rect) -> String {
+        func x(_ value: Double) -> String { format(rect.x + value * rect.width) }
+        func y(_ value: Double) -> String { format(rect.y + value * rect.height) }
+        return commands.map { command in
+            switch command {
+            case .move(let px, let py): return "M\(x(px)),\(y(py))"
+            case .line(let px, let py): return "L\(x(px)),\(y(py))"
+            case .quad(let cx, let cy, let px, let py):
+                return "Q\(x(cx)),\(y(cy)) \(x(px)),\(y(py))"
+            case .cubic(let c1x, let c1y, let c2x, let c2y, let px, let py):
+                return "C\(x(c1x)),\(y(c1y)) \(x(c2x)),\(y(c2y)) \(x(px)),\(y(py))"
+            case .close: return "Z"
+            }
+        }.joined(separator: " ")
     }
 
     private static func chartElements(_ chart: ResolvedChart, in rect: Rect, indent: String) -> String {

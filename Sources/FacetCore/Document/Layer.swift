@@ -112,6 +112,9 @@ public enum ShapeKind: String, Codable, Sendable {
     case rectangle
     case circle
     case capsule
+    /// An arbitrary outline from `ShapeContent.pathData` — organic frames,
+    /// imported silhouettes, generated blobs.
+    case path
 }
 
 public struct ShapeContent: Codable, Hashable, Sendable {
@@ -119,12 +122,21 @@ public struct ShapeContent: Codable, Hashable, Sendable {
     public var fill: Fill
     public var strokeColor: ColorRef?
     public var strokeWidth: Double
-
-    public init(kind: ShapeKind, fill: Fill, strokeColor: ColorRef? = nil, strokeWidth: Double = 0) {
+    /// SVG path syntax in normalized 0...1 coordinates, used when
+    /// `kind == .path`. Optional so v1/v2 documents decode unchanged.
+    public var pathData: String?
+    public init(
+        kind: ShapeKind,
+        fill: Fill,
+        strokeColor: ColorRef? = nil,
+        strokeWidth: Double = 0,
+        pathData: String? = nil
+    ) {
         self.kind = kind
         self.fill = fill
         self.strokeColor = strokeColor
         self.strokeWidth = strokeWidth
+        self.pathData = pathData
     }
 
     public init(kind: ShapeKind, fill: ColorRef, strokeColor: ColorRef? = nil, strokeWidth: Double = 0) {

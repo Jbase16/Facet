@@ -11,7 +11,7 @@ struct CustomSourceStore: Sendable {
     /// Built-in provider IDs. A custom slug colliding with one of these
     /// would shadow the real source in the snapshot cache.
     private static let reservedIDs: Set<String> = [
-        "time", "battery", "weather", "health", "calendar", "reminders", "astronomy",
+        "time", "battery", "weather", "health", "calendar", "reminders", "astronomy", "focus",
     ]
 
     func load() -> [URLSourceConfig] {

@@ -24,6 +24,10 @@ struct InspectorView: View {
     @State private var visibleWhenValid = true
     @State private var tapURLText: String = ""
     @State private var tapURLValid = true
+    /// Blob settings live in view state, not the document: the shape stores
+    /// only the resulting path so the renderers stay generator-agnostic.
+    @State private var blobParameters: BlobParameters?
+    @State private var showingAppPicker = false
 
     var body: some View {
         NavigationStack {
@@ -43,6 +47,38 @@ struct InspectorView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear(perform: load)
+        .sheet(isPresented: $showingAppPicker) {
+            AppPickerView { app in
+                // Picking an app fills the tap link and, for a launcher
+                // tile, its glyph and label too — one choice, whole tile.
+                tapURLText = app.urlScheme
+                tapURLValid = true
+                apply { layer in
+                    layer.tapAction = TapAction(urlTemplate: app.urlScheme)
+                    layer.name = app.displayName
+                    if case .symbol(var symbol) = layer.content {
+                        symbol.systemName = app.sfSymbol
+                        layer.content = .symbol(symbol)
+                    }
+                    if case .container(var container) = layer.content {
+                        for index in container.children.indices {
+                            switch container.children[index].content {
+                            case .symbol(var symbol):
+                                symbol.systemName = app.sfSymbol
+                                container.children[index].content = .symbol(symbol)
+                            case .text(var text):
+                                text.text = app.displayName
+                                container.children[index].content = .text(text)
+                            default:
+                                break
+                            }
+                        }
+                        layer.content = .container(container)
+                    }
+                }
+                showingAppPicker = false
+            }
+        }
     }
 
     private func load() {
@@ -94,6 +130,12 @@ struct InspectorView: View {
                             if tapURLValid { apply { $0.tapAction = TapAction(urlTemplate: trimmed) } }
                         }
                     }
+                Button {
+                    showingAppPicker = true
+                } label: {
+                    Image(systemName: "square.grid.2x2")
+                }
+                .buttonStyle(.borderless)
                 Menu {
                     Button("Run a Shortcut") { tapURLText = "shortcuts://run-shortcut?name=" }
                     Button("Open today in Calendar") { tapURLText = "calshow:{calendar.nextStart}" }
@@ -284,12 +326,74 @@ struct InspectorView: View {
         }
     }
 
+    /// Blob shapes are generated, not hand-drawn: nobody authors Bézier
+    /// data on a phone. The sliders regenerate the path, and Shuffle walks
+    /// the seed so a pleasing shape is a few taps away.
+    @ViewBuilder
+    private func blobControls(_ content: ShapeContent) -> some View {
+        let parameters = blobParameters ?? .default
+        sliderRow("Points", value: Double(parameters.points), range: 3...12, format: { "\(Int($0))" }) { value in
+            regenerateBlob { $0.points = Int(value.rounded()) }
+        }
+        sliderRow("Irregularity", value: parameters.irregularity, range: 0...1, format: { "\(Int($0 * 100))%" }) { value in
+            regenerateBlob { $0.irregularity = value }
+        }
+        sliderRow("Smoothness", value: parameters.smoothness, range: 0...1.5, format: { String(format: "%.2f", $0) }) { value in
+            regenerateBlob { $0.smoothness = value }
+        }
+        HStack {
+            Button {
+                regenerateBlob { $0.seed = UInt64.random(in: 0..<UInt64.max) }
+            } label: {
+                Label("Shuffle", systemImage: "dice")
+            }
+            Spacer()
+            Menu("Presets") {
+                ForEach(BlobPath.presets, id: \.name) { preset in
+                    Button(preset.name) {
+                        blobParameters = preset.parameters
+                        applyBlobPath(preset.parameters)
+                    }
+                }
+            }
+        }
+    }
+
+    private func regenerateBlob(_ mutate: (inout BlobParameters) -> Void) {
+        var parameters = blobParameters ?? .default
+        mutate(&parameters)
+        blobParameters = parameters
+        applyBlobPath(parameters)
+    }
+
+    private func applyBlobPath(_ parameters: BlobParameters) {
+        let data = BlobPath.path(parameters)
+        apply { layer in
+            if case .shape(var shape) = layer.content {
+                shape.kind = .path
+                shape.pathData = data
+                layer.content = .shape(shape)
+            }
+        }
+    }
+
     private func shapeSection(_ content: ShapeContent) -> some View {
         Section("Shape") {
-            Picker("Kind", selection: contentBinding(get: content.kind, set: { (value, shape: inout ShapeContent) in shape.kind = value })) {
+            Picker("Kind", selection: contentBinding(get: content.kind, set: { (value, shape: inout ShapeContent) in
+                shape.kind = value
+                // Switching to a path with nothing to draw would resolve as
+                // a rectangle; seed a default blob so the choice is visible.
+                if value == .path && (shape.pathData?.isEmpty ?? true) {
+                    shape.pathData = BlobPath.path(.default)
+                }
+            })) {
                 Text("Rectangle").tag(ShapeKind.rectangle)
                 Text("Circle").tag(ShapeKind.circle)
                 Text("Capsule").tag(ShapeKind.capsule)
+                Text("Blob").tag(ShapeKind.path)
+            }
+            if content.kind == .path {
+                blobControls(content)
             }
             FillPicker(
                 label: "Fill", tokens: tokens.colors, scheme: scheme,

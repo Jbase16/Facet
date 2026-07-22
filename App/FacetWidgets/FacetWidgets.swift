@@ -101,6 +101,7 @@ struct FacetWidgetEntryView: View {
                     ),
                     interactive: true
                 )
+                .environment(\.facetImageProvider, FacetImageProviderFactory.make(documentID: document.id))
             }
             .containerBackground(.clear, for: .widget)
         } else {

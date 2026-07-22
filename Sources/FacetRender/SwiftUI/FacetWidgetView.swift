@@ -243,6 +243,13 @@ private struct NodeView: View {
                     Circle().strokeBorder(stroke, lineWidth: shape.strokeWidth)
                 }
             }
+        case .path:
+            let outline = NormalizedPath(commands: shape.path ?? [])
+            outline.fill(fill).overlay {
+                if let stroke, shape.strokeWidth > 0 {
+                    outline.stroke(stroke, lineWidth: shape.strokeWidth)
+                }
+            }
         case .capsule:
             Capsule().fill(fill).overlay {
                 if let stroke, shape.strokeWidth > 0 {
@@ -338,6 +345,35 @@ private struct ShadowModifier: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// Draws resolved path commands, scaling normalized 0...1 coordinates into
+/// whatever rect SwiftUI hands it. A `Shape` rather than a drawn `Path` so
+/// it composes with `.fill`, `.stroke`, and clipping like any other shape.
+struct NormalizedPath: Shape {
+    let commands: [PathCommand]
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        func point(_ x: Double, _ y: Double) -> CGPoint {
+            CGPoint(x: rect.minX + x * rect.width, y: rect.minY + y * rect.height)
+        }
+        for command in commands {
+            switch command {
+            case .move(let x, let y):
+                path.move(to: point(x, y))
+            case .line(let x, let y):
+                path.addLine(to: point(x, y))
+            case .quad(let cx, let cy, let x, let y):
+                path.addQuadCurve(to: point(x, y), control: point(cx, cy))
+            case .cubic(let c1x, let c1y, let c2x, let c2y, let x, let y):
+                path.addCurve(to: point(x, y), control1: point(c1x, c1y), control2: point(c2x, c2y))
+            case .close:
+                path.closeSubpath()
+            }
+        }
+        return path
     }
 }
 

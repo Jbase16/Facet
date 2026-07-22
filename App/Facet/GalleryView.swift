@@ -338,6 +338,7 @@ struct WidgetPreview: View {
             environment: RenderEnvironment(rendition: rendition, colorScheme: colorScheme)
         )
         FacetWidgetView(widget: resolved)
+            .environment(\.facetImageProvider, FacetImageProviderFactory.make(documentID: document.id))
     }
 
     /// Cached device data where we have it, sample data as fallback so a

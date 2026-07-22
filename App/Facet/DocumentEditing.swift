@@ -158,10 +158,65 @@ enum NewLayerFactory {
                 frame: LayerFrame(x: 0.5, y: 0.5, width: 0.8, height: 0.4),
                 content: .container(ContainerContent(layout: .horizontal, spacing: 6))
             )
+        case "App Launcher":
+            return launcher()
+        case "Blob":
+            return Layer(
+                name: "Blob",
+                frame: LayerFrame(x: 0.5, y: 0.5, width: 0.8, height: 0.8),
+                content: .shape(ShapeContent(
+                    kind: .path,
+                    fill: Fill.literal(ColorValue(hex: "#1C1C2E")!),
+                    pathData: BlobPath.path(.default)
+                ))
+            )
         default:
             return nil
         }
     }
 
-    static let kinds = ["Text", "Symbol", "Shape", "Gauge", "Line", "Chart", "Image", "Group"]
+    /// A themed app tile: rounded background, glyph, label, and a tap that
+    /// deep-links to the app. Composed from ordinary layers rather than a
+    /// bespoke content type — which means it inherits everything the
+    /// renderer already does (theming, shapes, glows, per-size overrides)
+    /// and stays editable piece by piece.
+    static func launcher(
+        name: String = "App",
+        symbol: String = "app.dashed",
+        urlScheme: String? = nil,
+        tint: ColorValue = ColorValue(hex: "#FF7A3D")!
+    ) -> Layer {
+        Layer(
+            name: name,
+            frame: LayerFrame(x: 0.5, y: 0.5, width: 0.34, height: 0.34),
+            tapAction: urlScheme.map { TapAction(urlTemplate: $0) },
+            content: .container(ContainerContent(
+                layout: .absolute,
+                background: Fill.literal(ColorValue(hex: "#141420")!),
+                children: [
+                    Layer(
+                        name: "Glyph",
+                        frame: LayerFrame(x: 0.5, y: 0.42, width: 0.5, height: 0.4),
+                        content: .symbol(SymbolContent(
+                            systemName: symbol, color: .literal(tint), size: 26
+                        ))
+                    ),
+                    Layer(
+                        name: "Label",
+                        frame: LayerFrame(x: 0.5, y: 0.82, width: 0.9, height: 0.2),
+                        content: .text(TextContent(
+                            text: name,
+                            font: .literal(FontToken(size: 9, weight: .medium)),
+                            color: .literal(ColorValue(hex: "#B8B8C4")!)
+                        ))
+                    ),
+                ]
+            ))
+        )
+    }
+
+    static let kinds = [
+        "Text", "Symbol", "Shape", "Gauge", "Line", "Chart",
+        "Image", "Group", "App Launcher", "Blob",
+    ]
 }

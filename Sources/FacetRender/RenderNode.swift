@@ -87,6 +87,25 @@ public struct ResolvedShape: Sendable, Equatable {
     public var fill: ResolvedFill
     public var strokeColor: ColorValue?
     public var strokeWidth: Double
+    /// Outline for `.path` shapes, already parsed (still in normalized
+    /// 0...1 space — renderers scale it into the node's rect). Parsing in
+    /// the resolver means one implementation, shared diagnostics, and no
+    /// re-parsing on every frame.
+    public var path: [PathCommand]?
+
+    public init(
+        kind: ShapeKind,
+        fill: ResolvedFill,
+        strokeColor: ColorValue? = nil,
+        strokeWidth: Double = 0,
+        path: [PathCommand]? = nil
+    ) {
+        self.kind = kind
+        self.fill = fill
+        self.strokeColor = strokeColor
+        self.strokeWidth = strokeWidth
+        self.path = path
+    }
 }
 
 public struct ResolvedLine: Sendable, Equatable {

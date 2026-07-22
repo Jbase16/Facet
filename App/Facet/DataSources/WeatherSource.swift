@@ -7,6 +7,11 @@ import WeatherKit
 /// shaped to match `SampleData.weather` exactly, so every template binding
 /// (`weather.temperature`, `weather.hourly.3`, …) works unchanged once the
 /// user grants location access.
+///
+/// Temperatures are stored in `UnitPreferences.temperature`, resolved at
+/// fetch time. Templates never see a unit, only a number — which is why a
+/// unit change has to go back to WeatherKit (see `invalidateCachedSnapshot`)
+/// rather than re-interpreting what's already cached.
 struct WeatherSource: DataSourceProvider {
     let descriptor = DataSourceDescriptor(
         id: "weather",
@@ -29,25 +34,43 @@ struct WeatherSource: DataSourceProvider {
             throw DataSourceError.fetchFailed("WeatherKit returned no daily forecast")
         }
 
+        // WeatherKit answers in whatever unit it likes; every temperature
+        // leaving this fetch is normalized to the user's choice.
+        let unit = UnitPreferences.temperature.unit
+
         // Templates chart exactly 12 points; from the current hour forward.
         let now = Date()
         let upcoming = hourly.forecast.filter { $0.date >= now.addingTimeInterval(-30 * 60) }
         let hourlyTemps = upcoming.prefix(12).map {
-            SnapshotValue.number($0.temperature.converted(to: .celsius).value.rounded())
+            SnapshotValue.number($0.temperature.converted(to: unit).value.rounded())
         }
 
         return DataSnapshot(
             sourceID: descriptor.id,
             values: .object([
-                "temperature": .number(current.temperature.converted(to: .celsius).value),
+                "temperature": .number(current.temperature.converted(to: unit).value),
                 "condition": .string(current.condition.description),
                 "symbol": .string(current.symbolName),
-                "high": .number(today.highTemperature.converted(to: .celsius).value),
-                "low": .number(today.lowTemperature.converted(to: .celsius).value),
+                "high": .number(today.highTemperature.converted(to: unit).value),
+                "low": .number(today.lowTemperature.converted(to: unit).value),
                 "humidity": .number(current.humidity),
                 "hourly": .list(Array(hourlyTemps)),
             ])
         )
+    }
+
+    /// Backdate the cached snapshot past its cadence window so the next
+    /// refresh pass refetches it. Called when the temperature unit changes:
+    /// the cached numbers are in the old scale and can't be salvaged, but
+    /// backdating (rather than deleting) keeps the last real reading on
+    /// screen — honestly labelled with its true age — until the new one
+    /// lands. Deleting would flash sample data at a user who has live data.
+    static func invalidateCachedSnapshot() {
+        let descriptor = WeatherSource().descriptor
+        let store = AppGroup.snapshotStore
+        guard var snapshot = store.load(sourceID: descriptor.id) else { return }
+        snapshot.fetchedAt = Date().addingTimeInterval(-descriptor.cadence.targetInterval - 60)
+        try? store.save(snapshot)
     }
 }
 

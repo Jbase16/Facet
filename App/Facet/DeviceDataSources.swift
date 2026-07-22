@@ -4,7 +4,7 @@ import FacetCore
 import FacetData
 
 /// The on-device data source providers. Battery, weather, health, calendar,
-/// and reminders are all real hardware/framework data; each throws
+/// reminders, and focus are all real hardware/framework data; each throws
 /// `DataSourceError.unavailable` until its permission is granted, and the
 /// refresh pipeline keeps the last cached snapshot on failure. Astronomy and
 /// user-defined URL sources need no permission at all.
@@ -20,6 +20,7 @@ enum DeviceDataSources {
             HealthSource(),
             CalendarSource(),
             RemindersSource(),
+            FocusSource(),
         ]
         // Astronomy is pure math but needs a coordinate. Reuse the last
         // CoreLocation fix when one exists — no prompt, no fetch. Without
