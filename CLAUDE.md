@@ -7,7 +7,9 @@ README.md has the current status and build instructions.
 ## Layout
 
 - `Sources/FacetCore` — the `.facet` document model (schema v2) + expression
-  language. Pure Swift, no UI. Schema changes must keep old documents
+  language + `Geometry/` (SVG path subset parser, path node editing, shape
+  generators). Pure Swift, no UI, builds on Linux — no CoreGraphics, hence
+  `PathPoint` rather than CGPoint. Schema changes must keep old documents
   decoding (see the v1-compat pattern: optional fields, string-form fills).
 - `Sources/FacetData` — data sources, snapshot cache, refresh planner,
   URLJSONSource (custom APIs), AstronomySource (computed sun/moon).
@@ -20,13 +22,22 @@ README.md has the current status and build instructions.
 - `App/` — the iOS app + widget extension. Xcode project is generated from
   `App/project.yml` by XcodeGen; the generated `Facet.xcodeproj` is
   committed. After adding/removing files under App/, run
-  `cd App && xcodegen generate`.
+  `cd App && xcodegen generate`. `App/Shared/` is compiled into BOTH
+  targets — anything the widget extension needs (asset store, app group,
+  image provider) belongs there, not in `App/Facet/`.
+  The `Facet` scheme is declared in project.yml and shared; without it
+  XcodeGen emits no scheme and Run has nothing to launch.
 - `Templates/` — exported .facet files (regenerate with
   `swift run facet-preview export-templates Templates`).
 
 ## Build & test
 
-- Packages: `swift build` / `swift test` (works on macOS and Linux; 96 tests).
+- Packages: `swift build` / `swift test` (works on macOS and Linux).
+- Headless smoke tests: `xcrun simctl launch booted com.JasonPhillips.app
+  -facet-show-sources` (or `-facet-open-editor`) opens a screen directly.
+- Simulator: Xcode 27 replaced Simulator.app with DeviceHub.app. The
+  physical iPhone and the sim are both named "iPhone 17 Pro" — picking the
+  device destination builds fine and launches nothing visible.
 - App: build the `Facet` scheme in Xcode or
   `xcodebuild -project App/Facet.xcodeproj -scheme Facet -destination 'generic/platform=iOS Simulator' build`.
 - Template gate: every starter template must resolve with zero diagnostics

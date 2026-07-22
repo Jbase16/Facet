@@ -25,6 +25,11 @@ struct EditorView: View {
     @State private var activeSheet: Sheet?
     @State private var snappedX = false
     @State private var snappedY = false
+    /// Node-editing mode for `.path` shapes: anchors and Bézier handles
+    /// become draggable and the normal move/resize gestures step aside.
+    @State private var editingNodes = false
+    @State private var selectedNodeIndex: Int?
+    @State private var dragStartCommands: [PathCommand]?
 
     private enum Sheet: String, Identifiable {
         case inspector, layers, theme
@@ -124,7 +129,11 @@ struct EditorView: View {
             FacetWidgetView(widget: widget)
                 .environment(\.facetImageProvider, FacetImageProviderFactory.make(documentID: document.id))
             snapGuides(widget)
-            selectionOverlay(widget)
+            if editingNodes {
+                nodeOverlay(widget)
+            } else {
+                selectionOverlay(widget)
+            }
         }
         .frame(width: widget.canvas.width, height: widget.canvas.height)
         .clipShape(RoundedRectangle(cornerRadius: 21, style: .continuous))
@@ -134,8 +143,142 @@ struct EditorView: View {
         }
         .scaleEffect(zoom)
         .contentShape(Rectangle())
-        .gesture(tapToSelect(widget))
-        .gesture(dragSelected(widget))
+        .gesture(editingNodes ? nil : tapToSelect(widget))
+        .gesture(editingNodes ? nil : dragSelected(widget))
+    }
+
+    /// True when the selection is a path shape, so node editing is offered.
+    private var selectedPathCommands: [PathCommand]? {
+        guard let id = selectedLayerID,
+              let layer = document.root.firstLayer(withID: id),
+              case .shape(let shape) = layer.content,
+              shape.kind == .path else { return nil }
+        return PathEditing.commands(from: shape.pathData)
+    }
+
+    private func writePathCommands(_ commands: [PathCommand]) {
+        guard let id = selectedLayerID else { return }
+        let data = PathEditing.pathData(from: commands)
+        document.root.updateFirstLayer(withID: id) { layer in
+            if case .shape(var shape) = layer.content {
+                shape.pathData = data
+                layer.content = .shape(shape)
+            }
+        }
+    }
+
+    /// Anchors and handles drawn over the live render, in canvas points.
+    @ViewBuilder
+    private func nodeOverlay(_ widget: ResolvedWidget) -> some View {
+        if editingNodes,
+           let id = selectedLayerID,
+           let node = findNode(widget.root, layerID: id),
+           let commands = selectedPathCommands {
+            let anchors = PathEditing.nodes(in: commands)
+            ForEach(Array(anchors.enumerated()), id: \.offset) { _, anchor in
+                let position = screenPoint(anchor.point, in: node.rect)
+                // Handles only for the selected anchor: showing every
+                // handle at once turns the canvas into spaghetti.
+                if selectedNodeIndex == anchor.commandIndex {
+                    if let inHandle = anchor.inHandle {
+                        handleControl(at: screenPoint(inHandle, in: node.rect), from: position) { point in
+                            var edited = commands
+                            PathEditing.setInHandle(&edited, at: anchor.commandIndex, to: point)
+                            writePathCommands(edited)
+                        }
+                    }
+                    if let outHandle = anchor.outHandle {
+                        handleControl(at: screenPoint(outHandle, in: node.rect), from: position) { point in
+                            var edited = commands
+                            PathEditing.setOutHandle(&edited, at: anchor.commandIndex, to: point)
+                            writePathCommands(edited)
+                        }
+                    }
+                }
+                anchorControl(
+                    at: position,
+                    isSelected: selectedNodeIndex == anchor.commandIndex,
+                    index: anchor.commandIndex,
+                    rect: node.rect,
+                    commands: commands
+                )
+            }
+        }
+    }
+
+    private func screenPoint(_ point: PathPoint, in rect: Rect) -> CGPoint {
+        CGPoint(x: rect.x + point.x * rect.width, y: rect.y + point.y * rect.height)
+    }
+
+    private func anchorControl(
+        at position: CGPoint,
+        isSelected: Bool,
+        index: Int,
+        rect: Rect,
+        commands: [PathCommand]
+    ) -> some View {
+        Circle()
+            .fill(isSelected ? Color.accentColor : Color.white)
+            .overlay(Circle().strokeBorder(Color.accentColor, lineWidth: 1.2))
+            .frame(width: 9, height: 9)
+            .offset(x: position.x - 4.5, y: position.y - 4.5)
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if dragStartCommands == nil {
+                            pushUndo()
+                            dragStartCommands = commands
+                            selectedNodeIndex = index
+                        }
+                        guard let start = dragStartCommands,
+                              let anchor = PathEditing.nodes(in: start)
+                                  .first(where: { $0.commandIndex == index }) else { return }
+                        var edited = start
+                        let moved = PathPoint(
+                            x: anchor.point.x + (value.translation.width / zoom) / rect.width,
+                            y: anchor.point.y + (value.translation.height / zoom) / rect.height
+                        )
+                        PathEditing.moveAnchor(&edited, at: index, to: PathEditing.clampAnchor(moved))
+                        writePathCommands(edited)
+                    }
+                    .onEnded { _ in dragStartCommands = nil }
+            )
+    }
+
+    private func handleControl(
+        at position: CGPoint,
+        from anchor: CGPoint,
+        update: @escaping (PathPoint) -> Void
+    ) -> some View {
+        ZStack(alignment: .topLeading) {
+            Path { path in
+                path.move(to: anchor)
+                path.addLine(to: position)
+            }
+            .stroke(Color.accentColor.opacity(0.5), lineWidth: 0.75)
+            Circle()
+                .fill(Color.accentColor.opacity(0.9))
+                .frame(width: 7, height: 7)
+                .offset(x: position.x - 3.5, y: position.y - 3.5)
+                .highPriorityGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            if dragStartCommands == nil {
+                                pushUndo()
+                                dragStartCommands = selectedPathCommands
+                            }
+                            guard let node = selectedLayerID.flatMap({ id in
+                                findNode(resolved.root, layerID: id)
+                            }) else { return }
+                            update(PathPoint(
+                                x: (position.x - node.rect.x + value.translation.width / zoom) / node.rect.width,
+                                y: (position.y - node.rect.y + value.translation.height / zoom) / node.rect.height
+                            ))
+                        }
+                        .onEnded { _ in dragStartCommands = nil }
+                )
+        }
+        .allowsHitTesting(true)
     }
 
     @ViewBuilder
@@ -340,6 +483,16 @@ struct EditorView: View {
                 }
                 .buttonStyle(FacetToolButton())
 
+                if selectedPathCommands != nil {
+                    Button {
+                        editingNodes.toggle()
+                        selectedNodeIndex = nil
+                    } label: {
+                        Image(systemName: editingNodes ? "point.topleft.filled.down.curvedto.point.bottomright.up" : "point.topleft.down.curvedto.point.bottomright.up")
+                    }
+                    .buttonStyle(FacetToolButton(prominent: editingNodes))
+                }
+
                 Button {
                     activeSheet = .inspector
                 } label: {
@@ -349,11 +502,56 @@ struct EditorView: View {
                 .disabled(selectedLayerID == nil)
                 .opacity(selectedLayerID == nil ? 0.35 : 1)
             }
+
+            if editingNodes {
+                nodeEditingBar
+            }
         }
         .padding(14)
         .facetPanel(radius: 20)
         .padding(.horizontal, 12)
         .padding(.bottom, 6)
+    }
+
+    /// Node-mode actions. They act on the selected anchor, so the bar
+    /// stays disabled until one is picked rather than guessing a target.
+    private var nodeEditingBar: some View {
+        HStack(spacing: 10) {
+            Text(selectedNodeIndex == nil ? "Tap a node" : "Node selected")
+                .font(FacetUI.caption)
+                .foregroundStyle(FacetUI.inkTertiary)
+            Spacer()
+            Button {
+                guard var commands = selectedPathCommands, let index = selectedNodeIndex else { return }
+                pushUndo()
+                PathEditing.insertNode(&commands, onSegmentEndingAt: index)
+                writePathCommands(commands)
+            } label: {
+                Image(systemName: "plus.circle")
+            }
+            .buttonStyle(FacetToolButton())
+            Button {
+                guard var commands = selectedPathCommands, let index = selectedNodeIndex else { return }
+                pushUndo()
+                PathEditing.toggleCurve(&commands, at: index)
+                writePathCommands(commands)
+            } label: {
+                Image(systemName: "scribble")
+            }
+            .buttonStyle(FacetToolButton())
+            Button {
+                guard var commands = selectedPathCommands, let index = selectedNodeIndex else { return }
+                pushUndo()
+                PathEditing.deleteNode(&commands, at: index)
+                writePathCommands(commands)
+                selectedNodeIndex = nil
+            } label: {
+                Image(systemName: "minus.circle")
+            }
+            .buttonStyle(FacetToolButton())
+        }
+        .disabled(selectedNodeIndex == nil)
+        .opacity(selectedNodeIndex == nil ? 0.5 : 1)
     }
 
     // MARK: - Editing machinery
