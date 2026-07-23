@@ -477,6 +477,65 @@ final class ShapeGeneratorTests: XCTestCase {
 
     // MARK: - Helpers
 
+    // MARK: - Irregular clouds
+
+    func testIrregularCloudIsDeterministic() {
+        // The whole point of seeding rather than randomising: identical output
+        // on every render, or a document reshapes itself each redraw.
+        XCTAssertEqual(
+            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 7),
+            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 7)
+        )
+    }
+
+    func testIrregularityZeroReproducesTheUniformCloud() {
+        // The four-argument call defaults irregularity to 0, so every existing
+        // caller keeps its identical-lobe shape.
+        XCTAssertEqual(
+            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14),
+            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0, seed: 99)
+        )
+    }
+
+    func testIrregularityAndSeedBothChangeTheShape() {
+        let base = ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0)
+        let varied = ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 7)
+        let otherSeed = ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 8)
+        XCTAssertNotEqual(base, varied, "irregularity should move the lobes")
+        XCTAssertNotEqual(varied, otherSeed, "the seed should pick a different variation")
+    }
+
+    func testIrregularCloudsStayNormalisedAndInsideTheBox() {
+        for seed in UInt64(0)...12 {
+            for irregularity in [0.25, 0.5, 0.75, 1.0] {
+                let path = ShapeGenerator.scallop(
+                    bumpsX: 4, bumpsY: 3, depth: 0.15, cornerRadius: 0.12,
+                    irregularity: irregularity, seed: seed
+                )
+                assertNormalized(path, message: "seed \(seed) irr \(irregularity)")
+            }
+        }
+    }
+
+    /// The organic clouds must not fold over themselves at any setting — the
+    /// same guarantee the uniform family got, extended across the new axis.
+    func testIrregularCloudsDoNotSelfIntersect() {
+        for seed in UInt64(0)...20 {
+            for irregularity in [0.3, 0.6, 1.0] {
+                for depth in [0.08, 0.15, 0.18] {
+                    let path = ShapeGenerator.scallop(
+                        bumpsX: 5, bumpsY: 3, depth: depth, cornerRadius: 0.12,
+                        irregularity: irregularity, seed: seed
+                    )
+                    XCTAssertFalse(
+                        Self.selfIntersects(path),
+                        "seed \(seed) irr \(irregularity) depth \(depth): \(path)"
+                    )
+                }
+            }
+        }
+    }
+
     private func assertNormalized(
         _ path: String,
         message: String = "",
@@ -513,6 +572,32 @@ final class ShapeGeneratorTests: XCTestCase {
     }
 
     /// Points on the drawn curve, not just the control polygon.
+    /// Samples the outline and checks every non-adjacent segment pair for a
+    /// proper crossing. "Proper" (strict sign changes) ignores shared endpoints
+    /// and grazes, so only a real fold-over trips it.
+    private static func selfIntersects(_ path: String) -> Bool {
+        let points = sample(path, stepsPerCurve: 6)
+        let n = points.count
+        guard n > 3 else { return false }
+        func cross(_ o: (x: Double, y: Double), _ a: (x: Double, y: Double), _ b: (x: Double, y: Double)) -> Double {
+            (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
+        }
+        func crosses(_ p1: (x: Double, y: Double), _ p2: (x: Double, y: Double),
+                     _ p3: (x: Double, y: Double), _ p4: (x: Double, y: Double)) -> Bool {
+            let d1 = cross(p3, p4, p1), d2 = cross(p3, p4, p2)
+            let d3 = cross(p1, p2, p3), d4 = cross(p1, p2, p4)
+            return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0))
+                && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+        }
+        for i in 0..<n {
+            let a1 = points[i], a2 = points[(i + 1) % n]
+            for j in (i + 1)..<n where j != (i + 1) % n && (j + 1) % n != i {
+                if crosses(a1, a2, points[j], points[(j + 1) % n]) { return true }
+            }
+        }
+        return false
+    }
+
     private static func sample(_ path: String, stepsPerCurve: Int) -> [(x: Double, y: Double)] {
         guard let commands = try? PathData.parse(path) else { return [] }
         var points: [(x: Double, y: Double)] = []

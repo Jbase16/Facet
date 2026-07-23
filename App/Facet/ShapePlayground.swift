@@ -22,10 +22,12 @@ struct ShapePlayground: View {
     @State private var showNodes = true
 
     // Cloud / scallop
-    @State private var bumpsX = 3.0
-    @State private var bumpsY = 2.0
-    @State private var depth = 0.05
-    @State private var cloudCorner = 0.16
+    @State private var bumpsX = 4.0
+    @State private var bumpsY = 3.0
+    @State private var depth = 0.11
+    @State private var cloudCorner = 0.14
+    @State private var cloudIrregularity = 0.42
+    @State private var cloudSeed = 7.0
 
     // Squircle
     @State private var roundness = 4.0
@@ -61,7 +63,8 @@ struct ShapePlayground: View {
         case .cloud:
             return ShapeGenerator.scallop(
                 bumpsX: Int(bumpsX), bumpsY: Int(bumpsY),
-                depth: depth, cornerRadius: cloudCorner
+                depth: depth, cornerRadius: cloudCorner,
+                irregularity: cloudIrregularity, seed: UInt64(max(0, cloudSeed))
             )
         case .squircle:
             return ShapeGenerator.superellipse(roundness: roundness)
@@ -136,10 +139,16 @@ struct ShapePlayground: View {
     private var controls: some View {
         switch family {
         case .cloud:
-            slider("Bumps across", $bumpsX, 0...8, step: 1)
-            slider("Bumps down", $bumpsY, 0...8, step: 1)
-            slider("Depth", $depth, 0...0.12)
+            slider("Bumps across", $bumpsX, 1...8, step: 1)
+            slider("Bumps down", $bumpsY, 1...8, step: 1)
+            slider("Depth", $depth, 0...0.18)
             slider("Corner radius", $cloudCorner, 0...0.3)
+            slider("Irregularity", $cloudIrregularity, 0...1)
+            HStack {
+                slider("Seed", $cloudSeed, 0...100, step: 1)
+                Button("Shuffle") { cloudSeed = Double(Int.random(in: 0...100)) }
+                    .buttonStyle(.bordered)
+            }
         case .squircle:
             slider("Roundness", $roundness, 1.5...12)
         case .corners:

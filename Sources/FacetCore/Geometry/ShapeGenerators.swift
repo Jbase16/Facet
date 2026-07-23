@@ -157,35 +157,48 @@ public enum ShapeGenerator {
 
     // MARK: - Scallop
 
-    /// A rounded rectangle whose straight edges bulge outward in circular arcs
-    /// — the "cloud" family, and the one shape that still frames content
-    /// because its corners and its content-bearing middle are unchanged.
+    /// A rounded rectangle whose straight edges bulge outward — the "cloud"
+    /// family, and the one shape that still frames content because its corners
+    /// and its content-bearing middle are unchanged.
+    ///
+    /// Each lobe is two cubics meeting at its apex, and both ends of a lobe are
+    /// tangent to the underlying edge — so neighbouring lobes join without the
+    /// inward cusp a pair of circular arcs would leave, and the outline reads as
+    /// one soft cloud rather than a row of scallops.
     ///
     /// - Parameters:
     ///   - bumpsX: bulges along the top and bottom edges, clamped 0...8.
     ///   - bumpsY: bulges along the left and right edges, clamped 0...8.
-    ///   - depth: how far each bulge stands off its edge, clamped 0...0.12, and
-    ///     additionally capped at 45% of the chord of the *most crowded* edge —
-    ///     so every lobe on the outline rises the same amount. Past half a chord
-    ///     an arc turns back on itself and neighbouring bulges cross; just under
-    ///     that it still cusps like a cartoon cloud. Consequence worth knowing:
-    ///     at seven or eight bulges the cap binds for the whole legal range, and
-    ///     the depth control stops moving.
+    ///   - depth: how far each bulge stands off its edge, clamped 0...0.18. Each
+    ///     lobe is additionally capped at 45% of *its own* chord — a wide lobe
+    ///     may rise more than a narrow one, so a crowded edge no longer flattens
+    ///     the lobes on a sparse one. Past half a chord a lobe turns back on
+    ///     itself; the cap leaves a shoulder. Worth knowing: at seven or eight
+    ///     bulges the cap binds for the whole legal range and depth stops moving.
     ///   - cornerRadius: the underlying rectangle's corner radius, 0...0.3.
     ///     Past 0.3 the base shape is nearly a circle and the straight run left
     ///     to carry bulges is short enough that they read as warts stuck on it
-    ///     rather than lobes of one outline — worst at one bulge per edge. A
-    ///     rounder base is `roundedRect`'s job anyway.
+    ///     rather than lobes of one outline. A rounder base is `roundedRect`'s
+    ///     job anyway.
+    ///   - irregularity: 0 gives identical lobes (manufactured scallops); toward
+    ///     1 their widths and heights vary for an organic, hand-drawn cloud.
+    ///   - seed: chooses which variation. Deterministic — the same seed yields
+    ///     byte-identical output on every device and render, because a document
+    ///     that reshaped itself on each redraw would be unusable. Each of the
+    ///     four edges is salted from this so a cloud isn't mirror-symmetric.
     public static func scallop(
         bumpsX: Int,
         bumpsY: Int,
         depth: Double,
-        cornerRadius: Double
+        cornerRadius: Double,
+        irregularity: Double = 0,
+        seed: UInt64 = 0
     ) -> String {
         let countX = clamp(bumpsX, 0, 8)
         let countY = clamp(bumpsY, 0, 8)
-        let requested = clamp(depth, 0, 0.12, fallback: 0)
+        let requested = clamp(depth, 0, 0.18, fallback: 0)
         let radius = clamp(cornerRadius, 0, 0.3, fallback: 0)
+        let variation = clamp(irregularity, 0, 1, fallback: 0)
 
         // Flat on both axes is a rounded rectangle, and routing through the same
         // function guarantees it is byte-identical to one.
@@ -195,46 +208,43 @@ public enum ShapeGenerator {
             )
         }
 
-        // One rise for every bulge on the outline, set by whichever axis is most
-        // crowded. Capping the two axes independently let three lobes across the
-        // top sit next to two much taller ones down the side, and the result
-        // read as two shapes fighting rather than one.
-        let span = 1 - 2 * radius
-        let crowding = max(countX, countY)
-        let sagitta = min(requested, Self.maxSagitta * span / Double(crowding))
-        let sagittaX = countX > 0 ? sagitta : 0
-        let sagittaY = countY > 0 ? sagitta : 0
-
         let k = Self.kappa
         var builder = PathBuilder()
         builder.move(to: Point(radius, 0))
-        bulge(&builder, to: Point(1 - radius, 0), outward: Point(0, -1), count: countX, sagitta: sagittaX)
+        irregularBulges(&builder, to: Point(1 - radius, 0), outward: Point(0, -1),
+                        count: countX, requestedDepth: requested, irregularity: variation,
+                        seed: mixedSeed(seed, salt: 0xC10D_0001))
         if radius > 0 {
             builder.cubic(
                 Point(1 - radius + k * radius, 0), Point(1, radius - k * radius), to: Point(1, radius)
             )
         }
-        bulge(&builder, to: Point(1, 1 - radius), outward: Point(1, 0), count: countY, sagitta: sagittaY)
+        irregularBulges(&builder, to: Point(1, 1 - radius), outward: Point(1, 0),
+                        count: countY, requestedDepth: requested, irregularity: variation,
+                        seed: mixedSeed(seed, salt: 0xC10D_0002))
         if radius > 0 {
             builder.cubic(
                 Point(1, 1 - radius + k * radius), Point(1 - radius + k * radius, 1),
                 to: Point(1 - radius, 1)
             )
         }
-        bulge(&builder, to: Point(radius, 1), outward: Point(0, 1), count: countX, sagitta: sagittaX)
+        irregularBulges(&builder, to: Point(radius, 1), outward: Point(0, 1),
+                        count: countX, requestedDepth: requested, irregularity: variation,
+                        seed: mixedSeed(seed, salt: 0xC10D_0003))
         if radius > 0 {
             builder.cubic(
                 Point(radius - k * radius, 1), Point(0, 1 - radius + k * radius),
                 to: Point(0, 1 - radius)
             )
         }
-        bulge(&builder, to: Point(0, radius), outward: Point(-1, 0), count: countY, sagitta: sagittaY)
+        irregularBulges(&builder, to: Point(0, radius), outward: Point(-1, 0),
+                        count: countY, requestedDepth: requested, irregularity: variation,
+                        seed: mixedSeed(seed, salt: 0xC10D_0004))
         if radius > 0 {
             builder.cubic(Point(0, radius - k * radius), Point(radius - k * radius, 0), to: Point(radius, 0))
         }
         builder.close()
-        // The bulges push past the unit square by one sagitta on each side;
-        // normalization pulls the whole outline back in.
+        // The bulges push past the unit square; normalization pulls them in.
         return serialize(builder.commands)
     }
 
@@ -310,11 +320,12 @@ public enum ShapeGenerator {
             topLeft: 0.5, topRight: 0.5, bottomRight: 0.08, bottomLeft: 0.08
         )),
         ShapePreset(name: "Cloud", pathData: scallop(
-            bumpsX: 3, bumpsY: 2, depth: 0.12, cornerRadius: 0.18
+            bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.42, seed: 7
         )),
         ShapePreset(name: "Wide Cloud", pathData: scallop(
-            bumpsX: 5, bumpsY: 3, depth: 0.12, cornerRadius: 0.12
+            bumpsX: 5, bumpsY: 3, depth: 0.10, cornerRadius: 0.10, irregularity: 0.55, seed: 19
         )),
+        // Perforations should read as manufactured, not grown — so no variation.
         ShapePreset(name: "Ticket", pathData: scallop(
             bumpsX: 0, bumpsY: 5, depth: 0.06, cornerRadius: 0.06
         )),
@@ -396,35 +407,97 @@ public enum ShapeGenerator {
 
     // MARK: - Arcs
 
-    /// Replaces the straight run to `end` with `count` outward circular
-    /// bulges of height `sagitta`. Each bulge is two cubics meeting at its apex.
-    private static func bulge(
+    /// Replaces the straight run to `end` with `count` outward cloud lobes.
+    /// Widths and heights vary deterministically with `seed` when `irregularity`
+    /// is above zero; at zero every lobe is identical. Each lobe begins and ends
+    /// tangent to the edge, so lobes of different sizes still join smoothly and
+    /// the first and last flow into the rounded corners.
+    private static func irregularBulges(
         _ builder: inout PathBuilder,
         to end: Point,
         outward: Point,
         count: Int,
-        sagitta: Double
+        requestedDepth: Double,
+        irregularity: Double,
+        seed: UInt64
     ) {
         let start = builder.currentPoint
         let span = end - start
-        guard count > 0, sagitta > Self.epsilon, span.length > Self.epsilon else {
+        let spanLength = span.length
+        guard count > 0, requestedDepth > Self.epsilon, spanLength > Self.epsilon else {
             builder.line(to: end)
             return
         }
 
-        let chord = span / Double(count)
-        let chordLength = chord.length
-        let direction = chord / chordLength
-        // Circle through both chord ends with the requested rise at the middle.
-        let radius = (chordLength * chordLength / 4 + sagitta * sagitta) / (2 * sagitta)
-        let half = atan2(chordLength / 2, radius - sagitta)
+        let direction = span / spanLength
+        var random = SeededRandom(seed: seed)
 
-        for index in 0..<count {
-            let middle = start + chord * (Double(index) + 0.5)
-            let center = middle - outward * (radius - sagitta)
-            arc(&builder, center: center, radius: radius, axis: outward, cross: direction, from: -half, to: 0)
-            arc(&builder, center: center, radius: radius, axis: outward, cross: direction, from: 0, to: half)
+        // Weights are normalized afterward, so the lobes always consume exactly
+        // the available edge. At irregularity 0 every weight is 1 (identical
+        // lobes); at 1 widths span ~0.55...1.45 of nominal and heights ~0.6...1.4.
+        var widthWeights: [Double] = []
+        var depthFactors: [Double] = []
+        for _ in 0..<count {
+            widthWeights.append(max(0.2, 1 + random.nextSignedUnit() * 0.45 * irregularity))
+            depthFactors.append(max(0.25, 1 + random.nextSignedUnit() * 0.40 * irregularity))
         }
+
+        // The bookend lobes must flow into the corners, so let them vary less
+        // than the interior ones rather than lurching into a fillet.
+        if count > 1 {
+            widthWeights[0] = lerp(1, widthWeights[0], 0.55)
+            widthWeights[count - 1] = lerp(1, widthWeights[count - 1], 0.55)
+            depthFactors[0] = lerp(1, depthFactors[0], 0.60)
+            depthFactors[count - 1] = lerp(1, depthFactors[count - 1], 0.60)
+        }
+
+        let totalWeight = widthWeights.reduce(0, +)
+        guard totalWeight > Self.epsilon else {
+            builder.line(to: end)
+            return
+        }
+
+        var cursor = start
+        for index in 0..<count {
+            let isLast = index == count - 1
+            // The last lobe absorbs the rounding remainder so the edge closes
+            // exactly on `end` rather than a hair short.
+            let chordLength = isLast
+                ? (end - cursor).length
+                : spanLength * widthWeights[index] / totalWeight
+            let lobeEnd = isLast ? end : cursor + direction * chordLength
+
+            // Cap each lobe by its own chord — the change that lets a sparse
+            // edge stay tall next to a crowded one.
+            let lobeDepth = min(requestedDepth * depthFactors[index], Self.maxSagitta * chordLength)
+            addSmoothLobe(&builder, from: cursor, to: lobeEnd, outward: outward, direction: direction, depth: lobeDepth)
+            cursor = lobeEnd
+        }
+    }
+
+    /// One convex cloud lobe as two cubics. Both endpoints are tangent to the
+    /// edge and the apex tangent is parallel to it too, so the top is rounded
+    /// rather than pointed. Handle lengths are fractions of the lobe's own width,
+    /// which keeps every control point inside the lobe's horizontal interval and
+    /// so keeps neighbouring lobes from crossing.
+    private static func addSmoothLobe(
+        _ builder: inout PathBuilder,
+        from start: Point,
+        to end: Point,
+        outward: Point,
+        direction: Point,
+        depth: Double
+    ) {
+        let chordLength = (end - start).length
+        guard chordLength > Self.epsilon, depth > Self.epsilon else {
+            builder.line(to: end)
+            return
+        }
+        let apex = start + (end - start) * 0.5 + outward * depth
+        let shoulder = chordLength * 0.28
+        let crown = chordLength * 0.20
+        builder.cubic(start + direction * shoulder, apex - direction * crown, to: apex)
+        builder.cubic(apex + direction * crown, end - direction * shoulder, to: end)
     }
 
     /// One cubic for the circular arc `P(t) = center + radius·(cos t·axis + sin
@@ -493,6 +566,40 @@ public enum ShapeGenerator {
     /// Maps centered half-extent-1 coordinates onto the unit square.
     private static func unitSquare(_ point: Point) -> Point {
         Point(0.5 + 0.5 * point.x, 0.5 + 0.5 * point.y)
+    }
+
+    private static func lerp(_ a: Double, _ b: Double, _ t: Double) -> Double {
+        a + (b - a) * t
+    }
+
+    /// SplitMix64 — the same deterministic generator `BlobPath` uses, so the
+    /// two organic families share one notion of "seeded but stable". Not
+    /// cryptographic, which does not matter for choosing lobe sizes.
+    private struct SeededRandom {
+        private var state: UInt64
+        init(seed: UInt64) { state = seed &+ 0x9E37_79B9_7F4A_7C15 }
+
+        mutating func next() -> UInt64 {
+            state &+= 0x9E37_79B9_7F4A_7C15
+            var z = state
+            z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+            z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+            return z ^ (z >> 31)
+        }
+
+        /// Uniform in -1...1.
+        mutating func nextSignedUnit() -> Double {
+            Double(next() >> 11) / Double(UInt64(1) << 53) * 2 - 1
+        }
+    }
+
+    /// Fold a per-edge salt into the seed so the four edges vary independently
+    /// while staying a pure function of the one seed the caller chose.
+    private static func mixedSeed(_ seed: UInt64, salt: UInt64) -> UInt64 {
+        var z = seed ^ salt
+        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+        return z ^ (z >> 31)
     }
 
     private static func radians(_ degrees: Double) -> Double {

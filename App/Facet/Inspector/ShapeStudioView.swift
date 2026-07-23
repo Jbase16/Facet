@@ -119,7 +119,9 @@ struct ShapeStudioView: View {
                 bumpsX: cloud.bumpsX,
                 bumpsY: cloud.bumpsY,
                 depth: cloud.depth,
-                cornerRadius: cloud.cornerRadius
+                cornerRadius: cloud.cornerRadius,
+                irregularity: cloud.irregularity,
+                seed: cloud.seed
             )
         case .polygon:
             return ShapeGenerator.polygon(
@@ -283,10 +285,12 @@ struct ShapeStudioView: View {
         case .cloud:
             stepperRow("Bumps across", value: $cloud.bumpsX, range: 0...8)
             stepperRow("Bumps down", value: $cloud.bumpsY, range: 0...8)
-            sliderRow("Depth", value: $cloud.depth, range: 0...0.12) {
+            sliderRow("Depth", value: $cloud.depth, range: 0...0.18) {
                 String(format: "%.1f%%", $0 * 100)
             }
             sliderRow("Corner radius", value: $cloud.cornerRadius, range: 0...0.3, format: percent)
+            sliderRow("Irregularity", value: $cloud.irregularity, range: 0...1, format: percent)
+            cloudSeedRow
 
         case .polygon:
             stepperRow("Sides", value: $polygon.sides, range: 3...12)
@@ -434,6 +438,32 @@ struct ShapeStudioView: View {
             }
             Slider(value: value, in: range)
                 .tint(FacetUI.accent)
+        }
+        .frame(minHeight: 44)
+    }
+
+    /// Seed can't be dialed meaningfully, so it's a readout plus Shuffle —
+    /// each tap jumps to a different deterministic cloud.
+    private var cloudSeedRow: some View {
+        HStack(spacing: 8) {
+            Text("Variation")
+                .font(FacetUI.label)
+                .foregroundStyle(FacetUI.inkSecondary)
+            readout("#\(cloud.seed % 1000)")
+            Spacer()
+            Button {
+                cloud.seed = UInt64.random(in: 0..<UInt64.max)
+            } label: {
+                Label("Shuffle", systemImage: "dice")
+                    .font(FacetUI.label)
+                    .foregroundStyle(FacetUI.accent)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(FacetUI.accentDim, in: Capsule())
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
         .frame(minHeight: 44)
     }
@@ -629,8 +659,10 @@ private struct CornerRadii {
 private struct CloudParameters {
     var bumpsX: Int = 4
     var bumpsY: Int = 3
-    var depth: Double = 0.06
-    var cornerRadius: Double = 0.12
+    var depth: Double = 0.11
+    var cornerRadius: Double = 0.14
+    var irregularity: Double = 0.42
+    var seed: UInt64 = 7
 }
 
 private struct PolygonParameters {
