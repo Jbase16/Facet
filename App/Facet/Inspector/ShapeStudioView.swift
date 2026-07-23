@@ -645,3 +645,7 @@ private struct StarParameters {
     var cornerRadius: Double = 0.06
     var rotation: Double = 0
 }
+
+#Preview("Shape Studio") {
+    ShapeStudioView(pathData: nil) { _ in }
+}

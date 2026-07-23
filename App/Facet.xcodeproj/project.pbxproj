@@ -35,6 +35,7 @@
 		8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */; };
 		919A996A7E98875F4DB7D683 /* AssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC6203D80540BB24BA295B /* AssetStore.swift */; };
 		A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */; };
+		A3AE4B68B94873D25416AB48 /* ShapePlayground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */; };
 		A6A131B69996C8C24FA68437 /* FacetImageProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */; };
 		A991B25B44E194B4DDA00455 /* WidgetGeneratorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */; };
 		B39CE1E925ED7136181F7E47 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */; };
@@ -103,6 +104,7 @@
 		9A0EA27D153D75EBEFECD233 /* FacetUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetUI.swift; sourceTree = "<group>"; };
 		9A5CCA0565292A65A784FC56 /* WeatherSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSource.swift; sourceTree = "<group>"; };
 		9B5BEC0697888C94C419A750 /* WidgetDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDraft.swift; sourceTree = "<group>"; };
+		A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapePlayground.swift; sourceTree = "<group>"; };
 		AAF7B56A34AE22CC18F1CCF1 /* Facet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Facet.entitlements; sourceTree = "<group>"; };
 		AC05E333F65932D292DD4D47 /* HealthSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSource.swift; sourceTree = "<group>"; };
 		B0CA8406D09B0D7574BED59D /* UnitPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitPreferences.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 				9A0EA27D153D75EBEFECD233 /* FacetUI.swift */,
 				CAEBEADC60946A4516B04197 /* GalleryView.swift */,
 				7AF056977F3F074F99FBAA99 /* LayerListView.swift */,
+				A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */,
 				3493883341D6B22D1F294A1E /* ThemeEditorView.swift */,
 				20A889A124C755D755733C71 /* AI */,
 				D3584E435834C638BF5DABE8 /* Assets */,
@@ -405,6 +408,7 @@
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,
+				A3AE4B68B94873D25416AB48 /* ShapePlayground.swift in Sources */,
 				F024C274E822725E25BC3DAD /* ShapeStudioView.swift in Sources */,
 				265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */,
 				18B366D8929C3D314A443997 /* UnitPreferences.swift in Sources */,

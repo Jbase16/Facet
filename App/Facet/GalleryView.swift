@@ -16,6 +16,7 @@ struct GalleryView: View {
     @State private var importError: String?
     @State private var showingSources = false
     @State private var showingGenerate = false
+    @State private var showingPlayground = false
     @State private var path: [UUID] = []
 
     private let columns = [GridItem(.adaptive(minimum: 158), spacing: 18)]
@@ -109,6 +110,9 @@ struct GalleryView: View {
             .sheet(isPresented: $showingSources) {
                 DataSourcesView()
             }
+            .sheet(isPresented: $showingPlayground) {
+                ShapePlayground()
+            }
             .sheet(isPresented: $showingGenerate) {
                 if #available(iOS 26, *) {
                     GenerateWidgetView { document in
@@ -142,6 +146,9 @@ struct GalleryView: View {
                 // simctl launch booted com.JasonPhillips.app -facet-show-sources
                 if ProcessInfo.processInfo.arguments.contains("-facet-show-sources") {
                     showingSources = true
+                }
+                if ProcessInfo.processInfo.arguments.contains("-facet-shape-playground") {
+                    showingPlayground = true
                 }
                 // Likewise for the editor (first document), after seeding.
                 if ProcessInfo.processInfo.arguments.contains("-facet-open-editor") {
