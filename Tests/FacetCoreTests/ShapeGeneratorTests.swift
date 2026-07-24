@@ -20,13 +20,13 @@ final class ShapeGeneratorTests: XCTestCase {
                 topLeft: radii.0, topRight: radii.1, bottomRight: radii.2, bottomLeft: radii.3
             )))
         }
-        for bumps in [(0, 0), (1, 1), (3, 2), (0, 4), (5, 0), (8, 8)] {
-            for depth in [0.0, 0.05, 0.12] {
-                for radius in [0.0, 0.15, 0.3] {
+        for puffs in 3...7 {
+            for puffiness in [0.1, 0.25, 0.4] {
+                for irregularity in [0.0, 0.5, 1.0] {
                     cases.append((
-                        "scallop \(bumps) d\(depth) r\(radius)",
-                        ShapeGenerator.scallop(
-                            bumpsX: bumps.0, bumpsY: bumps.1, depth: depth, cornerRadius: radius
+                        "cloud \(puffs) p\(puffiness) i\(irregularity)",
+                        ShapeGenerator.cloud(
+                            puffs: puffs, puffiness: puffiness, irregularity: irregularity, seed: 3
                         )
                     ))
                 }
@@ -70,8 +70,8 @@ final class ShapeGeneratorTests: XCTestCase {
                 ShapeGenerator.roundedRect(topLeft: 0.31, topRight: 0.07, bottomRight: 0.5, bottomLeft: 0)
             )
             XCTAssertEqual(
-                ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.19),
-                ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.19)
+                ShapeGenerator.cloud(puffs: 5, puffiness: 0.28, irregularity: 0.5, seed: 7),
+                ShapeGenerator.cloud(puffs: 5, puffiness: 0.28, irregularity: 0.5, seed: 7)
             )
             XCTAssertEqual(
                 ShapeGenerator.polygon(sides: 7, cornerRadius: 0.44, rotation: 23),
@@ -170,8 +170,8 @@ final class ShapeGeneratorTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            ShapeGenerator.scallop(bumpsX: -3, bumpsY: 99, depth: 5, cornerRadius: 12),
-            ShapeGenerator.scallop(bumpsX: 0, bumpsY: 8, depth: 0.12, cornerRadius: 0.3)
+            ShapeGenerator.cloud(puffs: -3, puffiness: 5, irregularity: 9, seed: 1),
+            ShapeGenerator.cloud(puffs: 3, puffiness: 0.5, irregularity: 1, seed: 1)
         )
 
         XCTAssertEqual(
@@ -201,8 +201,8 @@ final class ShapeGeneratorTests: XCTestCase {
             ShapeGenerator.superellipse(roundness: .infinity),
             ShapeGenerator.superellipse(roundness: -.infinity),
             ShapeGenerator.roundedRect(topLeft: .nan, topRight: .infinity, bottomRight: -.infinity, bottomLeft: 0.2),
-            ShapeGenerator.scallop(bumpsX: 3, bumpsY: 2, depth: .nan, cornerRadius: .infinity),
-            ShapeGenerator.scallop(bumpsX: 3, bumpsY: 2, depth: 0.1, cornerRadius: .nan),
+            ShapeGenerator.cloud(puffs: 5, puffiness: .nan, irregularity: .infinity, seed: 2),
+            ShapeGenerator.cloud(puffs: 4, puffiness: 0.3, irregularity: .nan, seed: 5),
             ShapeGenerator.polygon(sides: 6, cornerRadius: .nan, rotation: .infinity),
             ShapeGenerator.polygon(sides: 6, cornerRadius: .infinity, rotation: .nan),
             ShapeGenerator.star(points: 5, innerRatio: .nan, cornerRadius: .nan, rotation: .nan),
@@ -313,86 +313,48 @@ final class ShapeGeneratorTests: XCTestCase {
         assertNormalized(path)
     }
 
-    // MARK: - Scallop
+    // MARK: - Cloud
 
-    func testNoBumpsIsExactlyAPlainRoundedRect() {
-        for radius in [0.0, 0.05, 0.15, 0.3] {
-            let expected = ShapeGenerator.roundedRect(
-                topLeft: radius, topRight: radius, bottomRight: radius, bottomLeft: radius
-            )
-            XCTAssertEqual(
-                ShapeGenerator.scallop(bumpsX: 0, bumpsY: 0, depth: 0.12, cornerRadius: radius),
-                expected, "radius \(radius)"
-            )
-            XCTAssertEqual(
-                ShapeGenerator.scallop(bumpsX: 4, bumpsY: 4, depth: 0, cornerRadius: radius),
-                expected, "zero depth is also flat at radius \(radius)"
-            )
-        }
+    func testCloudHasAFlatBottom() {
+        // The defining feature: the bottom edge is one straight run, not bumps.
+        // After normalization the baseline maps to y = 1, so a wide band of the
+        // outline sits on that line.
+        let path = ShapeGenerator.cloud(puffs: 5, puffiness: 0.28, irregularity: 0.3, seed: 7)
+        let onBottom = Self.sample(path, stepsPerCurve: 10).filter { $0.y > 1 - 0.01 }
+        let spanX = (onBottom.map(\.x).max() ?? 0) - (onBottom.map(\.x).min() ?? 0)
+        XCTAssertGreaterThan(spanX, 0.85, "the cloud should rest on a wide flat base: \(path)")
     }
 
-    func testEachBumpIsOneOutwardLobe() {
-        // A bulge touches the top edge only at its apex, so the outline meets
-        // y = 0 in exactly `bumpsX` short bursts. Notches cut inward would
-        // instead leave the long flat runs between them touching the edge, and
-        // a flat edge touches along its whole length — this separates all three.
-        func lobes(_ path: String) -> [Int] {
-            let curve = Self.sample(path, stepsPerCurve: 16)
-            var runs: [Int] = []
-            var run = 0
-            for point in curve {
-                if point.y < 0.004 {
-                    run += 1
-                } else if run > 0 {
-                    runs.append(run)
-                    run = 0
+    func testCloudTopIsBumpierThanItsBottom() {
+        // Puffs live on top; the bottom is flat. So the upper half of the outline
+        // should wander in y far more than the lower half.
+        let curve = Self.sample(ShapeGenerator.cloud(puffs: 5, puffiness: 0.3, irregularity: 0.4, seed: 2), stepsPerCurve: 12)
+        let topSpread = curve.filter { $0.y < 0.5 }.map(\.y)
+        let bottomSpread = curve.filter { $0.y >= 0.5 }.map(\.y)
+        let topRange = (topSpread.max() ?? 0) - (topSpread.min() ?? 0)
+        let bottomRange = (bottomSpread.max() ?? 0) - (bottomSpread.min() ?? 0)
+        XCTAssertGreaterThan(topRange, bottomRange, "the top should be the bumpy half")
+    }
+
+    /// The property the arc-walk could not hold: no cloud folds over itself, at
+    /// any puff count, puffiness, irregularity, or seed. The generator's whole
+    /// construction (an x-monotone upper envelope) exists to guarantee this.
+    func testCloudsNeverSelfIntersect() {
+        for puffs in 3...7 {
+            for seed in UInt64(0)..<24 {
+                for irregularity in [0.0, 0.5, 1.0] {
+                    for puffiness in [0.1, 0.3, 0.5] {
+                        let path = ShapeGenerator.cloud(
+                            puffs: puffs, puffiness: puffiness, irregularity: irregularity, seed: seed
+                        )
+                        XCTAssertFalse(
+                            Self.selfIntersects(path),
+                            "puffs \(puffs) seed \(seed) irr \(irregularity) pf \(puffiness): \(path)"
+                        )
+                    }
                 }
             }
-            if run > 0 { runs.append(run) }
-            // The outline starts partway along the top edge, so a run that
-            // wraps the seam would otherwise be counted twice.
-            if runs.count > 1, let first = curve.first, let last = curve.last,
-               first.y < 0.004, last.y < 0.004 {
-                runs[0] += runs.removeLast()
-            }
-            return runs
         }
-
-        let flat = lobes(ShapeGenerator.scallop(bumpsX: 0, bumpsY: 0, depth: 0, cornerRadius: 0.2))
-        XCTAssertEqual(flat.count, 1, "A flat edge is one contact run")
-
-        for bumps in 1...5 {
-            let path = ShapeGenerator.scallop(bumpsX: bumps, bumpsY: 2, depth: 0.12, cornerRadius: 0.15)
-            let runs = lobes(path)
-            XCTAssertEqual(runs.count, bumps, "\(bumps) bumps: \(path)")
-            XCTAssertLessThan(runs.max() ?? .max, flat[0], "Each lobe should touch at its apex, not along a flat")
-            for point in Self.sample(path, stepsPerCurve: 16) {
-                XCTAssertGreaterThanOrEqual(point.x, -epsilon)
-                XCTAssertGreaterThanOrEqual(point.y, -epsilon)
-                XCTAssertLessThanOrEqual(point.x, 1 + epsilon)
-                XCTAssertLessThanOrEqual(point.y, 1 + epsilon)
-            }
-        }
-    }
-
-    func testBumpDepthIsCappedByTheChordItSitsOn() {
-        // Past half a chord an arc turns back on itself and neighbouring bulges
-        // cross, so crowded edges must saturate rather than self-intersect.
-        let crowded = ShapeGenerator.scallop(bumpsX: 8, bumpsY: 8, depth: 0.08, cornerRadius: 0.3)
-        XCTAssertEqual(crowded, ShapeGenerator.scallop(bumpsX: 8, bumpsY: 8, depth: 0.12, cornerRadius: 0.3))
-        XCTAssertNotEqual(
-            ShapeGenerator.scallop(bumpsX: 2, bumpsY: 2, depth: 0.08, cornerRadius: 0.1),
-            ShapeGenerator.scallop(bumpsX: 2, bumpsY: 2, depth: 0.12, cornerRadius: 0.1),
-            "An uncrowded edge must still respond to depth"
-        )
-    }
-
-    func testBumpsOnOneAxisOnly() {
-        let path = ShapeGenerator.scallop(bumpsX: 0, bumpsY: 4, depth: 0.08, cornerRadius: 0.1)
-        assertNormalized(path)
-        // Flat top and bottom: the horizontal edges stay straight lines.
-        XCTAssertGreaterThan(path.filter { $0 == "L" }.count, 0, path)
-        XCTAssertNotEqual(path, ShapeGenerator.scallop(bumpsX: 4, bumpsY: 0, depth: 0.08, cornerRadius: 0.1))
     }
 
     // MARK: - Polygon and star
@@ -475,66 +437,17 @@ final class ShapeGeneratorTests: XCTestCase {
         }
     }
 
+    func testCloudSeedAndParametersChangeTheShape() {
+        let base = ShapeGenerator.cloud(puffs: 5, puffiness: 0.28, irregularity: 0.5, seed: 7)
+        XCTAssertEqual(base, ShapeGenerator.cloud(puffs: 5, puffiness: 0.28, irregularity: 0.5, seed: 7),
+                       "same inputs must be byte-identical")
+        XCTAssertNotEqual(base, ShapeGenerator.cloud(puffs: 5, puffiness: 0.28, irregularity: 0.5, seed: 8),
+                          "the seed should pick a different cloud")
+        XCTAssertNotEqual(base, ShapeGenerator.cloud(puffs: 6, puffiness: 0.28, irregularity: 0.5, seed: 7),
+                          "puff count should change the cloud")
+    }
+
     // MARK: - Helpers
-
-    // MARK: - Irregular clouds
-
-    func testIrregularCloudIsDeterministic() {
-        // The whole point of seeding rather than randomising: identical output
-        // on every render, or a document reshapes itself each redraw.
-        XCTAssertEqual(
-            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 7),
-            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 7)
-        )
-    }
-
-    func testIrregularityZeroReproducesTheUniformCloud() {
-        // The four-argument call defaults irregularity to 0, so every existing
-        // caller keeps its identical-lobe shape.
-        XCTAssertEqual(
-            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14),
-            ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0, seed: 99)
-        )
-    }
-
-    func testIrregularityAndSeedBothChangeTheShape() {
-        let base = ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0)
-        let varied = ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 7)
-        let otherSeed = ShapeGenerator.scallop(bumpsX: 4, bumpsY: 3, depth: 0.11, cornerRadius: 0.14, irregularity: 0.5, seed: 8)
-        XCTAssertNotEqual(base, varied, "irregularity should move the lobes")
-        XCTAssertNotEqual(varied, otherSeed, "the seed should pick a different variation")
-    }
-
-    func testIrregularCloudsStayNormalisedAndInsideTheBox() {
-        for seed in UInt64(0)...12 {
-            for irregularity in [0.25, 0.5, 0.75, 1.0] {
-                let path = ShapeGenerator.scallop(
-                    bumpsX: 4, bumpsY: 3, depth: 0.15, cornerRadius: 0.12,
-                    irregularity: irregularity, seed: seed
-                )
-                assertNormalized(path, message: "seed \(seed) irr \(irregularity)")
-            }
-        }
-    }
-
-    /// The organic clouds must not fold over themselves at any setting — the
-    /// same guarantee the uniform family got, extended across the new axis.
-    func testIrregularCloudsDoNotSelfIntersect() {
-        for seed in UInt64(0)...20 {
-            for irregularity in [0.3, 0.6, 1.0] {
-                for depth in [0.08, 0.15, 0.18] {
-                    let path = ShapeGenerator.scallop(
-                        bumpsX: 5, bumpsY: 3, depth: depth, cornerRadius: 0.12,
-                        irregularity: irregularity, seed: seed
-                    )
-                    XCTAssertFalse(
-                        Self.selfIntersects(path),
-                        "seed \(seed) irr \(irregularity) depth \(depth): \(path)"
-                    )
-                }
-            }
-        }
-    }
 
     private func assertNormalized(
         _ path: String,

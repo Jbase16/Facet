@@ -115,11 +115,9 @@ struct ShapeStudioView: View {
                 bottomLeft: corners.bottomLeft
             )
         case .cloud:
-            return ShapeGenerator.scallop(
-                bumpsX: cloud.bumpsX,
-                bumpsY: cloud.bumpsY,
-                depth: cloud.depth,
-                cornerRadius: cloud.cornerRadius,
+            return ShapeGenerator.cloud(
+                puffs: cloud.puffs,
+                puffiness: cloud.puffiness,
                 irregularity: cloud.irregularity,
                 seed: cloud.seed
             )
@@ -283,12 +281,8 @@ struct ShapeStudioView: View {
             note("Radii are fractions of the layer's shorter side, so they hold their look at any widget size.")
 
         case .cloud:
-            stepperRow("Bumps across", value: $cloud.bumpsX, range: 0...8)
-            stepperRow("Bumps down", value: $cloud.bumpsY, range: 0...8)
-            sliderRow("Depth", value: $cloud.depth, range: 0...0.18) {
-                String(format: "%.1f%%", $0 * 100)
-            }
-            sliderRow("Corner radius", value: $cloud.cornerRadius, range: 0...0.3, format: percent)
+            stepperRow("Puffs", value: $cloud.puffs, range: 3...7)
+            sliderRow("Puffiness", value: $cloud.puffiness, range: 0.05...0.5, format: percent)
             sliderRow("Irregularity", value: $cloud.irregularity, range: 0...1, format: percent)
             cloudSeedRow
 
@@ -657,11 +651,9 @@ private struct CornerRadii {
 }
 
 private struct CloudParameters {
-    var bumpsX: Int = 4
-    var bumpsY: Int = 3
-    var depth: Double = 0.11
-    var cornerRadius: Double = 0.14
-    var irregularity: Double = 0.42
+    var puffs: Int = 5
+    var puffiness: Double = 0.28
+    var irregularity: Double = 0.3
     var seed: UInt64 = 7
 }
 

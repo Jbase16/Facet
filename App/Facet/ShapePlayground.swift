@@ -21,12 +21,10 @@ struct ShapePlayground: View {
     @State private var wide = true
     @State private var showNodes = true
 
-    // Cloud / scallop
-    @State private var bumpsX = 4.0
-    @State private var bumpsY = 3.0
-    @State private var depth = 0.11
-    @State private var cloudCorner = 0.14
-    @State private var cloudIrregularity = 0.42
+    // Cloud
+    @State private var cloudPuffs = 5.0
+    @State private var cloudPuffiness = 0.28
+    @State private var cloudIrregularity = 0.35
     @State private var cloudSeed = 7.0
 
     // Squircle
@@ -61,9 +59,8 @@ struct ShapePlayground: View {
     private var pathData: String {
         switch family {
         case .cloud:
-            return ShapeGenerator.scallop(
-                bumpsX: Int(bumpsX), bumpsY: Int(bumpsY),
-                depth: depth, cornerRadius: cloudCorner,
+            return ShapeGenerator.cloud(
+                puffs: Int(cloudPuffs), puffiness: cloudPuffiness,
                 irregularity: cloudIrregularity, seed: UInt64(max(0, cloudSeed))
             )
         case .squircle:
@@ -139,10 +136,8 @@ struct ShapePlayground: View {
     private var controls: some View {
         switch family {
         case .cloud:
-            slider("Bumps across", $bumpsX, 1...8, step: 1)
-            slider("Bumps down", $bumpsY, 1...8, step: 1)
-            slider("Depth", $depth, 0...0.18)
-            slider("Corner radius", $cloudCorner, 0...0.3)
+            slider("Puffs", $cloudPuffs, 3...7, step: 1)
+            slider("Puffiness", $cloudPuffiness, 0.05...0.5)
             slider("Irregularity", $cloudIrregularity, 0...1)
             HStack {
                 slider("Seed", $cloudSeed, 0...100, step: 1)
