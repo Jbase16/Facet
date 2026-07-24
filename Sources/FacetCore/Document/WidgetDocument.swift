@@ -16,6 +16,12 @@ public struct WidgetDocument: Codable, Identifiable, Sendable, Hashable {
     /// Identifiers of the data sources this document reads (e.g. "time", "battery").
     public var sources: [String]
     public var overrides: [RenditionKind: [LayerPatch]]
+    /// The wallpaper this widget was designed against, as an asset name in the
+    /// document's own asset bundle. Optional and editor-only — the renderer
+    /// ignores it — but it travels with the `.facet` so a shared design carries
+    /// the backdrop its colours were sampled from. The first step toward a
+    /// Scene: a widget that knows the surface it lives on.
+    public var backdrop: String?
 
     public init(
         id: UUID = UUID(),
@@ -23,7 +29,8 @@ public struct WidgetDocument: Codable, Identifiable, Sendable, Hashable {
         tokens: ThemeTokens = .empty,
         root: Layer,
         sources: [String] = [],
-        overrides: [RenditionKind: [LayerPatch]] = [:]
+        overrides: [RenditionKind: [LayerPatch]] = [:],
+        backdrop: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.id = id
@@ -32,10 +39,11 @@ public struct WidgetDocument: Codable, Identifiable, Sendable, Hashable {
         self.root = root
         self.sources = sources
         self.overrides = overrides
+        self.backdrop = backdrop
     }
 
     private enum CodingKeys: String, CodingKey {
-        case schemaVersion, id, name, tokens, root, sources, overrides
+        case schemaVersion, id, name, tokens, root, sources, overrides, backdrop
     }
 
     public init(from decoder: Decoder) throws {
@@ -59,6 +67,7 @@ public struct WidgetDocument: Codable, Identifiable, Sendable, Hashable {
             mapped[kind] = patches
         }
         overrides = mapped
+        backdrop = try container.decodeIfPresent(String.self, forKey: .backdrop)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -71,6 +80,7 @@ public struct WidgetDocument: Codable, Identifiable, Sendable, Hashable {
         try container.encode(sources, forKey: .sources)
         let rawOverrides = Dictionary(uniqueKeysWithValues: overrides.map { ($0.key.rawValue, $0.value) })
         try container.encode(rawOverrides, forKey: .overrides)
+        try container.encodeIfPresent(backdrop, forKey: .backdrop)
     }
 
     /// Patches applicable to `layerID` for the given rendition.

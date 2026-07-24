@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 import FacetCore
 import FacetData
@@ -30,6 +31,14 @@ struct EditorView: View {
     @State private var editingNodes = false
     @State private var selectedNodeIndex: Int?
     @State private var dragStartCommands: [PathCommand]?
+    // Wallpaper-aware canvas: design the widget against its real backdrop, and
+    // sample colours from that backdrop into the widget.
+    @State private var backdropImage: UIImage?
+    @State private var backdropSampler: SampledImage?
+    @State private var wallpaperItem: PhotosPickerItem?
+    @State private var pickingWallpaper = false
+    @State private var eyedropper = false
+    @State private var sampledConfirmation: String?
 
     private enum Sheet: String, Identifiable {
         case inspector, layers, theme
@@ -50,15 +59,21 @@ struct EditorView: View {
             canvasArea
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background {
-                    ZStack {
-                        FacetUI.bg
-                        DotGrid()
-                    }
+                    WallpaperBackdrop(
+                        image: backdropImage,
+                        sampler: backdropSampler,
+                        sampling: eyedropper,
+                        onSample: applySampledColor
+                    )
                     .ignoresSafeArea()
                 }
+                .overlay(alignment: .top) { sampledToast }
             controls
         }
         .background(FacetUI.bg)
+        .task(id: document.backdrop) { loadBackdrop() }
+        .photosPicker(isPresented: $pickingWallpaper, selection: $wallpaperItem, matching: .images)
+        .onChange(of: wallpaperItem) { importWallpaper() }
         .navigationTitle(document.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -483,6 +498,22 @@ struct EditorView: View {
                 }
                 .buttonStyle(FacetToolButton())
 
+                Button {
+                    pickingWallpaper = true
+                } label: {
+                    Image(systemName: backdropImage == nil ? "photo" : "photo.fill")
+                }
+                .buttonStyle(FacetToolButton())
+
+                if backdropImage != nil {
+                    Button {
+                        eyedropper.toggle()
+                    } label: {
+                        Image(systemName: "eyedropper")
+                    }
+                    .buttonStyle(FacetToolButton(prominent: eyedropper))
+                }
+
                 if selectedPathCommands != nil {
                     Button {
                         editingNodes.toggle()
@@ -552,6 +583,96 @@ struct EditorView: View {
         }
         .disabled(selectedNodeIndex == nil)
         .opacity(selectedNodeIndex == nil ? 0.5 : 1)
+    }
+
+    // MARK: - Wallpaper backdrop
+
+    @ViewBuilder
+    private var sampledToast: some View {
+        if let text = sampledConfirmation {
+            Text(text)
+                .font(FacetUI.caption)
+                .foregroundStyle(FacetUI.ink)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(FacetUI.surface, in: Capsule())
+                .overlay(Capsule().strokeBorder(FacetUI.hairline, lineWidth: 1))
+                .padding(.top, 10)
+                .transition(.opacity)
+        }
+    }
+
+    private func loadBackdrop() {
+        guard let name = document.backdrop, let image = AssetStore().load(name, for: document.id) else {
+            backdropImage = nil
+            backdropSampler = nil
+            return
+        }
+        backdropImage = image
+        backdropSampler = SampledImage(image)
+    }
+
+    private func importWallpaper() {
+        guard let item = wallpaperItem else { return }
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self),
+                  let name = try? AssetStore().save(data, for: document.id) else { return }
+            await MainActor.run {
+                // The wallpaper is one of the document's assets, so it travels
+                // inside the .facet the same way layer images do.
+                mutateDocument { $0.backdrop = name }
+                loadBackdrop()
+            }
+        }
+    }
+
+    /// Eyedropper result: recolour the selected layer to the sampled colour, or,
+    /// with nothing selected, keep it as a reusable theme token. This is the
+    /// Scene move — the widget's colour is taken from the surface behind it.
+    private func applySampledColor(_ color: ColorValue) {
+        if let id = selectedLayerID {
+            mutateDocument { $0.root.updateFirstLayer(withID: id) { Self.setPrimaryColor(&$0, to: color) } }
+            flashSample("Applied to layer")
+        } else {
+            let name = uniqueTokenName()
+            mutateDocument { $0.tokens.colors[name] = ColorToken(light: color, dark: color) }
+            flashSample("Saved as “\(name)”")
+        }
+        eyedropper = false
+    }
+
+    /// Sets whatever counts as a layer's main colour, across content types.
+    private static func setPrimaryColor(_ layer: inout Layer, to color: ColorValue) {
+        switch layer.content {
+        case .text(var content): content.color = .literal(color); layer.content = .text(content)
+        case .symbol(var content): content.color = .literal(color); layer.content = .symbol(content)
+        case .shape(var content): content.fill = .literal(color); layer.content = .shape(content)
+        case .gauge(var content): content.tint = .literal(color); layer.content = .gauge(content)
+        case .line(var content): content.color = .literal(color); layer.content = .line(content)
+        case .chart(var content): content.color = .literal(color); layer.content = .chart(content)
+        case .container(var content): content.background = .literal(color); layer.content = .container(content)
+        case .image: break
+        }
+    }
+
+    private func uniqueTokenName() -> String {
+        var index = 1
+        var name = "Sampled"
+        while document.tokens.colors[name] != nil {
+            index += 1
+            name = "Sampled \(index)"
+        }
+        return name
+    }
+
+    private func flashSample(_ text: String) {
+        withAnimation { sampledConfirmation = text }
+        Task {
+            try? await Task.sleep(for: .seconds(1.6))
+            await MainActor.run {
+                if sampledConfirmation == text { withAnimation { sampledConfirmation = nil } }
+            }
+        }
     }
 
     // MARK: - Editing machinery

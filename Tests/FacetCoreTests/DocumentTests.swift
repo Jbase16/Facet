@@ -52,6 +52,24 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(decoded, document)
     }
 
+    func testBackdropRoundTripsAndDefaultsToNil() throws {
+        var document = sampleDocument()
+        XCTAssertNil(document.backdrop, "a fresh document has no backdrop")
+        document.backdrop = "img_abc123"
+        let decoded = try FacetFile.decode(try FacetFile.encode(document))
+        XCTAssertEqual(decoded.backdrop, "img_abc123")
+    }
+
+    func testDocumentWithoutBackdropKeyStillDecodes() throws {
+        // A pre-backdrop document omits the key entirely; it must decode with a
+        // nil backdrop rather than failing.
+        var document = sampleDocument()
+        document.backdrop = nil
+        let json = String(data: try FacetFile.encode(document), encoding: .utf8)!
+        XCTAssertFalse(json.contains("backdrop"), "an absent backdrop stays absent in the file")
+        XCTAssertNil(try FacetFile.decode(Data(json.utf8)).backdrop)
+    }
+
     func testEncodedFormIsStableAndReadable() throws {
         let document = sampleDocument()
         let json = String(data: try FacetFile.encode(document), encoding: .utf8)!
