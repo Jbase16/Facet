@@ -51,6 +51,7 @@
 		D42C371C1BE5EB7EFBB9E533 /* CustomSourceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */; };
 		DE2AF1799F3C8518DCC6572F /* ColorRefPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */; };
 		E4FF2E99E6BDFDB0915A6499 /* WallpaperBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918865A47134FEC46093EEE3 /* WallpaperBackdrop.swift */; };
+		ECD528597E5D9E5F08945D99 /* HomeScreenPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */; };
 		F00F56280E15C1FECDBABED6 /* FacetWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F024C274E822725E25BC3DAD /* ShapeStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC97288BBFA9D1E86C7C3E4A /* ShapeStudioView.swift */; };
 		F830BB9675846D9D23605777 /* AppPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E46B8ACCA64942D839BC /* AppPickerView.swift */; };
@@ -114,6 +115,7 @@
 		B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C62E5678109F5B19042F0E78 /* GenerateWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateWidgetView.swift; sourceTree = "<group>"; };
 		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
+		CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenPreview.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FacetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -192,6 +194,7 @@
 				402DA8915E10ABBF586F49CD /* FacetApp.swift */,
 				9A0EA27D153D75EBEFECD233 /* FacetUI.swift */,
 				CAEBEADC60946A4516B04197 /* GalleryView.swift */,
+				CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */,
 				7AF056977F3F074F99FBAA99 /* LayerListView.swift */,
 				A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */,
 				3493883341D6B22D1F294A1E /* ThemeEditorView.swift */,
@@ -408,6 +411,7 @@
 				BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */,
 				7C20108989E04D30EF34B5C9 /* GenerateWidgetView.swift in Sources */,
 				B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */,
+				ECD528597E5D9E5F08945D99 /* HomeScreenPreview.swift in Sources */,
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,

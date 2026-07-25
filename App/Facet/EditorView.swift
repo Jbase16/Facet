@@ -39,6 +39,10 @@ struct EditorView: View {
     @State private var pickingWallpaper = false
     @State private var eyedropper = false
     @State private var sampledConfirmation: String?
+    /// Home-screen preview: the widget at true size in a real slot, rather than
+    /// magnified on the editing canvas.
+    @State private var previewMode = false
+    @State private var previewSlot = 0
 
     private enum Sheet: String, Identifiable {
         case inspector, layers, theme
@@ -56,22 +60,41 @@ struct EditorView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            canvasArea
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background {
-                    WallpaperBackdrop(
-                        image: backdropImage,
-                        sampler: backdropSampler,
-                        sampling: eyedropper,
-                        onSample: applySampledColor
+            Group {
+                if previewMode {
+                    HomeScreenPreview(
+                        document: document,
+                        rendition: rendition,
+                        scheme: scheme,
+                        wallpaper: backdropImage,
+                        slot: $previewSlot
                     )
-                    .ignoresSafeArea()
+                    .padding(20)
+                } else {
+                    canvasArea
+                        .background {
+                            WallpaperBackdrop(
+                                image: backdropImage,
+                                sampler: backdropSampler,
+                                sampling: eyedropper,
+                                onSample: applySampledColor
+                            )
+                            .ignoresSafeArea()
+                        }
                 }
-                .overlay(alignment: .top) { sampledToast }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: .top) { sampledToast }
             controls
         }
         .background(FacetUI.bg)
         .task(id: document.backdrop) { loadBackdrop() }
+        .onAppear {
+            // Headless smoke test: simctl launch … -facet-preview
+            if ProcessInfo.processInfo.arguments.contains("-facet-preview") {
+                previewMode = true
+            }
+        }
         .photosPicker(isPresented: $pickingWallpaper, selection: $wallpaperItem, matching: .images)
         .onChange(of: wallpaperItem) { importWallpaper() }
         .navigationTitle(document.name)
@@ -480,24 +503,38 @@ struct EditorView: View {
 
                 Spacer()
 
-                AddLayerMenu { layer in
-                    addLayer(layer)
-                }
-
+                // Preview is the one control that stays in both modes: it is
+                // how you get back out.
                 Button {
-                    activeSheet = .layers
+                    withAnimation(.snappy) { previewMode.toggle() }
+                    eyedropper = false
                 } label: {
-                    Image(systemName: "square.3.layers.3d")
+                    Image(systemName: previewMode ? "iphone.gen3" : "iphone.gen3.badge.play")
                 }
-                .buttonStyle(FacetToolButton())
+                .buttonStyle(FacetToolButton(prominent: previewMode))
 
-                Button {
-                    activeSheet = .theme
-                } label: {
-                    Image(systemName: "paintpalette")
+                if !previewMode {
+                    AddLayerMenu { layer in
+                        addLayer(layer)
+                    }
+
+                    Button {
+                        activeSheet = .layers
+                    } label: {
+                        Image(systemName: "square.3.layers.3d")
+                    }
+                    .buttonStyle(FacetToolButton())
+
+                    Button {
+                        activeSheet = .theme
+                    } label: {
+                        Image(systemName: "paintpalette")
+                    }
+                    .buttonStyle(FacetToolButton())
                 }
-                .buttonStyle(FacetToolButton())
 
+                // The wallpaper matters in both modes — it is the backdrop you
+                // design against and the one the preview stands on.
                 Button {
                     pickingWallpaper = true
                 } label: {
@@ -505,7 +542,7 @@ struct EditorView: View {
                 }
                 .buttonStyle(FacetToolButton())
 
-                if backdropImage != nil {
+                if backdropImage != nil && !previewMode {
                     Button {
                         eyedropper.toggle()
                     } label: {
@@ -514,27 +551,38 @@ struct EditorView: View {
                     .buttonStyle(FacetToolButton(prominent: eyedropper))
                 }
 
-                if selectedPathCommands != nil {
-                    Button {
-                        editingNodes.toggle()
-                        selectedNodeIndex = nil
-                    } label: {
-                        Image(systemName: editingNodes ? "point.topleft.filled.down.curvedto.point.bottomright.up" : "point.topleft.down.curvedto.point.bottomright.up")
+                if !previewMode {
+                    if selectedPathCommands != nil {
+                        Button {
+                            editingNodes.toggle()
+                            selectedNodeIndex = nil
+                        } label: {
+                            Image(systemName: editingNodes ? "point.topleft.filled.down.curvedto.point.bottomright.up" : "point.topleft.down.curvedto.point.bottomright.up")
+                        }
+                        .buttonStyle(FacetToolButton(prominent: editingNodes))
                     }
-                    .buttonStyle(FacetToolButton(prominent: editingNodes))
-                }
 
-                Button {
-                    activeSheet = .inspector
-                } label: {
-                    Image(systemName: "slider.horizontal.3")
+                    Button {
+                        activeSheet = .inspector
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                    }
+                    .buttonStyle(FacetToolButton())
+                    .disabled(selectedLayerID == nil)
+                    .opacity(selectedLayerID == nil ? 0.35 : 1)
                 }
-                .buttonStyle(FacetToolButton())
-                .disabled(selectedLayerID == nil)
-                .opacity(selectedLayerID == nil ? 0.35 : 1)
             }
 
-            if editingNodes {
+            if previewMode {
+                Text(rendition.isAccessory
+                     ? "Lock Screen preview — accessories sit below the clock."
+                     : "Tap a slot to move the widget.")
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if editingNodes && !previewMode {
                 nodeEditingBar
             }
         }
