@@ -98,8 +98,16 @@ struct HomeScreenPreview: View {
             .frame(width: size.width, height: size.height)
             .clipShape(RoundedRectangle(cornerRadius: 21, style: .continuous))
             .scaleEffect(scale, anchor: .topLeading)
-            .frame(width: size.width * scale, height: size.height * scale)
+            // `scaleEffect` shrinks the drawing but not the layout box, so this
+            // frame holds a box larger than itself — and its default centre
+            // alignment would shove the widget up and left by half the
+            // difference, hard enough to clip it off the bezel. Pinning to
+            // topLeading keeps `origin` meaning the widget's true top-left.
+            .frame(width: size.width * scale, height: size.height * scale, alignment: .topLeading)
             .offset(x: origin.x * scale, y: origin.y * scale)
+            // The slot tap targets live underneath; the widget must never eat
+            // a tap meant to move it.
+            .allowsHitTesting(false)
     }
 
     private func widgetOrigin(size: (width: Double, height: Double)) -> CGPoint {
