@@ -43,6 +43,7 @@ struct EditorView: View {
     /// magnified on the editing canvas.
     @State private var previewMode = false
     @State private var previewSlot = 0
+    @State private var inspectorDetent: PresentationDetent = .medium
 
     private enum Sheet: String, Identifiable {
         case inspector, layers, theme
@@ -94,6 +95,15 @@ struct EditorView: View {
             if ProcessInfo.processInfo.arguments.contains("-facet-preview") {
                 previewMode = true
             }
+            // …-facet-inspector selects the first leaf layer and opens it.
+            if ProcessInfo.processInfo.arguments.contains("-facet-inspector") {
+                if case .container(let container) = document.root.content,
+                   let first = container.children.first {
+                    selectedLayerID = first.id
+                    inspectorDetent = .large
+                    activeSheet = .inspector
+                }
+            }
         }
         .photosPicker(isPresented: $pickingWallpaper, selection: $wallpaperItem, matching: .images)
         .onChange(of: wallpaperItem) { importWallpaper() }
@@ -127,9 +137,17 @@ struct EditorView: View {
                         apply: { mutation in
                             mutateDocument { $0.root.updateFirstLayer(withID: id, mutation) }
                         },
-                        clearOverride: { clearOverride(for: id) }
+                        clearOverride: { clearOverride(for: id) },
+                        frame: effectiveFrame(of: id) ?? layer.frame,
+                        applyFrame: { newFrame in
+                            // Same path dragging uses, so typing a number and
+                            // dragging land in the same place — base in
+                            // systemSmall, a rendition override elsewhere.
+                            pushUndo()
+                            setFrame(newFrame, for: id)
+                        }
                     )
-                    .presentationDetents([.medium, .large])
+                    .presentationDetents([.medium, .large], selection: $inspectorDetent)
                 }
             case .layers:
                 LayerListView(

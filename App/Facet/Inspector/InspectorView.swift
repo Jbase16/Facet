@@ -12,6 +12,12 @@ struct InspectorView: View {
     let hasOverride: Bool
     let apply: ((inout Layer) -> Void) -> Void
     let clearOverride: () -> Void
+    /// The frame in effect for the rendition being edited — the override's if
+    /// one exists, else the base. Geometry gets its own channel because `apply`
+    /// writes the base layer, while a frame edit has to follow the same
+    /// base-vs-override rule dragging on the canvas does.
+    let frame: LayerFrame
+    let applyFrame: (LayerFrame) -> Void
 
     @State private var name: String = ""
     @State private var templateText: String = ""
@@ -31,6 +37,7 @@ struct InspectorView: View {
         NavigationStack {
             Form {
                 genericSection
+                layoutSection
                 contentSection
                 interactionSection
                 if hasOverride {
@@ -107,6 +114,133 @@ struct InspectorView: View {
         case .chart(let content): dataPath = content.dataPath
         default: break
         }
+    }
+
+    // MARK: - Layout
+
+    /// Numeric position and size, plus alignment actions. Dragging is fast but
+    /// never exact; a design tool has to let you type a number and to say
+    /// "centre this" without nudging at it. Values are percentages of the
+    /// parent, and x/y are the layer's *centre* — the same convention the
+    /// resolver uses, so what you type is what the renderer reads.
+    private var layoutSection: some View {
+        Section {
+            HStack(spacing: 12) {
+                numberField("X", value: frame.x, range: -0.5...1.5) {
+                    applyFrame(updating(frame, x: $0))
+                }
+                numberField("Y", value: frame.y, range: -0.5...1.5) {
+                    applyFrame(updating(frame, y: $0))
+                }
+            }
+            HStack(spacing: 12) {
+                numberField("W", value: frame.width, range: 0.01...2) {
+                    applyFrame(updating(frame, width: $0))
+                }
+                numberField("H", value: frame.height, range: 0.01...2) {
+                    applyFrame(updating(frame, height: $0))
+                }
+            }
+            alignmentRow
+        } header: {
+            Text("Layout")
+        } footer: {
+            Text(hasOverride
+                 ? "Percentages of the parent. X and Y are the layer's centre. Edits apply to this size only."
+                 : "Percentages of the parent. X and Y are the layer's centre.")
+        }
+    }
+
+    private var alignmentRow: some View {
+        HStack(spacing: 4) {
+            alignButton("align.horizontal.left", "Align left") {
+                applyFrame(updating(frame, x: frame.width / 2))
+            }
+            alignButton("align.horizontal.center", "Centre horizontally") {
+                applyFrame(updating(frame, x: 0.5))
+            }
+            alignButton("align.horizontal.right", "Align right") {
+                applyFrame(updating(frame, x: 1 - frame.width / 2))
+            }
+            Divider().frame(height: 20)
+            alignButton("align.vertical.top", "Align top") {
+                applyFrame(updating(frame, y: frame.height / 2))
+            }
+            alignButton("align.vertical.center", "Centre vertically") {
+                applyFrame(updating(frame, y: 0.5))
+            }
+            alignButton("align.vertical.bottom", "Align bottom") {
+                applyFrame(updating(frame, y: 1 - frame.height / 2))
+            }
+            Divider().frame(height: 20)
+            alignButton("arrow.up.left.and.arrow.down.right", "Fill parent") {
+                applyFrame(LayerFrame(x: 0.5, y: 0.5, width: 1, height: 1))
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func alignButton(_ symbol: String, _ hint: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .frame(width: 30, height: 30)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(hint)
+    }
+
+    /// A percentage field with a stepper. Stored values are 0...1 fractions;
+    /// showing them as percentages is the difference between typing "42" and
+    /// squinting at "0.42".
+    private func numberField(
+        _ label: String,
+        value: Double,
+        range: ClosedRange<Double>,
+        commit: @escaping (Double) -> Void
+    ) -> some View {
+        HStack(spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(width: 16, alignment: .leading)
+            TextField(
+                label,
+                value: Binding(
+                    get: { (value * 1000).rounded() / 10 },
+                    set: { commit(min(max($0 / 100, range.lowerBound), range.upperBound)) }
+                ),
+                format: .number.precision(.fractionLength(0...1))
+            )
+            .keyboardType(.numbersAndPunctuation)
+            .multilineTextAlignment(.trailing)
+            .font(.system(.footnote, design: .monospaced))
+            Text("%")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+            Stepper(
+                label,
+                value: Binding(get: { value }, set: { commit(min(max($0, range.lowerBound), range.upperBound)) }),
+                in: range,
+                step: 0.005
+            )
+            .labelsHidden()
+        }
+    }
+
+    private func updating(
+        _ frame: LayerFrame,
+        x: Double? = nil,
+        y: Double? = nil,
+        width: Double? = nil,
+        height: Double? = nil
+    ) -> LayerFrame {
+        var updated = frame
+        if let x { updated.x = x }
+        if let y { updated.y = y }
+        if let width { updated.width = width }
+        if let height { updated.height = height }
+        return updated
     }
 
     // MARK: - Interaction
