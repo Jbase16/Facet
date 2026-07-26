@@ -44,14 +44,33 @@ struct EditorView: View {
     @State private var previewMode = false
     @State private var previewSlot = 0
     @State private var inspectorDetent: PresentationDetent = .medium
+    /// Space the canvas has to work with, so zoom can fit the rendition.
+    @State private var canvasViewport: CGSize = .zero
 
     private enum Sheet: String, Identifiable {
         case inspector, layers, theme
         var id: String { rawValue }
     }
 
-    /// Canvas magnification: widgets are small; editing wants room.
-    private let zoom: Double = 2
+    /// Canvas magnification: widgets are small, so editing wants room — but a
+    /// fixed factor only ever suited systemSmall. At 2× a medium widget is
+    /// 676pt wide on a 402pt screen, so two thirds of it hung off the canvas
+    /// and it read as a cropped letterbox (large read as a tall portrait for
+    /// the same reason). Scale to fit the viewport instead, capped so a small
+    /// widget still gets magnified and nothing shrinks past usable.
+    private var zoom: Double {
+        let size = rendition.designSize
+        guard canvasViewport.width > 0, canvasViewport.height > 0 else { return 1 }
+        // Proportional rather than a fixed inset: the reported viewport can be
+        // wider than the screen (the backdrop ignores safe areas), so
+        // subtracting points left the widget flush to the bezel with the
+        // selection handles hanging off it.
+        let fit = min(
+            canvasViewport.width / size.width,
+            canvasViewport.height / size.height
+        ) * 0.84
+        return min(max(fit, 0.4), 2.2)
+    }
     private let snapStops: [Double] = [0, 0.25, 0.5, 0.75, 1]
     private let snapThreshold = 0.02
 
@@ -72,16 +91,21 @@ struct EditorView: View {
                     )
                     .padding(20)
                 } else {
-                    canvasArea
-                        .background {
-                            WallpaperBackdrop(
-                                image: backdropImage,
-                                sampler: backdropSampler,
-                                sampling: eyedropper,
-                                onSample: applySampledColor
-                            )
-                            .ignoresSafeArea()
-                        }
+                    GeometryReader { geo in
+                        canvasArea
+                            .frame(width: geo.size.width, height: geo.size.height)
+                            .onAppear { canvasViewport = geo.size }
+                            .onChange(of: geo.size) { _, size in canvasViewport = size }
+                    }
+                    .background {
+                        WallpaperBackdrop(
+                            image: backdropImage,
+                            sampler: backdropSampler,
+                            sampling: eyedropper,
+                            onSample: applySampledColor
+                        )
+                        .ignoresSafeArea()
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -94,6 +118,13 @@ struct EditorView: View {
             // Headless smoke test: simctl launch … -facet-preview
             if ProcessInfo.processInfo.arguments.contains("-facet-preview") {
                 previewMode = true
+            }
+            // …-facet-medium / -facet-large open on that rendition.
+            if ProcessInfo.processInfo.arguments.contains("-facet-medium") {
+                rendition = .systemMedium
+            }
+            if ProcessInfo.processInfo.arguments.contains("-facet-large") {
+                rendition = .systemLarge
             }
             // …-facet-inspector selects the first leaf layer and opens it.
             if ProcessInfo.processInfo.arguments.contains("-facet-inspector") {

@@ -626,7 +626,7 @@ struct InspectorView: View {
                 Text("Rectangle").tag(ShapeKind.rectangle)
                 Text("Circle").tag(ShapeKind.circle)
                 Text("Capsule").tag(ShapeKind.capsule)
-                Text("Blob").tag(ShapeKind.path)
+                Text("Custom").tag(ShapeKind.path)
             }
             if content.kind == .path {
                 Button {
@@ -634,7 +634,7 @@ struct InspectorView: View {
                 } label: {
                     Label("Open Shape Studio", systemImage: "square.on.circle")
                 }
-                Text("Edit nodes directly on the canvas with the node button.")
+                Text("Custom outlines are designed in Shape Studio, then fine-tuned node by node on the canvas.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

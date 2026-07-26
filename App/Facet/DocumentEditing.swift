@@ -160,16 +160,6 @@ enum NewLayerFactory {
             )
         case "App Launcher":
             return launcher()
-        case "Blob":
-            return Layer(
-                name: "Blob",
-                frame: LayerFrame(x: 0.5, y: 0.5, width: 0.8, height: 0.8),
-                content: .shape(ShapeContent(
-                    kind: .path,
-                    fill: Fill.literal(ColorValue(hex: "#1C1C2E")!),
-                    pathData: BlobPath.path(.default)
-                ))
-            )
         default:
             return nil
         }
@@ -217,6 +207,6 @@ enum NewLayerFactory {
 
     static let kinds = [
         "Text", "Symbol", "Shape", "Gauge", "Line", "Chart",
-        "Image", "Group", "App Launcher", "Blob",
+        "Image", "Group", "App Launcher",
     ]
 }
