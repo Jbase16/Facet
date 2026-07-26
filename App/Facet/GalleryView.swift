@@ -183,7 +183,9 @@ struct GalleryView: View {
         Button {
             store.selectedForWidget = document.id
         } label: {
-            Label("Show in Widget", systemImage: "square.grid.2x2")
+            // Each placed widget now picks its own design, so this is only the
+            // default a newly added widget starts on — not "the" widget.
+            Label("Use as default", systemImage: "square.grid.2x2")
         }
         Button {
             renameText = document.name
@@ -314,7 +316,7 @@ struct GalleryCell: View {
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 if isOnWidget {
-                    FacetPill(text: "On widget", color: FacetUI.accent)
+                    FacetPill(text: "Default", color: FacetUI.accent)
                 }
             }
             .padding(.horizontal, 12)

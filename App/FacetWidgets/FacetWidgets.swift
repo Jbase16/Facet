@@ -1,3 +1,4 @@
+import AppIntents
 import WidgetKit
 import SwiftUI
 import FacetCore
@@ -12,17 +13,26 @@ struct FacetWidgetBundle: WidgetBundle {
     }
 }
 
-/// The widget extension is a dumb renderer by design: it reads the selected
-/// document and cached snapshots from the App Group and draws. No fetching,
-/// no decisions — that keeps renders fast and inside the ~30 MB extension
-/// memory budget (SPEC §5.1).
+/// The widget extension is a dumb renderer by design: it reads a document and
+/// cached snapshots from the App Group and draws. No fetching, no decisions —
+/// that keeps renders fast and inside the ~30 MB extension memory budget
+/// (SPEC §5.1).
+///
+/// The configuration is per-instance, so each placed widget picks its own
+/// design and several can run at once. The kind is unchanged on purpose:
+/// widgets already on a home screen keep their identity and pick up a default
+/// configuration rather than disappearing.
 struct FacetWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "FacetWidget", provider: FacetTimelineProvider()) { entry in
+        AppIntentConfiguration(
+            kind: "FacetWidget",
+            intent: SelectDocumentIntent.self,
+            provider: FacetTimelineProvider()
+        ) { entry in
             FacetWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Facet")
-        .description("Your Facet design, live.")
+        .description("Your Facet design, live. Long-press to choose which one.")
         .supportedFamilies([
             .systemSmall, .systemMedium, .systemLarge,
             .accessoryCircular, .accessoryRectangular, .accessoryInline,
@@ -36,7 +46,7 @@ struct FacetEntry: TimelineEntry {
     let snapshots: SnapshotSet
 }
 
-struct FacetTimelineProvider: TimelineProvider {
+struct FacetTimelineProvider: AppIntentTimelineProvider {
     private let repository = SharedDocumentRepository()
 
     func placeholder(in context: Context) -> FacetEntry {
@@ -47,11 +57,11 @@ struct FacetTimelineProvider: TimelineProvider {
         )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (FacetEntry) -> Void) {
-        completion(entry(at: Date()))
+    func snapshot(for configuration: SelectDocumentIntent, in context: Context) async -> FacetEntry {
+        entry(at: Date(), for: configuration)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<FacetEntry>) -> Void) {
+    func timeline(for configuration: SelectDocumentIntent, in context: Context) async -> Timeline<FacetEntry> {
         // One entry per minute for the next 30 minutes keeps clocks honest;
         // everything else re-renders from the cache each entry for free.
         // After that, WidgetKit re-asks and the planner's floor applies.
@@ -63,15 +73,19 @@ struct FacetTimelineProvider: TimelineProvider {
             matchingPolicy: .nextTime
         ) ?? now.addingTimeInterval(60)
 
-        var entries = [entry(at: now)]
+        var entries = [entry(at: now, for: configuration)]
         for offset in 0..<30 {
-            entries.append(entry(at: nextMinute.addingTimeInterval(Double(offset) * 60)))
+            entries.append(entry(at: nextMinute.addingTimeInterval(Double(offset) * 60), for: configuration))
         }
-        completion(Timeline(entries: entries, policy: .atEnd))
+        return Timeline(entries: entries, policy: .atEnd)
     }
 
-    private func entry(at date: Date) -> FacetEntry {
-        let document = AppGroup.selectedDocumentID.flatMap { repository.load(id: $0) }
+    /// Resolves this instance's configured design, falling back to the old
+    /// single-selection key and then to any document — so a widget placed
+    /// before per-instance configuration existed still draws something.
+    private func entry(at date: Date, for configuration: SelectDocumentIntent) -> FacetEntry {
+        let document = configuration.design.flatMap { repository.load(id: $0.id) }
+            ?? AppGroup.selectedDocumentID.flatMap { repository.load(id: $0) }
             ?? repository.loadAll().first
         var snapshots = AppGroup.snapshotStore.loadSet(sourceIDs: document?.sources ?? [])
         // Time is computed, not cached — always fresh, pre-dated per entry.
