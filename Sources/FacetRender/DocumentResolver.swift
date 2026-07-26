@@ -128,14 +128,15 @@ public struct DocumentResolver {
             }
         }
 
+        let style = layer.style
         return RenderNode(
             layerID: layer.id,
             name: layer.name,
             rect: rect,
             opacity: opacity,
-            rotation: layer.style.rotation,
-            cornerRadius: layer.style.cornerRadius,
-            shadow: layer.style.shadow.map {
+            rotation: style.rotation,
+            cornerRadius: style.cornerRadius,
+            shadow: style.shadow.map {
                 ResolvedShadow(
                     color: resolveColor($0.color),
                     radius: $0.radius,
@@ -143,10 +144,62 @@ public struct DocumentResolver {
                     offsetY: $0.offsetY
                 )
             },
+            blendMode: style.blendMode ?? .normal,
+            blur: clamp(style.blur, to: 0...50, default: 0),
+            border: resolveBorder(style.border),
+            scale: clamp(style.scale, to: 0.1...4, default: 1),
+            flipHorizontal: style.flipHorizontal ?? false,
+            flipVertical: style.flipVertical ?? false,
+            colorAdjust: ResolvedColorAdjust(
+                brightness: clamp(style.brightness, to: -1...1, default: 0),
+                contrast: clamp(style.contrast, to: 0...4, default: 1),
+                saturation: clamp(style.saturation, to: 0...4, default: 1),
+                hueRotation: wrapDegrees(style.hueRotation)
+            ),
+            glow: resolveGlow(style.glow),
             tapURL: tapURL,
             kind: kind,
             children: children
         )
+    }
+
+    // MARK: - Effects
+
+    /// A zero-width border draws nothing, so drop it here rather than making
+    /// every renderer test for it.
+    private func resolveBorder(_ border: BorderStyle?) -> ResolvedBorder? {
+        guard let border else { return nil }
+        let width = clamp(border.width, to: 0...100, default: 0)
+        guard width > 0 else { return nil }
+        return ResolvedBorder(
+            color: resolveColor(border.color),
+            width: width,
+            inset: clamp(border.inset, to: 0...100, default: 0)
+        )
+    }
+
+    /// A zero-radius glow sits exactly behind its own layer — invisible, but
+    /// still a filter pass. Drop it.
+    private func resolveGlow(_ glow: GlowStyle?) -> ResolvedGlow? {
+        guard let glow else { return nil }
+        let radius = clamp(glow.radius, to: 0...50, default: 0)
+        guard radius > 0 else { return nil }
+        return ResolvedGlow(color: resolveColor(glow.color), radius: radius)
+    }
+
+    /// NaN/infinity fall back to the effect's default: one bad expression or
+    /// a corrupt file must degrade a single property, not blank the widget.
+    private func clamp(_ value: Double?, to range: ClosedRange<Double>, default fallback: Double) -> Double {
+        guard let value, value.isFinite else { return fallback }
+        return min(max(value, range.lowerBound), range.upperBound)
+    }
+
+    /// Hue is periodic, so out-of-range is meaningful rather than wrong:
+    /// normalize into 0..<360 instead of clamping and losing the intent.
+    private func wrapDegrees(_ value: Double?) -> Double {
+        guard let value, value.isFinite else { return 0 }
+        let wrapped = value.truncatingRemainder(dividingBy: 360)
+        return wrapped < 0 ? wrapped + 360 : wrapped
     }
 
     private mutating func resolveChildren(_ container: ContainerContent, in rect: Rect) -> [RenderNode] {

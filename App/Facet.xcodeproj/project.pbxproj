@@ -34,6 +34,7 @@
 		8E963D04A9098EEBCF7C55E0 /* DraftMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */; };
 		8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68367781880E42AE2DB8D0A8 /* FacetWidgets.swift */; };
 		919A996A7E98875F4DB7D683 /* AssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC6203D80540BB24BA295B /* AssetStore.swift */; };
+		A01BEE08A394ACDF2CABA639 /* FontCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85940E91E1B2095A543A6506 /* FontCatalog.swift */; };
 		A181C809212C8AC3D69FA59C /* DocumentEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */; };
 		A3AE4B68B94873D25416AB48 /* ShapePlayground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */; };
 		A6A131B69996C8C24FA68437 /* FacetImageProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */; };
@@ -45,6 +46,7 @@
 		B9DC2ABDCB134093E6D0E873 /* FacetTemplates in Frameworks */ = {isa = PBXBuildFile; productRef = 5F9764CB47CC3255E1DAAFA4 /* FacetTemplates */; };
 		BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAEBEADC60946A4516B04197 /* GalleryView.swift */; };
 		BF0847FF88251983C70FF62C /* FacetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8C9D4A59B6640134536493C3 /* FacetCore */; };
+		BF400D839C7451CC8862F6FE /* FontPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9876F40CC3BEB17D884B5626 /* FontPickerView.swift */; };
 		C49BDA574C5A958CC0D5F8FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */; };
 		CB1F51102AE3813587CE4067 /* FocusSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F7D9E84D357AF552E47CB3 /* FocusSource.swift */; };
 		CE7A570D8F6A87D48F95806D /* CustomSourceEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA0CA5DC0BA9616B892486D /* CustomSourceEditorView.swift */; };
@@ -99,11 +101,13 @@
 		6D8FD5ED9865C55FCAC59ADE /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
 		7AF056977F3F074F99FBAA99 /* LayerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerListView.swift; sourceTree = "<group>"; };
 		7B78AC784E0C43A253A67F82 /* DocumentEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditing.swift; sourceTree = "<group>"; };
+		85940E91E1B2095A543A6506 /* FontCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontCatalog.swift; sourceTree = "<group>"; };
 		8BAABD07F00F6A8557E4248C /* AssetPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetPickerView.swift; sourceTree = "<group>"; };
 		918865A47134FEC46093EEE3 /* WallpaperBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperBackdrop.swift; sourceTree = "<group>"; };
 		92E1F7508053F63AC77BC8A0 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		95A3E46B8ACCA64942D839BC /* AppPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPickerView.swift; sourceTree = "<group>"; };
 		973EC022838148FEC7718A70 /* Facet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Facet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9876F40CC3BEB17D884B5626 /* FontPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontPickerView.swift; sourceTree = "<group>"; };
 		9A0EA27D153D75EBEFECD233 /* FacetUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetUI.swift; sourceTree = "<group>"; };
 		9A5CCA0565292A65A784FC56 /* WeatherSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSource.swift; sourceTree = "<group>"; };
 		9B5BEC0697888C94C419A750 /* WidgetDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDraft.swift; sourceTree = "<group>"; };
@@ -157,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */,
+				9876F40CC3BEB17D884B5626 /* FontPickerView.swift */,
 				6D8FD5ED9865C55FCAC59ADE /* InspectorView.swift */,
 				FC97288BBFA9D1E86C7C3E4A /* ShapeStudioView.swift */,
 			);
@@ -202,6 +207,7 @@
 				20A889A124C755D755733C71 /* AI */,
 				D3584E435834C638BF5DABE8 /* Assets */,
 				7D1509DF44996F46192BF65B /* DataSources */,
+				4C6DEE7ACC2D6DD81A633FFF /* Fonts */,
 				0D90168BB99EE3761DB5C82C /* Inspector */,
 				FE8A1E074A857ED196C35C8B /* Launcher */,
 			);
@@ -215,6 +221,14 @@
 				5BAE8323F8A46D8204007A7B /* Assets */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		4C6DEE7ACC2D6DD81A633FFF /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				85940E91E1B2095A543A6506 /* FontCatalog.swift */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		5BAE8323F8A46D8204007A7B /* Assets */ = {
@@ -408,6 +422,8 @@
 				A6A131B69996C8C24FA68437 /* FacetImageProviderFactory.swift in Sources */,
 				89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */,
 				CB1F51102AE3813587CE4067 /* FocusSource.swift in Sources */,
+				A01BEE08A394ACDF2CABA639 /* FontCatalog.swift in Sources */,
+				BF400D839C7451CC8862F6FE /* FontPickerView.swift in Sources */,
 				BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */,
 				7C20108989E04D30EF34B5C9 /* GenerateWidgetView.swift in Sources */,
 				B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */,

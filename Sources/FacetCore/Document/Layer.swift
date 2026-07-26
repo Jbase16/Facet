@@ -34,7 +34,85 @@ public struct ShadowStyle: Codable, Hashable, Sendable {
     }
 }
 
+/// How a layer composites into what is already drawn beneath it. Blending is
+/// the difference between a design that looks composed and one that looks
+/// pasted — a `multiply` shadow or a `screen` highlight picks up the colours
+/// underneath instead of covering them.
+public enum BlendMode: String, Codable, Sendable {
+    case normal
+    case multiply
+    case screen
+    case overlay
+    case darken
+    case lighten
+    case colorDodge
+    case colorBurn
+    case softLight
+    case hardLight
+    case difference
+    case exclusion
+    case hue
+    case saturation
+    case color
+    case luminosity
+    case plusLighter
+}
+
+/// A stroke drawn inside a layer's bounds, following its corner radius.
+/// Deliberately part of `LayerStyle` and not `ShapeContent`: text, symbols,
+/// images and gauges all want outlines too, and only shapes could have them.
+public struct BorderStyle: Codable, Hashable, Sendable {
+    public var color: ColorRef
+    /// Stroke thickness in points, drawn inward from the edge.
+    public var width: Double
+    /// Points to pull the stroke in from the layer's bounds.
+    public var inset: Double
+
+    public init(color: ColorRef, width: Double, inset: Double = 0) {
+        self.color = color
+        self.width = width
+        self.inset = inset
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case color, width, inset
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        color = try container.decode(ColorRef.self, forKey: .color)
+        width = try container.decode(Double.self, forKey: .width)
+        inset = try container.decodeIfPresent(Double.self, forKey: .inset) ?? 0
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(color, forKey: .color)
+        try container.encode(width, forKey: .width)
+        if inset != 0 { try container.encode(inset, forKey: .inset) }
+    }
+}
+
+/// A coloured halo: mechanically a shadow with no offset, but kept separate
+/// because "neon rim" is a different design decision from "cast shadow" and a
+/// layer routinely wants both at once.
+public struct GlowStyle: Codable, Hashable, Sendable {
+    public var color: ColorRef
+    /// Spread in points.
+    public var radius: Double
+
+    public init(color: ColorRef, radius: Double) {
+        self.color = color
+        self.radius = radius
+    }
+}
+
 /// Visual attributes shared by every layer kind.
+///
+/// Everything past `shadow` is optional: absent means "no effect", and absent
+/// stays absent through a round trip, so adding effects doesn't grow every
+/// existing document by a screenful of defaults. Ranges are advisory here and
+/// enforced by the resolver — a document is data, not a validated input.
 public struct LayerStyle: Codable, Hashable, Sendable {
     public var opacity: Double
     /// Rotation in degrees, clockwise.
@@ -42,14 +120,106 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     public var cornerRadius: Double
     public var shadow: ShadowStyle?
 
-    public init(opacity: Double = 1.0, rotation: Double = 0, cornerRadius: Double = 0, shadow: ShadowStyle? = nil) {
+    public var blendMode: BlendMode?
+    /// Gaussian blur radius in points, 0...50.
+    public var blur: Double?
+    public var border: BorderStyle?
+    /// Uniform scale about the layer's centre, 0.1...4. Distinct from resizing
+    /// the frame: layout is unchanged, which is what makes overshoot and pop
+    /// effects possible without disturbing neighbours.
+    public var scale: Double?
+    public var flipHorizontal: Bool?
+    public var flipVertical: Bool?
+    /// Additive brightness, -1...1.
+    public var brightness: Double?
+    /// Contrast multiplier about mid-grey, 0...4.
+    public var contrast: Double?
+    /// 0 is greyscale, 1 unchanged, up to 4.
+    public var saturation: Double?
+    /// Hue shift in degrees, wrapped. Colour adjustment is what lets one
+    /// design be re-themed without editing every layer's fill.
+    public var hueRotation: Double?
+    public var glow: GlowStyle?
+
+    public init(
+        opacity: Double = 1.0,
+        rotation: Double = 0,
+        cornerRadius: Double = 0,
+        shadow: ShadowStyle? = nil,
+        blendMode: BlendMode? = nil,
+        blur: Double? = nil,
+        border: BorderStyle? = nil,
+        scale: Double? = nil,
+        flipHorizontal: Bool? = nil,
+        flipVertical: Bool? = nil,
+        brightness: Double? = nil,
+        contrast: Double? = nil,
+        saturation: Double? = nil,
+        hueRotation: Double? = nil,
+        glow: GlowStyle? = nil
+    ) {
         self.opacity = opacity
         self.rotation = rotation
         self.cornerRadius = cornerRadius
         self.shadow = shadow
+        self.blendMode = blendMode
+        self.blur = blur
+        self.border = border
+        self.scale = scale
+        self.flipHorizontal = flipHorizontal
+        self.flipVertical = flipVertical
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.hueRotation = hueRotation
+        self.glow = glow
     }
 
     public static let plain = LayerStyle()
+
+    private enum CodingKeys: String, CodingKey {
+        case opacity, rotation, cornerRadius, shadow
+        case blendMode, blur, border, scale, flipHorizontal, flipVertical
+        case brightness, contrast, saturation, hueRotation, glow
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        opacity = try container.decodeIfPresent(Double.self, forKey: .opacity) ?? 1.0
+        rotation = try container.decodeIfPresent(Double.self, forKey: .rotation) ?? 0
+        cornerRadius = try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? 0
+        shadow = try container.decodeIfPresent(ShadowStyle.self, forKey: .shadow)
+        blendMode = try container.decodeIfPresent(BlendMode.self, forKey: .blendMode)
+        blur = try container.decodeIfPresent(Double.self, forKey: .blur)
+        border = try container.decodeIfPresent(BorderStyle.self, forKey: .border)
+        scale = try container.decodeIfPresent(Double.self, forKey: .scale)
+        flipHorizontal = try container.decodeIfPresent(Bool.self, forKey: .flipHorizontal)
+        flipVertical = try container.decodeIfPresent(Bool.self, forKey: .flipVertical)
+        brightness = try container.decodeIfPresent(Double.self, forKey: .brightness)
+        contrast = try container.decodeIfPresent(Double.self, forKey: .contrast)
+        saturation = try container.decodeIfPresent(Double.self, forKey: .saturation)
+        hueRotation = try container.decodeIfPresent(Double.self, forKey: .hueRotation)
+        glow = try container.decodeIfPresent(GlowStyle.self, forKey: .glow)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(opacity, forKey: .opacity)
+        try container.encode(rotation, forKey: .rotation)
+        try container.encode(cornerRadius, forKey: .cornerRadius)
+        try container.encodeIfPresent(shadow, forKey: .shadow)
+        try container.encodeIfPresent(blendMode, forKey: .blendMode)
+        try container.encodeIfPresent(blur, forKey: .blur)
+        try container.encodeIfPresent(border, forKey: .border)
+        try container.encodeIfPresent(scale, forKey: .scale)
+        try container.encodeIfPresent(flipHorizontal, forKey: .flipHorizontal)
+        try container.encodeIfPresent(flipVertical, forKey: .flipVertical)
+        try container.encodeIfPresent(brightness, forKey: .brightness)
+        try container.encodeIfPresent(contrast, forKey: .contrast)
+        try container.encodeIfPresent(saturation, forKey: .saturation)
+        try container.encodeIfPresent(hueRotation, forKey: .hueRotation)
+        try container.encodeIfPresent(glow, forKey: .glow)
+    }
 }
 
 public enum TextAlignment: String, Codable, Sendable {

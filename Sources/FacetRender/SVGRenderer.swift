@@ -61,11 +61,22 @@ public enum SVGRenderer {
         if node.opacity < 1 {
             attributes += " opacity=\"\(format(node.opacity))\""
         }
-        if node.rotation != 0 {
-            attributes += " transform=\"rotate(\(format(node.rotation)) \(format(node.rect.midX)) \(format(node.rect.midY)))\""
+        if let transform = transformAttribute(node) {
+            attributes += " transform=\"\(transform)\""
         }
-        if let shadow = node.shadow {
-            attributes += " style=\"filter: drop-shadow(\(format(shadow.offsetX))px \(format(shadow.offsetY))px \(format(shadow.radius))px \(cssColor(shadow.color)))\""
+        var styles: [String] = []
+        if let filterID = filterDefinition(node, defs: &defs) {
+            attributes += " filter=\"url(#\(filterID))\""
+        } else if let shadow = node.shadow {
+            // A lone shadow keeps the plain CSS form it has always emitted;
+            // only nodes that actually need a filter chain grow one.
+            styles.append("filter: drop-shadow(\(format(shadow.offsetX))px \(format(shadow.offsetY))px \(format(shadow.radius))px \(cssColor(shadow.color)))")
+        }
+        if let blend = cssBlendMode(node.blendMode) {
+            styles.append("mix-blend-mode: \(blend)")
+        }
+        if !styles.isEmpty {
+            attributes += " style=\"\(styles.joined(separator: "; "))\""
         }
         output += "\(indent)<g\(attributes)>\n"
 
@@ -103,7 +114,136 @@ public enum SVGRenderer {
         for child in node.children {
             emit(child, into: &output, defs: &defs, indent: indent + "  ")
         }
+        // Last, so it sits over the node's own content and its children —
+        // the SwiftUI backend applies the border overlay at the same point.
+        if let border = node.border {
+            output += indent + "  " + borderElement(border, in: node) + "\n"
+        }
         output += "\(indent)</g>\n"
+    }
+
+    // MARK: - Effects
+
+    /// Rotation, then scale/flip, both pivoted on the layer's centre — the
+    /// order the SwiftUI backend applies them in.
+    private static func transformAttribute(_ node: RenderNode) -> String? {
+        var parts: [String] = []
+        if node.rotation != 0 {
+            parts.append("rotate(\(format(node.rotation)) \(format(node.rect.midX)) \(format(node.rect.midY)))")
+        }
+        let scaleX = node.scale * (node.flipHorizontal ? -1 : 1)
+        let scaleY = node.scale * (node.flipVertical ? -1 : 1)
+        if scaleX != 1 || scaleY != 1 {
+            // SVG's scale() is origin-anchored; sandwich it in translations.
+            let centerX = node.rect.midX
+            let centerY = node.rect.midY
+            parts.append(
+                "translate(\(format(centerX)) \(format(centerY))) scale(\(format(scaleX)) \(format(scaleY))) translate(\(format(-centerX)) \(format(-centerY)))"
+            )
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+
+    /// Colour grading → blur → glow → shadow, chained as filter primitives in
+    /// the same order the SwiftUI backend applies them. Returns nil when the
+    /// node needs no filter at all, which is the common case.
+    ///
+    /// Approximations, deliberate: SwiftUI's `.blur(radius:)` is not a
+    /// Gaussian sigma (it is roughly twice one), so radii are halved for
+    /// `stdDeviation` here and in the drop shadows — close, not identical.
+    /// `color-interpolation-filters="sRGB"` is required because SVG filters
+    /// otherwise operate in linear RGB, which would grade noticeably darker
+    /// than SwiftUI does.
+    private static func filterDefinition(_ node: RenderNode, defs: inout [String]) -> String? {
+        let adjust = node.colorAdjust
+        guard !adjust.isIdentity || node.blur > 0 || node.glow != nil else { return nil }
+
+        var primitives = ""
+        if adjust.brightness != 0 || adjust.contrast != 1 {
+            // Brightness is additive and contrast multiplies about mid-grey;
+            // both are linear in the channel, so one transfer function
+            // expresses the pair exactly rather than approximately.
+            let slope = adjust.contrast
+            let intercept = adjust.contrast * adjust.brightness + 0.5 * (1 - adjust.contrast)
+            let transfer = ["R", "G", "B"].map {
+                "<feFunc\($0) type=\"linear\" slope=\"\(format(slope))\" intercept=\"\(format(intercept))\"/>"
+            }.joined()
+            primitives += "<feComponentTransfer>\(transfer)</feComponentTransfer>"
+        }
+        if adjust.saturation != 1 {
+            primitives += "<feColorMatrix type=\"saturate\" values=\"\(format(adjust.saturation))\"/>"
+        }
+        if adjust.hueRotation != 0 {
+            primitives += "<feColorMatrix type=\"hueRotate\" values=\"\(format(adjust.hueRotation))\"/>"
+        }
+        if node.blur > 0 {
+            primitives += "<feGaussianBlur stdDeviation=\"\(format(node.blur / 2))\"/>"
+        }
+        if let glow = node.glow {
+            primitives += dropShadow(offsetX: 0, offsetY: 0, radius: glow.radius, color: glow.color)
+        }
+        if let shadow = node.shadow {
+            primitives += dropShadow(
+                offsetX: shadow.offsetX,
+                offsetY: shadow.offsetY,
+                radius: shadow.radius,
+                color: shadow.color
+            )
+        }
+
+        let id = "fx\(defs.count)"
+        // The default filter region (-10%, 120%) clips blur and glow off at
+        // the edges; widen it enough that a 50pt spread survives.
+        defs.append(
+            "<filter id=\"\(id)\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\" color-interpolation-filters=\"sRGB\">\(primitives)</filter>"
+        )
+        return id
+    }
+
+    private static func dropShadow(offsetX: Double, offsetY: Double, radius: Double, color: ColorValue) -> String {
+        var attributes = "dx=\"\(format(offsetX))\" dy=\"\(format(offsetY))\" stdDeviation=\"\(format(radius / 2))\""
+        attributes += " flood-color=\"\(opaqueHex(color))\""
+        if color.alpha < 1 {
+            attributes += " flood-opacity=\"\(String(format: "%.3f", color.alpha))\""
+        }
+        return "<feDropShadow \(attributes)/>"
+    }
+
+    private static func borderElement(_ border: ResolvedBorder, in node: RenderNode) -> String {
+        // SVG strokes straddle the path, SwiftUI's strokeBorder sits inside
+        // it; pull the rect in by half the width so both land in the same place.
+        let inset = border.inset + border.width / 2
+        let radius = max(0, max(0, node.cornerRadius - border.inset) - border.width / 2)
+        let rect = node.rect.insetBy(inset)
+        return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"none\" stroke=\"\(cssColor(border.color))\" stroke-width=\"\(format(border.width))\"/>"
+    }
+
+    /// nil for `.normal`, so unblended nodes emit no style attribute at all.
+    ///
+    /// `plusLighter` maps to `plus-lighter`, which is Compositing Level 2 and
+    /// missing from older SVG rasterizers — those fall back to normal
+    /// compositing rather than approximating it. Everything else in the set
+    /// is Compositing Level 1 and matches SwiftUI's mode of the same name.
+    private static func cssBlendMode(_ mode: BlendMode) -> String? {
+        switch mode {
+        case .normal: return nil
+        case .multiply: return "multiply"
+        case .screen: return "screen"
+        case .overlay: return "overlay"
+        case .darken: return "darken"
+        case .lighten: return "lighten"
+        case .colorDodge: return "color-dodge"
+        case .colorBurn: return "color-burn"
+        case .softLight: return "soft-light"
+        case .hardLight: return "hard-light"
+        case .difference: return "difference"
+        case .exclusion: return "exclusion"
+        case .hue: return "hue"
+        case .saturation: return "saturation"
+        case .color: return "color"
+        case .luminosity: return "luminosity"
+        case .plusLighter: return "plus-lighter"
+        }
     }
 
     private static func shapeElement(_ shape: ResolvedShape, in node: RenderNode, defs: inout [String]) -> String {
@@ -184,12 +324,22 @@ public enum SVGRenderer {
         case .center: anchor = "middle"; x = rect.midX
         case .trailing: anchor = "end"; x = rect.maxX
         }
+        // A chosen family wins over the design, and the design's stack becomes
+        // its fallback. Reading `family` only in the `.standard` branch meant a
+        // rounded-design token with a custom family silently rendered as the
+        // generic rounded stack here while the app drew the real face.
         let family: String
+        let designStack: String
         switch text.font.design {
-        case .monospaced: family = "ui-monospace, SFMono-Regular, monospace"
-        case .rounded: family = "ui-rounded, system-ui, sans-serif"
-        case .serif: family = "ui-serif, Georgia, serif"
-        case .standard: family = text.font.family ?? "system-ui, -apple-system, sans-serif"
+        case .monospaced: designStack = "ui-monospace, SFMono-Regular, monospace"
+        case .rounded: designStack = "ui-rounded, system-ui, sans-serif"
+        case .serif: designStack = "ui-serif, Georgia, serif"
+        case .standard: designStack = "system-ui, -apple-system, sans-serif"
+        }
+        if let custom = text.font.family {
+            family = "\(escape(custom)), \(designStack)"
+        } else {
+            family = designStack
         }
         let spacing = text.letterSpacing != 0 ? " letter-spacing=\"\(format(text.letterSpacing))\"" : ""
         return "<text x=\"\(format(x))\" y=\"\(format(rect.midY))\" text-anchor=\"\(anchor)\" dominant-baseline=\"central\" font-family=\"\(family)\" font-size=\"\(format(text.font.size))\" font-weight=\"\(cssWeight(text.font.weight))\"\(spacing) fill=\"\(cssColor(text.color))\">\(escape(text.text))</text>"
@@ -233,6 +383,14 @@ public enum SVGRenderer {
         let g = Int((color.green * 255).rounded())
         let b = Int((color.blue * 255).rounded())
         return "rgba(\(r),\(g),\(b),\(String(format: "%.3f", color.alpha)))"
+    }
+
+    /// `flood-color` carries no alpha (that's `flood-opacity`'s job), so the
+    /// 8-digit form `hexString` produces would be rejected.
+    private static func opaqueHex(_ color: ColorValue) -> String {
+        var opaque = color
+        opaque.alpha = 1
+        return opaque.hexString
     }
 
     private static func cssWeight(_ weight: FontWeight) -> Int {

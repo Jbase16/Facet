@@ -79,11 +79,24 @@ private struct NodeView: View {
         }
     }
 
+    // Effect order, deliberately the same in SVGRenderer so previews stay
+    // truthful. Colour grading and blur act on the drawn content; the border
+    // goes on after them so an outline stays crisp on a blurred layer;
+    // scale/flip/rotation then move the finished layer; glow and shadow are
+    // cast by the transformed silhouette in screen space, which keeps a
+    // rotated layer's light direction fixed (and preserves how rotation +
+    // shadow already rendered); opacity fades layer and shadow together; the
+    // blend mode composites the result into what's beneath, so it is last.
     private var styled: some View {
         content
-            .opacity(node.opacity)
-            .rotationEffect(.degrees(node.rotation))
+            .modifier(ColorAdjustModifier(adjust: node.colorAdjust))
+            .modifier(BlurModifier(radius: node.blur))
+            .modifier(BorderModifier(node: node))
+            .modifier(TransformModifier(node: node))
+            .modifier(GlowModifier(glow: node.glow))
             .modifier(ShadowModifier(shadow: node.shadow))
+            .opacity(node.opacity)
+            .modifier(BlendModeModifier(mode: node.blendMode))
     }
 
     @ViewBuilder
@@ -286,7 +299,11 @@ private struct NodeView: View {
 
     private func font(for token: FontToken) -> Font {
         if let family = token.family {
-            return .custom(family, size: token.size)
+            // Weight has to be chained on: `.custom` ignores the token's weight
+            // entirely, so picking a family used to silently reset a bold label
+            // to regular with nothing in the UI to explain it. (Design is a
+            // system-font concept and genuinely doesn't apply to a named face.)
+            return .custom(family, size: token.size).weight(weight(token.weight))
         }
         return .system(size: token.size, weight: weight(token.weight), design: design(token.design))
     }
@@ -344,6 +361,142 @@ private struct ShadowModifier: ViewModifier {
             )
         } else {
             content
+        }
+    }
+}
+
+/// A glow is a shadow with no offset. Separate modifier so a layer can carry
+/// both a rim light and a cast shadow.
+private struct GlowModifier: ViewModifier {
+    let glow: ResolvedGlow?
+
+    func body(content: Content) -> some View {
+        if let glow {
+            content.shadow(color: Color(glow.color), radius: glow.radius, x: 0, y: 0)
+        } else {
+            content
+        }
+    }
+}
+
+// Each of these short-circuits on the identity case: an unused effect must
+// not cost an off-screen compositing pass in a widget extension living inside
+// a ~30 MB budget.
+
+private struct ColorAdjustModifier: ViewModifier {
+    let adjust: ResolvedColorAdjust
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if adjust.isIdentity {
+            content
+        } else {
+            content
+                .brightness(adjust.brightness)
+                .contrast(adjust.contrast)
+                .saturation(adjust.saturation)
+                .hueRotation(.degrees(adjust.hueRotation))
+        }
+    }
+}
+
+private struct BlurModifier: ViewModifier {
+    let radius: Double
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if radius > 0 {
+            content.blur(radius: radius)
+        } else {
+            content
+        }
+    }
+}
+
+private struct BlendModeModifier: ViewModifier {
+    let mode: FacetCore.BlendMode
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if mode == .normal {
+            content
+        } else {
+            content.blendMode(swiftUIBlendMode(mode))
+        }
+    }
+
+    private func swiftUIBlendMode(_ mode: FacetCore.BlendMode) -> SwiftUI.BlendMode {
+        switch mode {
+        case .normal: return .normal
+        case .multiply: return .multiply
+        case .screen: return .screen
+        case .overlay: return .overlay
+        case .darken: return .darken
+        case .lighten: return .lighten
+        case .colorDodge: return .colorDodge
+        case .colorBurn: return .colorBurn
+        case .softLight: return .softLight
+        case .hardLight: return .hardLight
+        case .difference: return .difference
+        case .exclusion: return .exclusion
+        case .hue: return .hue
+        case .saturation: return .saturation
+        case .color: return .color
+        case .luminosity: return .luminosity
+        case .plusLighter: return .plusLighter
+        }
+    }
+}
+
+/// The border is drawn as its own overlay placed with the same frame/offset
+/// the content uses, because `.offset` doesn't move a view's layout bounds —
+/// a plain `.overlay` would land at the node's unoffset origin.
+private struct BorderModifier: ViewModifier {
+    let node: RenderNode
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let border = node.border {
+            content.overlay(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: max(0, node.cornerRadius - border.inset), style: .continuous)
+                    .strokeBorder(Color(border.color), lineWidth: border.width)
+                    .frame(
+                        width: max(0, node.rect.width - border.inset * 2),
+                        height: max(0, node.rect.height - border.inset * 2)
+                    )
+                    .offset(x: node.rect.x + border.inset, y: node.rect.y + border.inset)
+            }
+        } else {
+            content
+        }
+    }
+}
+
+/// Scale, flip and rotation as one affine pivoted on the layer's own centre.
+/// `.rotationEffect` and `.scaleEffect` anchor on the *layout* frame, but
+/// every node draws itself with `.offset` into absolute canvas coordinates,
+/// so the layout centre is not the layer's centre — a rotated off-centre
+/// layer orbits the canvas origin instead of spinning in place. Pivoting
+/// explicitly is also what makes SwiftUI agree with SVGRenderer, which has
+/// always rotated about `rect.midX/midY`.
+private struct TransformModifier: ViewModifier {
+    let node: RenderNode
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let scaleX = node.scale * (node.flipHorizontal ? -1 : 1)
+        let scaleY = node.scale * (node.flipVertical ? -1 : 1)
+        if scaleX == 1, scaleY == 1, node.rotation == 0 {
+            content
+        } else {
+            let centerX = node.rect.midX
+            let centerY = node.rect.midY
+            content.transformEffect(
+                CGAffineTransform(translationX: centerX, y: centerY)
+                    .rotated(by: node.rotation * .pi / 180)
+                    .scaledBy(x: scaleX, y: scaleY)
+                    .translatedBy(x: -centerX, y: -centerY)
+            )
         }
     }
 }

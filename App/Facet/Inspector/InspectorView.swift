@@ -32,6 +32,15 @@ struct InspectorView: View {
     @State private var tapURLValid = true
     @State private var showingAppPicker = false
     @State private var showingShapeStudio = false
+    @State private var fontEditTarget: FontEditTarget?
+
+    /// Carries the token being edited plus the closure that writes it back, so
+    /// one sheet can serve every font field in the inspector.
+    struct FontEditTarget: Identifiable {
+        let id = UUID()
+        let token: FontToken
+        let update: ((inout FontToken) -> Void) -> Void
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,6 +48,8 @@ struct InspectorView: View {
                 genericSection
                 layoutSection
                 contentSection
+                effectsSection
+                outlineSection
                 interactionSection
                 if hasOverride {
                     Section {
@@ -52,6 +63,15 @@ struct InspectorView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear(perform: load)
+        .sheet(item: $fontEditTarget) { target in
+            FontPickerView(selection: target.token) { picked in
+                // Only the family travels back: size/weight/design have their
+                // own controls, and replacing the whole token here would undo
+                // an edit made after the sheet opened.
+                target.update { $0.family = picked.family }
+                fontEditTarget = nil
+            }
+        }
         .sheet(isPresented: $showingShapeStudio) {
             ShapeStudioView(pathData: currentPathData) { data in
                 apply { layer in
@@ -115,6 +135,115 @@ struct InspectorView: View {
         default: break
         }
     }
+
+    // MARK: - Effects
+
+    /// Per-layer compositing and grading. Every control writes nil when it is
+    /// at its no-op value, so a document only carries the effects it actually
+    /// uses instead of a screenful of defaults on every layer.
+    private var effectsSection: some View {
+        Section {
+            Picker("Blend", selection: Binding(
+                get: { layer.style.blendMode ?? FacetCore.BlendMode.normal },
+                set: { value in apply { $0.style.blendMode = value == FacetCore.BlendMode.normal ? nil : value } }
+            )) {
+                ForEach(Self.blendModes, id: \.0) { mode, title in
+                    Text(title).tag(mode)
+                }
+            }
+
+            sliderRow("Blur", value: layer.style.blur ?? 0, range: 0...50, format: { "\(Int($0))" }) { value in
+                apply { $0.style.blur = value < 0.5 ? nil : value }
+            }
+            sliderRow("Scale", value: layer.style.scale ?? 1, range: 0.1...4, format: { String(format: "%.2f×", $0) }) { value in
+                apply { $0.style.scale = abs(value - 1) < 0.01 ? nil : value }
+            }
+
+            Toggle("Flip horizontally", isOn: Binding(
+                get: { layer.style.flipHorizontal ?? false },
+                set: { on in apply { $0.style.flipHorizontal = on ? true : nil } }
+            ))
+            Toggle("Flip vertically", isOn: Binding(
+                get: { layer.style.flipVertical ?? false },
+                set: { on in apply { $0.style.flipVertical = on ? true : nil } }
+            ))
+
+            sliderRow("Brightness", value: layer.style.brightness ?? 0, range: -1...1, format: { String(format: "%+.2f", $0) }) { value in
+                apply { $0.style.brightness = abs(value) < 0.01 ? nil : value }
+            }
+            sliderRow("Contrast", value: layer.style.contrast ?? 1, range: 0...4, format: { String(format: "%.2f", $0) }) { value in
+                apply { $0.style.contrast = abs(value - 1) < 0.01 ? nil : value }
+            }
+            sliderRow("Saturation", value: layer.style.saturation ?? 1, range: 0...4, format: { String(format: "%.2f", $0) }) { value in
+                apply { $0.style.saturation = abs(value - 1) < 0.01 ? nil : value }
+            }
+            sliderRow("Hue", value: layer.style.hueRotation ?? 0, range: 0...360, format: { "\(Int($0))°" }) { value in
+                apply { $0.style.hueRotation = value < 0.5 ? nil : value }
+            }
+        } header: {
+            Text("Effects")
+        }
+    }
+
+    /// Border and glow live in their own section: both are optional structs
+    /// rather than scalars, so they need a toggle to exist at all.
+    private var outlineSection: some View {
+        Section {
+            Toggle("Border", isOn: Binding(
+                get: { layer.style.border != nil },
+                set: { on in
+                    apply { $0.style.border = on ? BorderStyle(color: .literal(.white), width: 2) : nil }
+                }
+            ))
+            if let border = layer.style.border {
+                ColorRefPicker(
+                    label: "Border color", tokens: tokens.colors, scheme: scheme,
+                    selection: Binding(
+                        get: { border.color },
+                        set: { value in apply { $0.style.border?.color = value } }
+                    )
+                )
+                sliderRow("Border width", value: border.width, range: 0.5...20, format: { String(format: "%.1f", $0) }) { value in
+                    apply { $0.style.border?.width = value }
+                }
+                sliderRow("Border inset", value: border.inset, range: 0...20, format: { String(format: "%.1f", $0) }) { value in
+                    apply { $0.style.border?.inset = value }
+                }
+            }
+
+            Toggle("Glow", isOn: Binding(
+                get: { layer.style.glow != nil },
+                set: { on in
+                    apply { $0.style.glow = on ? GlowStyle(color: .literal(.white), radius: 8) : nil }
+                }
+            ))
+            if let glow = layer.style.glow {
+                ColorRefPicker(
+                    label: "Glow color", tokens: tokens.colors, scheme: scheme,
+                    selection: Binding(
+                        get: { glow.color },
+                        set: { value in apply { $0.style.glow?.color = value } }
+                    )
+                )
+                sliderRow("Glow radius", value: glow.radius, range: 1...40, format: { "\(Int($0))" }) { value in
+                    apply { $0.style.glow?.radius = value }
+                }
+            }
+        } header: {
+            Text("Outline & Glow")
+        }
+    }
+
+    // SwiftUI declares its own BlendMode; ours has to be qualified.
+    private static let blendModes: [(FacetCore.BlendMode, String)] = [
+        (.normal, "Normal"), (.multiply, "Multiply"), (.screen, "Screen"),
+        (.overlay, "Overlay"), (.darken, "Darken"), (.lighten, "Lighten"),
+        (.colorDodge, "Color Dodge"), (.colorBurn, "Color Burn"),
+        (.softLight, "Soft Light"), (.hardLight, "Hard Light"),
+        (.difference, "Difference"), (.exclusion, "Exclusion"),
+        (.hue, "Hue"), (.saturation, "Saturation"), (.color, "Color"),
+        (.luminosity, "Luminosity"), (.plusLighter, "Plus Lighter"),
+    ]
 
     // MARK: - Layout
 
@@ -706,6 +835,21 @@ struct InspectorView: View {
 
     @ViewBuilder
     private func fontControls(font: FontToken, update: @escaping ((inout FontToken) -> Void) -> Void) -> some View {
+        Button {
+            fontEditTarget = FontEditTarget(token: font, update: update)
+        } label: {
+            HStack {
+                Text("Font")
+                    .foregroundStyle(.primary)
+                Spacer()
+                Text(font.family ?? "System")
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Image(systemName: "chevron.right")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
         sliderRow("Size", value: font.size, range: 6...72, format: { "\(Int($0))" }) { value in
             update { $0.size = value }
         }

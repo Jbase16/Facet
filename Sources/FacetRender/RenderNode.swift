@@ -38,6 +38,54 @@ public struct ResolvedShadow: Sendable, Equatable {
     public var offsetY: Double
 }
 
+/// A stroke inside the node's rect, following its corner radius.
+public struct ResolvedBorder: Sendable, Equatable {
+    public var color: ColorValue
+    public var width: Double
+    public var inset: Double
+
+    public init(color: ColorValue, width: Double, inset: Double = 0) {
+        self.color = color
+        self.width = width
+        self.inset = inset
+    }
+}
+
+public struct ResolvedGlow: Sendable, Equatable {
+    public var color: ColorValue
+    public var radius: Double
+
+    public init(color: ColorValue, radius: Double) {
+        self.color = color
+        self.radius = radius
+    }
+}
+
+/// Per-layer colour grading, already clamped. Non-optional with identity
+/// defaults so renderers can ask `isIdentity` once instead of unwrapping four
+/// optionals on every node.
+public struct ResolvedColorAdjust: Sendable, Equatable {
+    /// Additive, -1...1.
+    public var brightness: Double
+    /// Multiplier about mid-grey, 0...4.
+    public var contrast: Double
+    /// 0...4.
+    public var saturation: Double
+    /// Degrees, 0..<360.
+    public var hueRotation: Double
+
+    public init(brightness: Double = 0, contrast: Double = 1, saturation: Double = 1, hueRotation: Double = 0) {
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.hueRotation = hueRotation
+    }
+
+    public static let identity = ResolvedColorAdjust()
+
+    public var isIdentity: Bool { self == .identity }
+}
+
 /// A gradient stop with its color already resolved for the color scheme.
 public struct ResolvedGradientStop: Sendable, Equatable {
     public var position: Double
@@ -159,6 +207,16 @@ public struct RenderNode: Sendable, Equatable {
     public var rotation: Double
     public var cornerRadius: Double
     public var shadow: ResolvedShadow?
+    public var blendMode: BlendMode
+    /// Gaussian blur radius in points, 0...50.
+    public var blur: Double
+    public var border: ResolvedBorder?
+    /// Uniform scale about `rect`'s centre, 0.1...4.
+    public var scale: Double
+    public var flipHorizontal: Bool
+    public var flipVertical: Bool
+    public var colorAdjust: ResolvedColorAdjust
+    public var glow: ResolvedGlow?
     /// Resolved tap destination (URL string — plain String so the resolver
     /// stays Linux-portable; renderers that can act on it parse it).
     public var tapURL: String?
@@ -173,6 +231,14 @@ public struct RenderNode: Sendable, Equatable {
         rotation: Double = 0,
         cornerRadius: Double = 0,
         shadow: ResolvedShadow? = nil,
+        blendMode: BlendMode = .normal,
+        blur: Double = 0,
+        border: ResolvedBorder? = nil,
+        scale: Double = 1,
+        flipHorizontal: Bool = false,
+        flipVertical: Bool = false,
+        colorAdjust: ResolvedColorAdjust = .identity,
+        glow: ResolvedGlow? = nil,
         tapURL: String? = nil,
         kind: Kind,
         children: [RenderNode] = []
@@ -184,6 +250,14 @@ public struct RenderNode: Sendable, Equatable {
         self.rotation = rotation
         self.cornerRadius = cornerRadius
         self.shadow = shadow
+        self.blendMode = blendMode
+        self.blur = blur
+        self.border = border
+        self.scale = scale
+        self.flipHorizontal = flipHorizontal
+        self.flipVertical = flipVertical
+        self.colorAdjust = colorAdjust
+        self.glow = glow
         self.tapURL = tapURL
         self.kind = kind
         self.children = children
