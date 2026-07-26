@@ -45,12 +45,15 @@ struct InspectorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                genericSection
-                layoutSection
-                contentSection
-                effectsSection
-                outlineSection
-                interactionSection
+                Group {
+                    genericSection
+                    layoutSection
+                    contentSection
+                    effectsSection
+                    outlineSection
+                    interactionSection
+                }
+                .listRowBackground(FacetUI.raised)
                 if hasOverride {
                     Section {
                         Button("Clear override for this size", role: .destructive, action: clearOverride)
@@ -59,9 +62,15 @@ struct InspectorView: View {
                     }
                 }
             }
+            // A stock Form reads as Settings, which is the wrong signal for a
+            // design tool. Same controls, Facet's surfaces.
+            .scrollContentBackground(.hidden)
+            .background(FacetUI.bg)
             .navigationTitle(layer.name)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(FacetUI.bg, for: .navigationBar)
         }
+        .presentationBackground(FacetUI.bg)
         .onAppear(perform: load)
         .sheet(item: $fontEditTarget) { target in
             FontPickerView(selection: target.token) { picked in
@@ -181,7 +190,7 @@ struct InspectorView: View {
                 apply { $0.style.hueRotation = value < 0.5 ? nil : value }
             }
         } header: {
-            Text("Effects")
+            Text("Effects").facetEyebrow()
         }
     }
 
@@ -230,7 +239,7 @@ struct InspectorView: View {
                 }
             }
         } header: {
-            Text("Outline & Glow")
+            Text("Outline & Glow").facetEyebrow()
         }
     }
 
@@ -272,7 +281,7 @@ struct InspectorView: View {
             }
             alignmentRow
         } header: {
-            Text("Layout")
+            Text("Layout").facetEyebrow()
         } footer: {
             Text(hasOverride
                  ? "Percentages of the parent. X and Y are the layer's centre. Edits apply to this size only."
@@ -426,7 +435,7 @@ struct InspectorView: View {
                 }
             }
         } header: {
-            Text("Interaction")
+            Text("Interaction").facetEyebrow()
         } footer: {
             if !visibleWhenValid {
                 Text("Visibility expression doesn't parse — the layer stays visible until it does.")
@@ -441,7 +450,7 @@ struct InspectorView: View {
     // MARK: - Generic
 
     private var genericSection: some View {
-        Section("Layer") {
+        Section(header: Text("Layer").facetEyebrow()) {
             TextField("Name", text: $name)
                 .onSubmit { apply { $0.name = name } }
             sliderRow("Opacity", value: layer.style.opacity, range: 0...1, format: { "\(Int($0 * 100))%" }) { value in
@@ -488,7 +497,7 @@ struct InspectorView: View {
     }
 
     private func textSection(_ content: TextContent) -> some View {
-        Section("Text") {
+        Section(header: Text("Text").facetEyebrow()) {
             TextField("Template", text: $templateText, axis: .vertical)
                 .font(.system(.body, design: .monospaced))
                 .autocorrectionDisabled()
@@ -556,7 +565,7 @@ struct InspectorView: View {
     ]
 
     private func symbolSection(_ content: SymbolContent) -> some View {
-        Section("Symbol") {
+        Section(header: Text("Symbol").facetEyebrow()) {
             TextField("SF Symbol name", text: $symbolName)
                 .font(.system(.body, design: .monospaced))
                 .autocorrectionDisabled()
@@ -605,7 +614,7 @@ struct InspectorView: View {
     }
 
     private func shapeSection(_ content: ShapeContent) -> some View {
-        Section("Shape") {
+        Section(header: Text("Shape").facetEyebrow()) {
             Picker("Kind", selection: contentBinding(get: content.kind, set: { (value, shape: inout ShapeContent) in
                 shape.kind = value
                 // Switching to a path with nothing to draw would resolve as
@@ -652,7 +661,7 @@ struct InspectorView: View {
     }
 
     private func gaugeSection(_ content: GaugeContent) -> some View {
-        Section("Gauge") {
+        Section(header: Text("Gauge").facetEyebrow()) {
             TextField("Value expression (0–1)", text: $expressionText)
                 .font(.system(.body, design: .monospaced))
                 .autocorrectionDisabled()
@@ -696,7 +705,7 @@ struct InspectorView: View {
     }
 
     private func lineSection(_ content: LineContent) -> some View {
-        Section("Line") {
+        Section(header: Text("Line").facetEyebrow()) {
             sliderRow("Thickness", value: content.thickness, range: 0.5...12, format: { String(format: "%.1f", $0) }) { value in
                 apply { layer in
                     if case .line(var line) = layer.content {
@@ -724,7 +733,7 @@ struct InspectorView: View {
     }
 
     private func chartSection(_ content: ChartContent) -> some View {
-        Section("Chart") {
+        Section(header: Text("Chart").facetEyebrow()) {
             TextField("Data path (a list)", text: $dataPath)
                 .font(.system(.body, design: .monospaced))
                 .autocorrectionDisabled()
@@ -761,7 +770,7 @@ struct InspectorView: View {
     }
 
     private func containerSection(_ content: ContainerContent) -> some View {
-        Section("Group") {
+        Section(header: Text("Group").facetEyebrow()) {
             Picker("Layout", selection: contentBinding(get: content.layout, set: { (value, container: inout ContainerContent) in container.layout = value })) {
                 Text("Free").tag(ContainerLayout.absolute)
                 Text("Row").tag(ContainerLayout.horizontal)
@@ -812,7 +821,7 @@ struct InspectorView: View {
     }
 
     private func imageSection(_ content: ImageContent) -> some View {
-        Section("Image") {
+        Section(header: Text("Image").facetEyebrow()) {
             LabeledContent("Asset", value: content.assetName)
             Picker("Mode", selection: contentBinding(get: content.contentMode, set: { (value, image: inout ImageContent) in image.contentMode = value })) {
                 Text("Fill").tag(ImageContent.ContentMode.fill)
