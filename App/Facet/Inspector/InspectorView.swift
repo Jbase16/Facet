@@ -43,8 +43,7 @@ struct InspectorView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
+        Form {
                 Group {
                     genericSection
                     layoutSection
@@ -64,13 +63,8 @@ struct InspectorView: View {
             }
             // A stock Form reads as Settings, which is the wrong signal for a
             // design tool. Same controls, Facet's surfaces.
-            .scrollContentBackground(.hidden)
-            .background(FacetUI.bg)
-            .navigationTitle(layer.name)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(FacetUI.bg, for: .navigationBar)
-        }
-        .presentationBackground(FacetUI.bg)
+        .scrollContentBackground(.hidden)
+        .background(FacetUI.surface)
         .onAppear(perform: load)
         .sheet(item: $fontEditTarget) { target in
             FontPickerView(selection: target.token) { picked in

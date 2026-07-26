@@ -43,7 +43,9 @@ struct EditorView: View {
     /// magnified on the editing canvas.
     @State private var previewMode = false
     @State private var previewSlot = 0
-    @State private var inspectorDetent: PresentationDetent = .medium
+    /// Panel height, user-resizable via the grab handle.
+    @State private var panelHeight: CGFloat = 360
+    @State private var panelDragStart: CGFloat?
     /// Space the canvas has to work with, so zoom can fit the rendition.
     @State private var canvasViewport: CGSize = .zero
 
@@ -79,6 +81,11 @@ struct EditorView: View {
     }
 
     var body: some View {
+        // Pinned to the screen's width: the Form inside the tool panel has a
+        // wider ideal width, and without a definite width that propagates up
+        // and makes the whole editor — panel, controls and all — overflow and
+        // clip at both edges.
+        GeometryReader { screen in
         VStack(spacing: 0) {
             Group {
                 if previewMode {
@@ -110,8 +117,15 @@ struct EditorView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .overlay(alignment: .top) { sampledToast }
+            if let panel = activeSheet {
+                editorPanel(panel)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
             controls
         }
+        .frame(width: screen.size.width, height: screen.size.height)
+        }
+        .animation(.snappy(duration: 0.25), value: activeSheet)
         .background(FacetUI.bg)
         .task(id: document.backdrop) { loadBackdrop() }
         .onAppear {
@@ -131,7 +145,6 @@ struct EditorView: View {
                 if case .container(let container) = document.root.content,
                    let first = container.children.first {
                     selectedLayerID = first.id
-                    inspectorDetent = .large
                     activeSheet = .inspector
                 }
             }
@@ -156,7 +169,74 @@ struct EditorView: View {
                 .fontWeight(.semibold)
             }
         }
-        .sheet(item: $activeSheet) { sheet in
+    }
+
+    /// Chrome around the panel: a grab handle that resizes it, a title, and a
+    /// close button. Resizing matters because how much canvas you want to see
+    /// depends on what you're editing.
+    private func editorPanel(_ panel: Sheet) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(panelTitle(panel)).facetEyebrow()
+                Spacer()
+                Button {
+                    activeSheet = nil
+                } label: {
+                    Image(systemName: "xmark")
+                }
+                .buttonStyle(FacetToolButton())
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 6)
+
+            panelContent(panel)
+        }
+        .padding(.top, 6)
+        // Width must be pinned as well as height: without it the Form inside
+        // sizes to its own ideal width, which is wider than the screen, and
+        // the panel centres — clipping the title off the left edge and the
+        // close button off the right.
+        .frame(maxWidth: .infinity)
+        .frame(height: panelHeight)
+        .background(FacetUI.surface)
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20, style: .continuous))
+        .overlay(alignment: .top) {
+            Capsule()
+                .fill(FacetUI.hairlineStrong)
+                .frame(width: 40, height: 5)
+                .padding(.top, 6)
+                .contentShape(Rectangle().inset(by: -14))
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            if panelDragStart == nil { panelDragStart = panelHeight }
+                            let start = panelDragStart ?? panelHeight
+                            panelHeight = min(max(start - value.translation.height, 220), 640)
+                        }
+                        .onEnded { _ in panelDragStart = nil }
+                )
+        }
+        .overlay(alignment: .top) { Divider().overlay(FacetUI.hairline) }
+    }
+
+    private func panelTitle(_ panel: Sheet) -> String {
+        switch panel {
+        case .inspector:
+            return selectedLayerID
+                .flatMap { document.root.firstLayer(withID: $0)?.name } ?? "Layer"
+        case .layers: return "Layers"
+        case .theme: return "Theme"
+        }
+    }
+
+    /// The editor's tool panel. Deliberately *not* a sheet: a sheet floats over
+    /// the canvas, so you could not see an edit land without dismissing it and
+    /// reopening — which is the whole loop of a design tool. As a resident
+    /// panel it takes real layout space, the canvas shrinks around it, and
+    /// zoom-to-fit keeps the whole widget visible while you work.
+    @ViewBuilder
+    private func panelContent(_ sheet: Sheet) -> some View {
+        Group {
             switch sheet {
             case .inspector:
                 if let id = selectedLayerID, let layer = document.root.firstLayer(withID: id) {
@@ -178,7 +258,6 @@ struct EditorView: View {
                             setFrame(newFrame, for: id)
                         }
                     )
-                    .presentationDetents([.medium, .large], selection: $inspectorDetent)
                 }
             case .layers:
                 LayerListView(
@@ -187,7 +266,6 @@ struct EditorView: View {
                     onSelect: { selectedLayerID = $0 },
                     mutate: { mutation in mutateDocument(mutation) }
                 )
-                .presentationDetents([.medium, .large])
             case .theme:
                 ThemeEditorView(
                     tokens: document.tokens,
@@ -195,7 +273,6 @@ struct EditorView: View {
                         mutateDocument { mutation(&$0.tokens) }
                     }
                 )
-                .presentationDetents([.medium, .large])
             }
         }
     }

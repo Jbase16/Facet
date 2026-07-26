@@ -12,14 +12,12 @@ struct LayerListView: View {
     let mutate: ((inout WidgetDocument) -> Void) -> Void
 
     var body: some View {
-        NavigationStack {
             List {
                 rows(for: document.root, depth: 0)
             }
-            .listStyle(.plain)
-            .navigationTitle("Layers")
-            .navigationBarTitleDisplayMode(.inline)
-        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(FacetUI.surface)
     }
 
     @ViewBuilder

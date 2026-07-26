@@ -12,8 +12,7 @@ struct ThemeEditorView: View {
     @State private var newName: String = ""
 
     var body: some View {
-        NavigationStack {
-            Form {
+        Form {
                 Section("Colors") {
                     ForEach(tokens.colors.keys.sorted(), id: \.self) { name in
                         colorRow(name: name, token: tokens.colors[name]!)
@@ -35,7 +34,6 @@ struct ThemeEditorView: View {
                     }
                 }
             }
-            .navigationTitle("Theme")
             .navigationBarTitleDisplayMode(.inline)
             .alert("Rename token", isPresented: Binding(
                 get: { renamingToken != nil },
@@ -45,7 +43,6 @@ struct ThemeEditorView: View {
                 Button("Rename") {
                     if let old = renamingToken {
                         rename(from: old, to: newName)
-                    }
                     renamingToken = nil
                 }
                 Button("Cancel", role: .cancel) { renamingToken = nil }
