@@ -22,6 +22,12 @@ enum AppGroup {
         containerURL.appendingPathComponent("Documents", isDirectory: true)
     }
 
+    /// Scenes sit beside documents rather than inside them: a scene references
+    /// widgets by id, so the two have independent lifetimes.
+    static var scenesURL: URL {
+        containerURL.appendingPathComponent("Scenes", isDirectory: true)
+    }
+
     static var snapshotStore: SnapshotStore {
         SnapshotStore(directory: containerURL.appendingPathComponent("Snapshots", isDirectory: true))
     }

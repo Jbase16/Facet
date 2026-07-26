@@ -66,7 +66,13 @@ struct GalleryView: View {
                     .buttonStyle(FacetToolButton())
 
                     Button {
-                        store.save(Self.blankDocument())
+                        // Create *and* open. Saving silently left you on the
+                        // gallery with no sign anything had happened, so the
+                        // natural response was to tap again — which is how a
+                        // library ends up with nine "Untitled" widgets in it.
+                        let document = Self.blankDocument()
+                        store.save(document)
+                        path = [document.id]
                     } label: {
                         Image(systemName: "plus")
                     }

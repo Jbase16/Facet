@@ -16,6 +16,7 @@
 		1853D459686F54EB3437A058 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */; };
 		18B366D8929C3D314A443997 /* UnitPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0CA8406D09B0D7574BED59D /* UnitPreferences.swift */; };
 		1900A00E6635F1A678923F15 /* WidgetSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A5750D64A4BA747CA816215 /* WidgetSelection.swift */; };
+		1A5707AF507E9BCA01A63B9E /* SceneRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 556DD7FBC61EA27E724CCCEB /* SceneRepository.swift */; };
 		1AF1EDC69F2AB164048C8D6C /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */; };
 		1D95F513434A4CE3BC995C9C /* WidgetSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A5750D64A4BA747CA816215 /* WidgetSelection.swift */; };
 		265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493883341D6B22D1F294A1E /* ThemeEditorView.swift */; };
@@ -30,6 +31,7 @@
 		77DDCF69899FD743134FF0CE /* FacetRender in Frameworks */ = {isa = PBXBuildFile; productRef = 0187F4ED6530EF2E65586359 /* FacetRender */; };
 		7C20108989E04D30EF34B5C9 /* GenerateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62E5678109F5B19042F0E78 /* GenerateWidgetView.swift */; };
 		7D32B2B277022511E2CA8902 /* FacetImageProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */; };
+		7DBA2DF9407F2F01D91FAAFC /* SceneRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 556DD7FBC61EA27E724CCCEB /* SceneRepository.swift */; };
 		81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DA8915E10ABBF586F49CD /* FacetApp.swift */; };
 		89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EA27D153D75EBEFECD233 /* FacetUI.swift */; };
 		8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A5CCA0565292A65A784FC56 /* WeatherSource.swift */; };
@@ -97,6 +99,7 @@
 		3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGeneratorService.swift; sourceTree = "<group>"; };
 		402DA8915E10ABBF586F49CD /* FacetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetApp.swift; sourceTree = "<group>"; };
 		4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetImageProviderFactory.swift; sourceTree = "<group>"; };
+		556DD7FBC61EA27E724CCCEB /* SceneRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRepository.swift; sourceTree = "<group>"; };
 		5752CDBE2A27273F68C0A8A6 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSource.swift; sourceTree = "<group>"; };
 		5A5750D64A4BA747CA816215 /* WidgetSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSelection.swift; sourceTree = "<group>"; };
 		5ED98CA53137812BF667A5C2 /* AppCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCatalog.swift; sourceTree = "<group>"; };
@@ -221,6 +224,7 @@
 			isa = PBXGroup;
 			children = (
 				D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */,
+				556DD7FBC61EA27E724CCCEB /* SceneRepository.swift */,
 				5A5750D64A4BA747CA816215 /* WidgetSelection.swift */,
 				5BAE8323F8A46D8204007A7B /* Assets */,
 			);
@@ -435,6 +439,7 @@
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,
+				7DBA2DF9407F2F01D91FAAFC /* SceneRepository.swift in Sources */,
 				A3AE4B68B94873D25416AB48 /* ShapePlayground.swift in Sources */,
 				F024C274E822725E25BC3DAD /* ShapeStudioView.swift in Sources */,
 				265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */,
@@ -456,6 +461,7 @@
 				094AD381D8E67A0078193473 /* AssetStore.swift in Sources */,
 				7D32B2B277022511E2CA8902 /* FacetImageProviderFactory.swift in Sources */,
 				8EC4D957C7965E09BD2F4868 /* FacetWidgets.swift in Sources */,
+				1A5707AF507E9BCA01A63B9E /* SceneRepository.swift in Sources */,
 				1D95F513434A4CE3BC995C9C /* WidgetSelection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
