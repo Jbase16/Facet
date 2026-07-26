@@ -274,6 +274,32 @@ private struct NodeView: View {
 
     @ViewBuilder
     private func gaugeView(_ gauge: ResolvedGauge) -> some View {
+        if let arc = gauge.arc {
+            // A gauge's coordinates describe a square, so it is drawn into the
+            // square on the layer's smaller side and centred — otherwise a ring
+            // on a wide layer would render as an ellipse.
+            GeometryReader { proxy in
+                let side = min(proxy.size.width, proxy.size.height)
+                let stroke = StrokeStyle(
+                    lineWidth: arc.lineWidth * side,
+                    lineCap: arc.roundCap ? .round : .butt
+                )
+                ZStack {
+                    NormalizedPath(commands: arc.track)
+                        .stroke(Color(gauge.track), style: stroke)
+                    NormalizedPath(commands: arc.progress)
+                        .stroke(Color(gauge.tint), style: stroke)
+                }
+                .frame(width: side, height: side)
+                .frame(width: proxy.size.width, height: proxy.size.height)
+            }
+        } else {
+            legacyGaugeView(gauge)
+        }
+    }
+
+    @ViewBuilder
+    private func legacyGaugeView(_ gauge: ResolvedGauge) -> some View {
         switch gauge.style {
         case .ring:
             ZStack {

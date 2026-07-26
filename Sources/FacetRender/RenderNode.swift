@@ -183,6 +183,44 @@ public struct ResolvedGauge: Sendable, Equatable {
     public var tint: ColorValue
     public var track: ColorValue
     public var lineWidth: Double
+    /// Arc geometry in normalized 0...1 coordinates, present only when the
+    /// design uses partial sweeps, segments, caps or a start angle. When nil
+    /// the renderers draw the original full ring / filled bar, so untouched
+    /// documents are unaffected.
+    public var arc: ResolvedGaugeArc?
+
+    public init(
+        fraction: Double,
+        style: GaugeStyle,
+        tint: ColorValue,
+        track: ColorValue,
+        lineWidth: Double,
+        arc: ResolvedGaugeArc? = nil
+    ) {
+        self.fraction = fraction
+        self.style = style
+        self.tint = tint
+        self.track = track
+        self.lineWidth = lineWidth
+        self.arc = arc
+    }
+}
+
+/// Track and progress outlines for a gauge, already parsed so neither renderer
+/// re-parses per frame.
+public struct ResolvedGaugeArc: Sendable, Equatable {
+    public var track: [PathCommand]
+    public var progress: [PathCommand]
+    public var roundCap: Bool
+    /// Stroke thickness as a fraction of the layer's smaller side.
+    public var lineWidth: Double
+
+    public init(track: [PathCommand], progress: [PathCommand], roundCap: Bool, lineWidth: Double) {
+        self.track = track
+        self.progress = progress
+        self.roundCap = roundCap
+        self.lineWidth = lineWidth
+    }
 }
 
 /// A fully resolved, concrete render tree: expressions evaluated, tokens

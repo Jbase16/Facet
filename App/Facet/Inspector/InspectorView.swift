@@ -701,6 +701,85 @@ struct InspectorView: View {
                 label: "Track", tokens: tokens.colors, scheme: scheme,
                 selection: contentBinding(get: content.track, set: { (value, gauge: inout GaugeContent) in gauge.track = value })
             )
+
+            if content.style == .ring {
+                // Arc controls only bind for rings; a bar has no sweep. Leaving
+                // these nil keeps a plain gauge on its original drawing path.
+                sliderRow("Sweep", value: content.sweep ?? 360, range: 30...360, format: { "\(Int($0))°" }) { value in
+                    apply { layer in
+                        if case .gauge(var gauge) = layer.content {
+                            gauge.sweep = value > 359.5 ? nil : value
+                            layer.content = .gauge(gauge)
+                        }
+                    }
+                }
+                sliderRow("Start angle", value: content.startAngle ?? 0, range: 0...360, format: { "\(Int($0))°" }) { value in
+                    apply { layer in
+                        if case .gauge(var gauge) = layer.content {
+                            gauge.startAngle = value < 0.5 ? nil : value
+                            layer.content = .gauge(gauge)
+                        }
+                    }
+                }
+                Picker("Direction", selection: Binding(
+                    get: { content.direction ?? .clockwise },
+                    set: { value in
+                        apply { layer in
+                            if case .gauge(var gauge) = layer.content {
+                                gauge.direction = value == .clockwise ? nil : value
+                                layer.content = .gauge(gauge)
+                            }
+                        }
+                    }
+                )) {
+                    Text("Clockwise").tag(GaugeDirection.clockwise)
+                    Text("Counter").tag(GaugeDirection.counterClockwise)
+                }
+                Picker("Cap", selection: Binding(
+                    get: { content.cap ?? .butt },
+                    set: { value in
+                        apply { layer in
+                            if case .gauge(var gauge) = layer.content {
+                                gauge.cap = value == .butt ? nil : value
+                                layer.content = .gauge(gauge)
+                            }
+                        }
+                    }
+                )) {
+                    Text("Flat").tag(GaugeCap.butt)
+                    Text("Round").tag(GaugeCap.round)
+                }
+                Toggle("Segmented", isOn: Binding(
+                    get: { content.segments != nil },
+                    set: { on in
+                        apply { layer in
+                            if case .gauge(var gauge) = layer.content {
+                                gauge.segments = on ? 12 : nil
+                                gauge.gapDegrees = on ? 4 : nil
+                                layer.content = .gauge(gauge)
+                            }
+                        }
+                    }
+                ))
+                if let segments = content.segments {
+                    sliderRow("Segments", value: Double(segments), range: 2...60, format: { "\(Int($0))" }) { value in
+                        apply { layer in
+                            if case .gauge(var gauge) = layer.content {
+                                gauge.segments = Int(value.rounded())
+                                layer.content = .gauge(gauge)
+                            }
+                        }
+                    }
+                    sliderRow("Gap", value: content.gapDegrees ?? 4, range: 0...20, format: { String(format: "%.1f°", $0) }) { value in
+                        apply { layer in
+                            if case .gauge(var gauge) = layer.content {
+                                gauge.gapDegrees = value
+                                layer.content = .gauge(gauge)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

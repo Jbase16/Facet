@@ -346,7 +346,62 @@ public struct DocumentResolver {
             style: content.style,
             tint: tint,
             track: track,
-            lineWidth: content.lineWidth
+            lineWidth: content.lineWidth,
+            arc: resolveGaugeArc(content, fraction: fraction, layer: layer)
+        )
+    }
+
+    /// Builds the arc outline, but only for gauges that ask for it. The
+    /// geometry works in a normalized square, so `lineWidth` (points here) is
+    /// expressed against the layer's smaller side before handing it over.
+    private mutating func resolveGaugeArc(
+        _ content: GaugeContent,
+        fraction: Double,
+        layer: Layer
+    ) -> ResolvedGaugeArc? {
+        guard content.usesArcGeometry, content.style == .ring else { return nil }
+
+        let side = min(
+            layer.frame.width * environment.canvasWidth,
+            layer.frame.height * environment.canvasHeight
+        )
+        guard side > 0 else { return nil }
+        let normalizedWidth = min(max(content.lineWidth / side, 0.01), 0.5)
+        let cap = content.cap ?? .butt
+
+        let arc: GaugeArc
+        if let segments = content.segments {
+            arc = GaugeGeometry.segmented(
+                value: fraction,
+                segments: segments,
+                startAngle: content.startAngle ?? 0,
+                sweep: content.sweep ?? 360,
+                direction: content.direction ?? .clockwise,
+                gapDegrees: content.gapDegrees ?? 4,
+                lineWidth: normalizedWidth,
+                cap: cap
+            )
+        } else {
+            arc = GaugeGeometry.ring(
+                value: fraction,
+                startAngle: content.startAngle ?? 0,
+                sweep: content.sweep ?? 360,
+                direction: content.direction ?? .clockwise,
+                cap: cap,
+                lineWidth: normalizedWidth
+            )
+        }
+
+        guard let trackPath = try? PathData.parse(arc.track),
+              let progressPath = try? PathData.parse(arc.progress) else {
+            report(layer, "gauge: could not parse generated arc")
+            return nil
+        }
+        return ResolvedGaugeArc(
+            track: trackPath,
+            progress: progressPath,
+            roundCap: cap == .round,
+            lineWidth: normalizedWidth
         )
     }
 

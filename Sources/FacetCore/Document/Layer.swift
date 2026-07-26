@@ -379,12 +379,50 @@ public struct GaugeContent: Codable, Hashable, Sendable {
     public var track: ColorRef
     public var lineWidth: Double
 
-    public init(value: String, style: GaugeStyle = .ring, tint: ColorRef, track: ColorRef, lineWidth: Double = 6) {
+    /// Where the arc begins, in degrees, 0 = 12 o'clock and positive clockwise.
+    public var startAngle: Double?
+    /// How much of the circle the gauge spans: 360 is a full ring, 270 the
+    /// classic activity arc, 180 a half-dial.
+    public var sweep: Double?
+    public var direction: GaugeDirection?
+    public var cap: GaugeCap?
+    /// Breaks the arc into discrete ticks — the activity-dots look. nil is a
+    /// continuous arc.
+    public var segments: Int?
+    public var gapDegrees: Double?
+
+    public init(
+        value: String,
+        style: GaugeStyle = .ring,
+        tint: ColorRef,
+        track: ColorRef,
+        lineWidth: Double = 6,
+        startAngle: Double? = nil,
+        sweep: Double? = nil,
+        direction: GaugeDirection? = nil,
+        cap: GaugeCap? = nil,
+        segments: Int? = nil,
+        gapDegrees: Double? = nil
+    ) {
         self.value = value
         self.style = style
         self.tint = tint
         self.track = track
         self.lineWidth = lineWidth
+        self.startAngle = startAngle
+        self.sweep = sweep
+        self.direction = direction
+        self.cap = cap
+        self.segments = segments
+        self.gapDegrees = gapDegrees
+    }
+
+    /// True once the design asks for anything the legacy full-ring drawing
+    /// can't express. Kept explicit so an untouched gauge keeps rendering
+    /// through exactly the code path it always did.
+    public var usesArcGeometry: Bool {
+        startAngle != nil || sweep != nil || direction != nil || cap != nil
+            || segments != nil || gapDegrees != nil
     }
 }
 

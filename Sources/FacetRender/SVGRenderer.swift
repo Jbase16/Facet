@@ -346,6 +346,23 @@ public enum SVGRenderer {
     }
 
     private static func gaugeElements(_ gauge: ResolvedGauge, in rect: Rect, indent: String) -> String {
+        if let arc = gauge.arc {
+            // Drawn into the centred square on the smaller side, matching the
+            // SwiftUI backend — a ring stretched to a wide layer is an ellipse.
+            let side = min(rect.width, rect.height)
+            let originX = rect.x + (rect.width - side) / 2
+            let originY = rect.y + (rect.height - side) / 2
+            let width = arc.lineWidth * side
+            let cap = arc.roundCap ? "round" : "butt"
+            func scaled(_ commands: [PathCommand]) -> String {
+                pathDescription(commands, in: Rect(x: originX, y: originY, width: side, height: side))
+            }
+            var output = "\(indent)<path d=\"\(scaled(arc.track))\" fill=\"none\" stroke=\"\(cssColor(gauge.track))\" stroke-width=\"\(format(width))\" stroke-linecap=\"\(cap)\"/>\n"
+            if !arc.progress.isEmpty {
+                output += "\(indent)<path d=\"\(scaled(arc.progress))\" fill=\"none\" stroke=\"\(cssColor(gauge.tint))\" stroke-width=\"\(format(width))\" stroke-linecap=\"\(cap)\"/>\n"
+            }
+            return output
+        }
         switch gauge.style {
         case .bar:
             let radius = rect.height / 2
