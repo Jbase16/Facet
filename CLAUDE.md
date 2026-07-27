@@ -75,6 +75,24 @@ README.md has the current status and build instructions.
   type — FacetCore builds on Linux, where WidgetKit doesn't exist. The
   mapping happens once, in `FacetWidgets.swift`, behind the only
   `#available(iOS 26)` in the app.
+- Masks (`LayerStyle.mask`) are a shape plus an optional alpha ramp plus
+  invert — not a reference to another layer. Masking by a layer's alpha
+  (text knockouts) needs cycle detection and a second pass; it is a
+  different, bigger feature. `ShapeKind` is reused, so anything the shape
+  studio generates works as a mask by pasting its path.
+- Effect order is `colorAdjust → mask → blur → border → transform → glow →
+  shadow → opacity → blend`, and BOTH backends must match. SVG puts the mask
+  on an inner `<g>` so the outer group's filter runs after it — on the same
+  element, SVG would apply the filter first and a shadow would be cast by the
+  unclipped silhouette.
+- A circle shape or mask is INSCRIBED (`Circle()` / `r = min(w,h)/2`), never
+  stretched. `Ellipse()` fills the rect and silently diverges from SVG on any
+  non-square layer.
+- Verify renderer work by rendering and looking, in BOTH backends. Two real
+  bugs in the mask pass — the ellipse divergence and a stale simulator
+  binary reading as "masks don't work" — were invisible to a green suite.
+  `swift run facet-preview render <file> --out x.svg` then
+  `qlmanage -t -s 840 -o . x.svg` gives a PNG to actually look at.
 - Anything that decides whether a layer renders must go in
   `DocumentResolver.willRender`, not inline. Stack layout sizes its cells
   from that predicate in a pre-pass; when the two disagreed, a hidden layer

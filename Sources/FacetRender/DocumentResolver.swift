@@ -182,6 +182,7 @@ public struct DocumentResolver {
                 hueRotation: wrapDegrees(style.hueRotation)
             ),
             glow: resolveGlow(style.glow),
+            mask: resolveMask(style.mask, in: rect, layer: layer),
             tapURL: tapURL,
             kind: kind,
             children: children
@@ -210,6 +211,70 @@ public struct DocumentResolver {
         let radius = clamp(glow.radius, to: 0...50, default: 0)
         guard radius > 0 else { return nil }
         return ResolvedGlow(color: resolveColor(glow.color), radius: radius)
+    }
+
+    /// Flattens a mask into canvas coordinates. The mask's frame is normalized
+    /// against the layer it clips, exactly like a child layer's frame, so the
+    /// same mental model applies whether you are placing a layer or a window
+    /// into it.
+    private mutating func resolveMask(_ mask: LayerMask?, in rect: Rect, layer: Layer) -> ResolvedMask? {
+        guard let mask, !mask.isNoOp else { return nil }
+
+        let maskRect: Rect
+        if let frame = mask.frame {
+            maskRect = Rect(
+                x: rect.x + frame.x * rect.width - frame.width * rect.width / 2,
+                y: rect.y + frame.y * rect.height - frame.height * rect.height / 2,
+                width: frame.width * rect.width,
+                height: frame.height * rect.height
+            )
+        } else {
+            maskRect = rect
+        }
+
+        // A path mask that won't parse would clip the layer away entirely.
+        // Failing open — no mask at all — keeps a typo from blanking a widget,
+        // the same rule `visibleWhen` and shape outlines already follow, and
+        // the diagnostic makes it findable.
+        var outline: [PathCommand]?
+        if mask.shape == .path {
+            guard let data = mask.pathData, !data.isEmpty else { return nil }
+            do {
+                outline = try PathData.parse(data)
+            } catch {
+                report(layer, "mask path: \(error)")
+                return nil
+            }
+        }
+
+        return ResolvedMask(
+            shape: mask.shape,
+            path: outline,
+            cornerRadius: clamp(mask.cornerRadius, to: 0...500, default: 0),
+            rect: maskRect,
+            fade: resolveFade(mask.fade),
+            invert: mask.invert
+        )
+    }
+
+    private func resolveFade(_ fade: MaskFade?) -> ResolvedMask.Fade? {
+        guard let fade, !fade.stops.isEmpty else { return nil }
+        // Sorted because both backends emit stops in order and an out-of-order
+        // list renders differently in each; clamped because an alpha outside
+        // 0...1 is meaningless to one and an error to the other.
+        let stops = fade.stops
+            .map {
+                ResolvedMask.FadeStop(
+                    position: clamp($0.position, to: 0...1, default: 0),
+                    alpha: clamp($0.alpha, to: 0...1, default: 1)
+                )
+            }
+            .sorted { $0.position < $1.position }
+        return ResolvedMask.Fade(
+            kind: fade.kind,
+            angle: wrapDegrees(fade.angle),
+            stops: stops
+        )
     }
 
     /// NaN/infinity fall back to the effect's default: one bad expression or

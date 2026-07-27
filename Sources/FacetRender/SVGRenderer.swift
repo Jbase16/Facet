@@ -80,6 +80,18 @@ public enum SVGRenderer {
         }
         output += "\(indent)<g\(attributes)>\n"
 
+        // The mask goes on an inner group so the outer group's filter (blur,
+        // glow, shadow) acts on the *masked* result. Per the SVG rendering
+        // model a filter on the same element would run before the mask, which
+        // would let a shadow be cast by the unclipped silhouette — the
+        // SwiftUI backend applies `.mask` before those effects too.
+        let maskID = maskDefinition(node, defs: &defs)
+        var indent = indent
+        if let maskID {
+            output += "\(indent)  <g mask=\"url(#\(maskID))\">\n"
+            indent += "  "
+        }
+
         switch node.kind {
         case .group(let background):
             if let background {
@@ -114,8 +126,13 @@ public enum SVGRenderer {
         for child in node.children {
             emit(child, into: &output, defs: &defs, indent: indent + "  ")
         }
-        // Last, so it sits over the node's own content and its children —
-        // the SwiftUI backend applies the border overlay at the same point.
+        if maskID != nil {
+            indent = String(indent.dropLast(2))
+            output += "\(indent)  </g>\n"
+        }
+        // Last, so it sits over the node's own content and its children, and
+        // outside the mask — an outline traces the layer, not the cutout.
+        // The SwiftUI backend applies the border overlay at the same point.
         if let border = node.border {
             output += indent + "  " + borderElement(border, in: node) + "\n"
         }
@@ -267,6 +284,75 @@ public enum SVGRenderer {
             // outline works at every widget size.
             let commands = shape.path ?? []
             return "<path d=\"\(pathDescription(commands, in: rect))\" fill=\"\(fill)\"\(stroke)/>"
+        }
+    }
+
+    /// A `<mask>` definition, returning its id. Emitted in user-space units
+    /// because every node here already draws in absolute canvas coordinates.
+    ///
+    /// White keeps, black cuts. An inverted mask starts from a white field the
+    /// size of the layer and paints the shape black over it — the same "hole
+    /// rather than window" the SwiftUI backend gets from `.destinationOut`.
+    private static func maskDefinition(_ node: RenderNode, defs: inout [String]) -> String? {
+        guard let mask = node.mask else { return nil }
+        let id = "mask\(defs.count)"
+        let paint: String
+        if let fade = mask.fade {
+            paint = "url(#\(fadeDefinition(fade, id: id, defs: &defs)))"
+        } else {
+            paint = "#fff"
+        }
+
+        var body = ""
+        if mask.invert {
+            body += "<rect x=\"\(format(node.rect.x))\" y=\"\(format(node.rect.y))\" "
+            body += "width=\"\(format(node.rect.width))\" height=\"\(format(node.rect.height))\" fill=\"#fff\"/>"
+        }
+        // On an inverted mask the shape is the hole, so it paints black; a
+        // fade on an inverted mask ramps that hole's depth, which is why the
+        // gradient is still consulted rather than forced to a flat black.
+        let shapePaint = mask.invert ? "#000" : paint
+        body += maskShapeElement(mask, fill: shapePaint)
+
+        defs.append("<mask id=\"\(id)\" maskUnits=\"userSpaceOnUse\">\(body)</mask>")
+        return id
+    }
+
+    private static func fadeDefinition(_ fade: ResolvedMask.Fade, id: String, defs: inout [String]) -> String {
+        let gradientID = "\(id)fade"
+        let stops = fade.stops.map {
+            "<stop offset=\"\(format($0.position * 100))%\" stop-color=\"#fff\" stop-opacity=\"\(format($0.alpha))\"/>"
+        }.joined()
+        switch fade.kind {
+        case .linear:
+            // Identical angle convention to `paint(_:defs:)` above, so a mask
+            // ramp and a fill gradient at the same angle point the same way.
+            let radians = fade.angle * .pi / 180
+            let dx = Darwin_cos(radians) / 2
+            let dy = Darwin_sin(radians) / 2
+            defs.append(
+                "<linearGradient id=\"\(gradientID)\" x1=\"\(format(0.5 - dx))\" y1=\"\(format(0.5 - dy))\" x2=\"\(format(0.5 + dx))\" y2=\"\(format(0.5 + dy))\">\(stops)</linearGradient>"
+            )
+        case .radial:
+            defs.append("<radialGradient id=\"\(gradientID)\">\(stops)</radialGradient>")
+        }
+        return gradientID
+    }
+
+    private static func maskShapeElement(_ mask: ResolvedMask, fill: String) -> String {
+        let rect = mask.rect
+        switch mask.shape {
+        case .circle:
+            let radius = min(rect.width, rect.height) / 2
+            return "<circle cx=\"\(format(rect.midX))\" cy=\"\(format(rect.midY))\" r=\"\(format(radius))\" fill=\"\(fill)\"/>"
+        case .capsule:
+            let radius = min(rect.width, rect.height) / 2
+            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"\(fill)\"/>"
+        case .rectangle:
+            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(mask.cornerRadius))\" fill=\"\(fill)\"/>"
+        case .path:
+            let commands = mask.path ?? []
+            return "<path d=\"\(pathDescription(commands, in: rect))\" fill=\"\(fill)\"/>"
         }
     }
 

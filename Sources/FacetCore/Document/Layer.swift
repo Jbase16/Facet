@@ -140,6 +140,9 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     /// design be re-themed without editing every layer's fill.
     public var hueRotation: Double?
     public var glow: GlowStyle?
+    /// Clips the layer to a shape and/or fades it out. nil draws the whole
+    /// layer, which is what every document written before masks existed does.
+    public var mask: LayerMask?
 
     public init(
         opacity: Double = 1.0,
@@ -156,7 +159,8 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         contrast: Double? = nil,
         saturation: Double? = nil,
         hueRotation: Double? = nil,
-        glow: GlowStyle? = nil
+        glow: GlowStyle? = nil,
+        mask: LayerMask? = nil
     ) {
         self.opacity = opacity
         self.rotation = rotation
@@ -173,6 +177,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         self.saturation = saturation
         self.hueRotation = hueRotation
         self.glow = glow
+        self.mask = mask
     }
 
     public static let plain = LayerStyle()
@@ -180,7 +185,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case opacity, rotation, cornerRadius, shadow
         case blendMode, blur, border, scale, flipHorizontal, flipVertical
-        case brightness, contrast, saturation, hueRotation, glow
+        case brightness, contrast, saturation, hueRotation, glow, mask
     }
 
     public init(from decoder: Decoder) throws {
@@ -200,6 +205,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         saturation = try container.decodeIfPresent(Double.self, forKey: .saturation)
         hueRotation = try container.decodeIfPresent(Double.self, forKey: .hueRotation)
         glow = try container.decodeIfPresent(GlowStyle.self, forKey: .glow)
+        mask = try container.decodeIfPresent(LayerMask.self, forKey: .mask)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -219,6 +225,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         try container.encodeIfPresent(saturation, forKey: .saturation)
         try container.encodeIfPresent(hueRotation, forKey: .hueRotation)
         try container.encodeIfPresent(glow, forKey: .glow)
+        try container.encodeIfPresent(mask, forKey: .mask)
     }
 }
 

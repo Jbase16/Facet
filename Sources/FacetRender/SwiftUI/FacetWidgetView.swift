@@ -80,8 +80,11 @@ private struct NodeView: View {
     }
 
     // Effect order, deliberately the same in SVGRenderer so previews stay
-    // truthful. Colour grading and blur act on the drawn content; the border
-    // goes on after them so an outline stays crisp on a blurred layer;
+    // truthful. Colour grading acts on the drawn content; the mask cuts it
+    // next, so everything after is computed from the masked silhouette — blur
+    // softens the cut edge, and a photo clipped to a blob drops a blob-shaped
+    // shadow; the border goes on after them so an outline stays crisp on a
+    // blurred layer, and traces the layer rather than the cutout;
     // scale/flip/rotation then move the finished layer; glow and shadow are
     // cast by the transformed silhouette in screen space, which keeps a
     // rotated layer's light direction fixed (and preserves how rotation +
@@ -90,6 +93,7 @@ private struct NodeView: View {
     private var styled: some View {
         content
             .modifier(ColorAdjustModifier(adjust: node.colorAdjust))
+            .modifier(MaskModifier(node: node))
             .modifier(BlurModifier(radius: node.blur))
             .modifier(BorderModifier(node: node))
             .modifier(TransformModifier(node: node))
@@ -494,6 +498,112 @@ private struct BorderModifier: ViewModifier {
             }
         } else {
             content
+        }
+    }
+}
+
+/// Clips a layer to its mask.
+///
+/// Built with the same frame-then-offset placement `BorderModifier` uses, and
+/// for the same reason: `.mask` aligns its content with the *layout* bounds,
+/// which sit at the node's unoffset origin, so a mask drawn naively lands in
+/// the top-left corner of the canvas instead of over the layer.
+///
+/// The mask view is opaque white where content survives. Inverting draws the
+/// shape as a hole punched out of an opaque field with `.destinationOut`,
+/// which needs its own `compositingGroup` or the blend escapes into the layer
+/// beneath.
+private struct MaskModifier: ViewModifier {
+    let node: RenderNode
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let mask = node.mask {
+            content.mask(alignment: .topLeading) {
+                if mask.invert {
+                    Rectangle()
+                        .fill(.white)
+                        .frame(width: node.rect.width, height: node.rect.height)
+                        .offset(x: node.rect.x, y: node.rect.y)
+                        .overlay(alignment: .topLeading) {
+                            maskShape(mask)
+                                .blendMode(.destinationOut)
+                        }
+                        .compositingGroup()
+                } else {
+                    maskShape(mask)
+                }
+            }
+        } else {
+            content
+        }
+    }
+
+    /// The shape itself, painted with the fade if there is one. A radial ramp
+    /// is inscribed in the shape's rect so it reaches the corners the same way
+    /// the SVG backend's `objectBoundingBox` radial does.
+    @ViewBuilder
+    private func maskShape(_ mask: ResolvedMask) -> some View {
+        let shape = MaskShapeView(shape: mask.shape, path: mask.path, cornerRadius: mask.cornerRadius)
+        Group {
+            if let fade = mask.fade {
+                shape.foregroundStyle(fadeStyle(fade, in: mask.rect))
+            } else {
+                shape.foregroundStyle(.white)
+            }
+        }
+        .frame(width: mask.rect.width, height: mask.rect.height)
+        .offset(x: mask.rect.x, y: mask.rect.y)
+    }
+
+    private func fadeStyle(_ fade: ResolvedMask.Fade, in rect: Rect) -> AnyShapeStyle {
+        let stops = fade.stops.map {
+            Gradient.Stop(color: .white.opacity($0.alpha), location: $0.position)
+        }
+        switch fade.kind {
+        case .linear:
+            // Same angle convention as GradientFill and the SVG backend:
+            // 0 points right, 90 down.
+            let radians = fade.angle * .pi / 180
+            let dx = cos(radians) / 2
+            let dy = sin(radians) / 2
+            return AnyShapeStyle(LinearGradient(
+                stops: stops,
+                startPoint: UnitPoint(x: 0.5 - dx, y: 0.5 - dy),
+                endPoint: UnitPoint(x: 0.5 + dx, y: 0.5 + dy)
+            ))
+        case .radial:
+            return AnyShapeStyle(RadialGradient(
+                stops: stops,
+                center: .center,
+                startRadius: 0,
+                endRadius: max(rect.width, rect.height) / 2
+            ))
+        }
+    }
+}
+
+/// The mask's geometry as a fillable view, so `maskShape` can paint it with a
+/// flat colour or a gradient without duplicating the shape switch.
+private struct MaskShapeView: View {
+    let shape: ShapeKind
+    let path: [PathCommand]?
+    let cornerRadius: Double
+
+    var body: some View {
+        switch shape {
+        case .rectangle:
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        case .circle:
+            // `Circle`, not `Ellipse` — inscribed, matching both the shape
+            // renderer above and SVG's `r = min(width, height) / 2`. An
+            // ellipse stretches to fill, so on any non-square layer the two
+            // backends would cut different silhouettes.
+            Circle()
+        case .capsule:
+            Capsule(style: .continuous)
+        case .path:
+            NormalizedPath(commands: path ?? [])
         }
     }
 }

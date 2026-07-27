@@ -49,6 +49,7 @@ struct InspectorView: View {
                     layoutSection
                     contentSection
                     effectsSection
+                    maskSection
                     outlineSection
                     interactionSection
                 }
@@ -185,6 +186,87 @@ struct InspectorView: View {
             }
         } header: {
             Text("Effects").facetEyebrow()
+        }
+    }
+
+    /// Clipping. The shape list is the same `ShapeKind` a shape layer uses, so
+    /// anything the shape studio can produce — including a generated blob —
+    /// works as a mask by pasting its path here.
+    private var maskSection: some View {
+        Section {
+            Toggle("Mask", isOn: Binding(
+                get: { layer.style.mask != nil },
+                set: { on in
+                    // Defaults to a circle rather than a rectangle: a
+                    // full-bleed square-cornered rect clips nothing, so
+                    // switching the toggle on would appear to do nothing.
+                    apply { $0.style.mask = on ? LayerMask(shape: .circle) : nil }
+                }
+            ))
+
+            if let mask = layer.style.mask {
+                Picker("Shape", selection: Binding(
+                    get: { mask.shape },
+                    set: { value in apply { $0.style.mask?.shape = value } }
+                )) {
+                    Text("Circle").tag(ShapeKind.circle)
+                    Text("Rectangle").tag(ShapeKind.rectangle)
+                    Text("Capsule").tag(ShapeKind.capsule)
+                    Text("Path").tag(ShapeKind.path)
+                }
+
+                if mask.shape == .rectangle {
+                    sliderRow("Corner radius", value: mask.cornerRadius, range: 0...80, format: { "\(Int($0))" }) { value in
+                        apply { $0.style.mask?.cornerRadius = value }
+                    }
+                }
+
+                if mask.shape == .path {
+                    TextField("Mask path — SVG syntax in 0…1 coordinates", text: Binding(
+                        get: { mask.pathData ?? "" },
+                        set: { value in
+                            apply { $0.style.mask?.pathData = value.isEmpty ? nil : value }
+                        }
+                    ), axis: .vertical)
+                    .font(.system(.footnote, design: .monospaced))
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                }
+
+                Toggle("Invert (cut a hole)", isOn: Binding(
+                    get: { mask.invert },
+                    set: { on in apply { $0.style.mask?.invert = on } }
+                ))
+
+                Toggle("Fade edge", isOn: Binding(
+                    get: { mask.fade != nil },
+                    set: { on in apply { $0.style.mask?.fade = on ? .fadeOut() : nil } }
+                ))
+
+                if let fade = mask.fade {
+                    Picker("Fade", selection: Binding(
+                        get: { fade.kind },
+                        set: { value in
+                            // Swapping kind swaps the preset too: a linear
+                            // ramp's stops make a poor vignette and vice versa.
+                            apply {
+                                $0.style.mask?.fade = value == .radial ? .vignette : .fadeOut(angle: fade.angle)
+                            }
+                        }
+                    )) {
+                        Text("Linear").tag(MaskFade.Kind.linear)
+                        Text("Radial").tag(MaskFade.Kind.radial)
+                    }
+
+                    if fade.kind == .linear {
+                        sliderRow("Fade angle", value: fade.angle, range: 0...360, format: { "\(Int($0))°" }) { value in
+                            apply { $0.style.mask?.fade?.angle = value }
+                        }
+                    }
+                }
+            }
+        } header: {
+            Text("Mask").facetEyebrow()
         }
     }
 

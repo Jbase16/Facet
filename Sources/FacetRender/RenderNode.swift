@@ -226,6 +226,60 @@ public struct ResolvedGaugeArc: Sendable, Equatable {
 /// A fully resolved, concrete render tree: expressions evaluated, tokens
 /// resolved, layout computed. Rendering this requires no document, no data,
 /// and no decisions — which is what keeps the widget extension trivial.
+/// A mask flattened into absolute canvas coordinates, ready for either
+/// backend. The shape's rect is resolved here rather than in the renderers so
+/// SwiftUI and SVG cannot disagree about where the window sits.
+public struct ResolvedMask: Sendable, Equatable {
+    public struct FadeStop: Sendable, Equatable {
+        public var position: Double
+        public var alpha: Double
+
+        public init(position: Double, alpha: Double) {
+            self.position = position
+            self.alpha = alpha
+        }
+    }
+
+    public struct Fade: Sendable, Equatable {
+        public var kind: MaskFade.Kind
+        public var angle: Double
+        public var stops: [FadeStop]
+
+        public init(kind: MaskFade.Kind, angle: Double, stops: [FadeStop]) {
+            self.kind = kind
+            self.angle = angle
+            self.stops = stops
+        }
+    }
+
+    public var shape: ShapeKind
+    /// Parsed once by the resolver, exactly like `ResolvedShape.path`, so a
+    /// malformed outline is diagnosed in one place and neither renderer has
+    /// to know the path grammar.
+    public var path: [PathCommand]?
+    public var cornerRadius: Double
+    /// Absolute canvas coordinates, already offset by the layer's own rect.
+    public var rect: Rect
+    public var fade: Fade?
+    public var invert: Bool
+
+    public init(
+        shape: ShapeKind,
+        path: [PathCommand]? = nil,
+        cornerRadius: Double = 0,
+        rect: Rect,
+        fade: Fade? = nil,
+        invert: Bool = false
+    ) {
+        self.shape = shape
+        self.path = path
+        self.cornerRadius = cornerRadius
+        self.rect = rect
+        self.fade = fade
+        self.invert = invert
+    }
+}
+
 public struct RenderNode: Sendable, Equatable {
     public enum Kind: Sendable, Equatable {
         case group(background: ResolvedFill?)
@@ -255,6 +309,8 @@ public struct RenderNode: Sendable, Equatable {
     public var flipVertical: Bool
     public var colorAdjust: ResolvedColorAdjust
     public var glow: ResolvedGlow?
+    /// Clips this layer (and its subtree) to a shape and/or alpha ramp.
+    public var mask: ResolvedMask?
     /// Resolved tap destination (URL string — plain String so the resolver
     /// stays Linux-portable; renderers that can act on it parse it).
     public var tapURL: String?
@@ -277,6 +333,7 @@ public struct RenderNode: Sendable, Equatable {
         flipVertical: Bool = false,
         colorAdjust: ResolvedColorAdjust = .identity,
         glow: ResolvedGlow? = nil,
+        mask: ResolvedMask? = nil,
         tapURL: String? = nil,
         kind: Kind,
         children: [RenderNode] = []
@@ -296,6 +353,7 @@ public struct RenderNode: Sendable, Equatable {
         self.flipVertical = flipVertical
         self.colorAdjust = colorAdjust
         self.glow = glow
+        self.mask = mask
         self.tapURL = tapURL
         self.kind = kind
         self.children = children
