@@ -11,6 +11,9 @@ README.md has the current status and build instructions.
   generators). Pure Swift, no UI, builds on Linux — no CoreGraphics, hence
   `PathPoint` rather than CGPoint. Schema changes must keep old documents
   decoding (see the v1-compat pattern: optional fields, string-form fills).
+  `Document/Scene.swift` is the *scene* document: a whole home screen
+  (wallpaper + widget placements + shared palette). Placements reference
+  widgets by id, never copy them, so the two have independent lifetimes.
 - `Sources/FacetData` — data sources, snapshot cache, refresh planner,
   URLJSONSource (custom APIs), AstronomySource (computed sun/moon).
 - `Sources/FacetRender` — DocumentResolver (pure: document + data + env →
@@ -34,7 +37,8 @@ README.md has the current status and build instructions.
 
 - Packages: `swift build` / `swift test` (works on macOS and Linux).
 - Headless smoke tests: `xcrun simctl launch booted com.JasonPhillips.app
-  -facet-show-sources` (or `-facet-open-editor`) opens a screen directly.
+  -facet-show-sources` (or `-facet-open-editor`, `-facet-open-scene`) opens
+  a screen directly.
 - Simulator: Xcode 27 replaced Simulator.app with DeviceHub.app. The
   physical iPhone and the sim are both named "iPhone 17 Pro" — picking the
   device destination builds fine and launches nothing visible.
@@ -58,6 +62,15 @@ README.md has the current status and build instructions.
   .entitlements files — rename all three together or not at all.
 - Editor: `systemSmall` is the base design; geometry edits in any other
   rendition record `LayerPatch` overrides instead of mutating the base.
+- Home-screen grid constants live in `App/Facet/HomeGrid.swift` and nowhere
+  else. `HomeScreenPreview`, `SceneEditorView` and `SceneCell` all draw the
+  same grid; when each kept a private copy they agreed only by luck.
+- `scaleEffect` scales drawn pixels but *not* layout size. Every widget
+  drawn at reduced scale needs `.frame(w*scale, h*scale, alignment:
+  .topLeading)` after it, or SwiftUI centres the shrunken render in a
+  full-size box and the widget lands offset by half its slack.
+- `.facetscene` files store document *ids*, so a scene is not shareable on
+  its own yet — it would open elsewhere as a screen of empty slots.
 - Xcode 27 quirk: don't store bare closures via @Entry (comparability
   diagnostic) — see FacetImageProvider for the wrapper pattern.
 

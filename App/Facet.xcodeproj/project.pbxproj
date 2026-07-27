@@ -23,6 +23,7 @@
 		2867A9D383219166875CEDF8 /* DataSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */; };
 		2F2B009BD21403FBC863F968 /* AssetPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAABD07F00F6A8557E4248C /* AssetPickerView.swift */; };
 		3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E1F7508053F63AC77BC8A0 /* EditorView.swift */; };
+		4908BC9E49EA2674F52E0AB5 /* SceneEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */; };
 		49F0A851E07FBEF658AAE78E /* AppCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED98CA53137812BF667A5C2 /* AppCatalog.swift */; };
 		5EDD7A3B4448D21F485D4DF1 /* AssetBundleCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */; };
 		6D1B7841CD3B72D88876B202 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = F9F468B849C3525792800F83 /* FacetData */; };
@@ -54,6 +55,7 @@
 		C49BDA574C5A958CC0D5F8FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */; };
 		CB1F51102AE3813587CE4067 /* FocusSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F7D9E84D357AF552E47CB3 /* FocusSource.swift */; };
 		CE7A570D8F6A87D48F95806D /* CustomSourceEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA0CA5DC0BA9616B892486D /* CustomSourceEditorView.swift */; };
+		D22D92226DD295CA6EB72FB6 /* HomeGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E3DAA22AC28B4EAB9CB816 /* HomeGrid.swift */; };
 		D42C371C1BE5EB7EFBB9E533 /* CustomSourceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */; };
 		DE2AF1799F3C8518DCC6572F /* ColorRefPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */; };
 		E4FF2E99E6BDFDB0915A6499 /* WallpaperBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918865A47134FEC46093EEE3 /* WallpaperBackdrop.swift */; };
@@ -118,11 +120,13 @@
 		9A5CCA0565292A65A784FC56 /* WeatherSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSource.swift; sourceTree = "<group>"; };
 		9B5BEC0697888C94C419A750 /* WidgetDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDraft.swift; sourceTree = "<group>"; };
 		A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapePlayground.swift; sourceTree = "<group>"; };
+		A9E3DAA22AC28B4EAB9CB816 /* HomeGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeGrid.swift; sourceTree = "<group>"; };
 		AAF7B56A34AE22CC18F1CCF1 /* Facet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Facet.entitlements; sourceTree = "<group>"; };
 		AC05E333F65932D292DD4D47 /* HealthSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSource.swift; sourceTree = "<group>"; };
 		B0CA8406D09B0D7574BED59D /* UnitPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitPreferences.swift; sourceTree = "<group>"; };
 		B0F7D9E84D357AF552E47CB3 /* FocusSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSource.swift; sourceTree = "<group>"; };
 		B3DAE7C5AC5E93326F030E60 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneEditorView.swift; sourceTree = "<group>"; };
 		C62E5678109F5B19042F0E78 /* GenerateWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateWidgetView.swift; sourceTree = "<group>"; };
 		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
 		CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenPreview.swift; sourceTree = "<group>"; };
@@ -205,6 +209,7 @@
 				402DA8915E10ABBF586F49CD /* FacetApp.swift */,
 				9A0EA27D153D75EBEFECD233 /* FacetUI.swift */,
 				CAEBEADC60946A4516B04197 /* GalleryView.swift */,
+				A9E3DAA22AC28B4EAB9CB816 /* HomeGrid.swift */,
 				CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */,
 				7AF056977F3F074F99FBAA99 /* LayerListView.swift */,
 				A3C71588B22CD224B5F50C0E /* ShapePlayground.swift */,
@@ -216,6 +221,7 @@
 				4C6DEE7ACC2D6DD81A633FFF /* Fonts */,
 				0D90168BB99EE3761DB5C82C /* Inspector */,
 				FE8A1E074A857ED196C35C8B /* Launcher */,
+				A622D43E477BE4714954BA6F /* Scenes */,
 			);
 			path = Facet;
 			sourceTree = "<group>";
@@ -272,6 +278,14 @@
 				1EA02B4A37A92738FF10C398 /* Info.plist */,
 			);
 			path = FacetWidgets;
+			sourceTree = "<group>";
+		};
+		A622D43E477BE4714954BA6F /* Scenes */ = {
+			isa = PBXGroup;
+			children = (
+				B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */,
+			);
+			path = Scenes;
 			sourceTree = "<group>";
 		};
 		B1D22D4C52782EC8D4C4FABF /* Products */ = {
@@ -435,10 +449,12 @@
 				BDACF21BF38B9672CF212964 /* GalleryView.swift in Sources */,
 				7C20108989E04D30EF34B5C9 /* GenerateWidgetView.swift in Sources */,
 				B41F3999350DFE8EC5E18D21 /* HealthSource.swift in Sources */,
+				D22D92226DD295CA6EB72FB6 /* HomeGrid.swift in Sources */,
 				ECD528597E5D9E5F08945D99 /* HomeScreenPreview.swift in Sources */,
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,
+				4908BC9E49EA2674F52E0AB5 /* SceneEditorView.swift in Sources */,
 				7DBA2DF9407F2F01D91FAAFC /* SceneRepository.swift in Sources */,
 				A3AE4B68B94873D25416AB48 /* ShapePlayground.swift in Sources */,
 				F024C274E822725E25BC3DAD /* ShapeStudioView.swift in Sources */,

@@ -20,29 +20,18 @@ struct HomeScreenPreview: View {
     let wallpaper: UIImage?
     @Binding var slot: Int
 
-    /// Reference device: the 390×844 class the schema's design sizes belong to.
-    private static let screen = CGSize(width: 390, height: 844)
-    private static let iconCell = 68.0
-    private static let columnPitch = 90.0
-    private static let rowCell = 60.0
-    private static let rowPitch = 98.0
-    /// The icon glyph itself is 60pt on this device class — the same as the row
-    /// cell, which is what makes a widget's top edge line up with the icons
-    /// beside it. (The 68pt column cell is pitch minus gutter, not glyph size.)
-    private static let iconGlyph = 60.0
-    private static let gridOrigin = CGPoint(x: 26, y: 78)
-    private static let columns = 4
-    private static let rows = 6
+    // Grid geometry lives in `HomeGrid` (App/Facet/HomeGrid.swift), shared with
+    // the scene editor so both place a widget in the same cell.
 
     var body: some View {
         GeometryReader { geo in
             // Fit a phone-shaped frame into whatever room the editor gives us.
             let scale = min(
-                geo.size.width / Self.screen.width,
-                geo.size.height / Self.screen.height
+                geo.size.width / HomeGrid.screen.width,
+                geo.size.height / HomeGrid.screen.height
             )
-            let width = Self.screen.width * scale
-            let height = Self.screen.height * scale
+            let width = HomeGrid.screen.width * scale
+            let height = HomeGrid.screen.height * scale
 
             ZStack(alignment: .topLeading) {
                 wallpaperLayer
@@ -113,12 +102,12 @@ struct HomeScreenPreview: View {
     private func widgetOrigin(size: (width: Double, height: Double)) -> CGPoint {
         guard !rendition.isAccessory else {
             // Lock Screen accessories sit under the clock, centred.
-            return CGPoint(x: (Self.screen.width - size.width) / 2, y: 250)
+            return CGPoint(x: (HomeGrid.screen.width - size.width) / 2, y: 250)
         }
         let position = currentSlot
         return CGPoint(
-            x: Self.gridOrigin.x + Double(position.col) * Self.columnPitch,
-            y: Self.gridOrigin.y + Double(position.row) * Self.rowPitch
+            x: HomeGrid.gridOrigin.x + Double(position.col) * HomeGrid.columnPitch,
+            y: HomeGrid.gridOrigin.y + Double(position.row) * HomeGrid.rowPitch
         )
     }
 
@@ -168,13 +157,13 @@ struct HomeScreenPreview: View {
 
             // Icon placeholders in every cell the widget doesn't occupy. Kept
             // deliberately quiet — they're context, not content.
-            ForEach(0..<Self.rows, id: \.self) { row in
-                ForEach(0..<Self.columns, id: \.self) { column in
+            ForEach(0..<HomeGrid.rows, id: \.self) { row in
+                ForEach(0..<HomeGrid.columns, id: \.self) { column in
                     if !covers(column: column, row: row) {
                         iconPlaceholder(scale: scale)
                             .offset(
-                                x: (Self.gridOrigin.x + Double(column) * Self.columnPitch) * scale,
-                                y: (Self.gridOrigin.y + Double(row) * Self.rowPitch) * scale
+                                x: (HomeGrid.gridOrigin.x + Double(column) * HomeGrid.columnPitch) * scale,
+                                y: (HomeGrid.gridOrigin.y + Double(row) * HomeGrid.rowPitch) * scale
                             )
                     }
                 }
@@ -188,8 +177,8 @@ struct HomeScreenPreview: View {
                     .contentShape(Rectangle())
                     .frame(width: size.width * scale, height: size.height * scale)
                     .offset(
-                        x: (Self.gridOrigin.x + Double(position.col) * Self.columnPitch) * scale,
-                        y: (Self.gridOrigin.y + Double(position.row) * Self.rowPitch) * scale
+                        x: (HomeGrid.gridOrigin.x + Double(position.col) * HomeGrid.columnPitch) * scale,
+                        y: (HomeGrid.gridOrigin.y + Double(position.row) * HomeGrid.rowPitch) * scale
                     )
                     .onTapGesture { withAnimation(.snappy) { slot = index } }
             }
@@ -238,14 +227,14 @@ struct HomeScreenPreview: View {
                     RoundedRectangle(cornerRadius: 14 * scale, style: .continuous)
                         .strokeBorder(.white.opacity(0.08), lineWidth: 1)
                 }
-                .frame(width: Self.iconGlyph * scale, height: Self.iconGlyph * scale)
+                .frame(width: HomeGrid.iconGlyph * scale, height: HomeGrid.iconGlyph * scale)
             Capsule()
                 .fill(.white.opacity(0.22))
                 .frame(width: 34 * scale, height: 4 * scale)
         }
         // Width only: constraining the height too would push the glyph off its
         // row and break the alignment with the widget beside it.
-        .frame(width: Self.iconCell * scale, alignment: .top)
+        .frame(width: HomeGrid.iconCell * scale, alignment: .top)
     }
 
     private func pageDots(scale: Double) -> some View {
@@ -268,7 +257,7 @@ struct HomeScreenPreview: View {
                     ForEach(0..<4, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 14 * scale, style: .continuous)
                             .fill(.white.opacity(0.2))
-                            .frame(width: Self.iconGlyph * scale, height: Self.iconGlyph * scale)
+                            .frame(width: HomeGrid.iconGlyph * scale, height: HomeGrid.iconGlyph * scale)
                     }
                 }
             }

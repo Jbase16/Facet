@@ -7,11 +7,13 @@ import FacetTemplates
 @main
 struct FacetApp: App {
     @State private var store = DocumentStore()
+    @State private var scenes = SceneStore()
 
     var body: some Scene {
         WindowGroup {
             GalleryView()
                 .environment(store)
+                .environment(scenes)
                 // A design tool lives on a dark workspace; the widgets being
                 // edited are the only things that get to be loud.
                 .preferredColorScheme(.dark)
@@ -21,6 +23,64 @@ struct FacetApp: App {
                     await store.refreshData()
                 }
         }
+    }
+}
+
+/// App-side scene state. Deliberately separate from `DocumentStore`: a scene
+/// only references documents by id, so the two have independent lifetimes and
+/// deleting either must not disturb the other.
+///
+/// No `WidgetCenter` reload here — a scene is a design-time composition, not
+/// something the home screen renders. Saving one changes nothing on the device.
+@Observable
+@MainActor
+final class SceneStore {
+    private let repository = SceneRepository()
+    private(set) var scenes: [FacetScene] = []
+
+    init() {
+        scenes = repository.loadAll()
+    }
+
+    func save(_ scene: FacetScene) {
+        do {
+            try repository.save(scene)
+            if let index = scenes.firstIndex(where: { $0.id == scene.id }) {
+                scenes[index] = scene
+            } else {
+                scenes.append(scene)
+            }
+            scenes.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        } catch {
+            assertionFailure("Failed to save scene: \(error)")
+        }
+    }
+
+    func delete(_ scene: FacetScene) {
+        try? repository.delete(id: scene.id)
+        // The wallpaper is stored under the scene's own id, so it has to go
+        // with it — otherwise every deleted scene leaves a full-res photo
+        // behind in the App Group container.
+        try? AssetStore().deleteAll(for: scene.id)
+        scenes.removeAll { $0.id == scene.id }
+    }
+
+    func duplicate(_ scene: FacetScene) {
+        var copy = scene
+        copy.id = UUID()
+        copy.name += " Copy"
+        // Placements are references, so they copy for free. The wallpaper does
+        // not: it is keyed by scene id and would dangle.
+        if let name = scene.backdrop,
+           let data = AssetStore().data(for: name, in: scene.id) {
+            try? AssetStore().write(data, named: name, for: copy.id)
+        }
+        // Fresh identities for the placements too, so editing the copy's
+        // layout cannot collide with the original's drag targets.
+        copy.placements = copy.placements.map {
+            ScenePlacement(documentID: $0.documentID, rendition: $0.rendition, column: $0.column, row: $0.row)
+        }
+        save(copy)
     }
 }
 

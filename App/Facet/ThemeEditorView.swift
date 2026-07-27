@@ -13,40 +13,40 @@ struct ThemeEditorView: View {
 
     var body: some View {
         Form {
-                Section("Colors") {
-                    ForEach(tokens.colors.keys.sorted(), id: \.self) { name in
-                        colorRow(name: name, token: tokens.colors[name]!)
-                    }
-                    Button {
-                        mutate { theme in
-                            var index = 1
-                            while theme.colors["color\(index)"] != nil { index += 1 }
-                            theme.colors["color\(index)"] = ColorToken(light: .black, dark: .white)
-                        }
-                    } label: {
-                        Label("Add color token", systemImage: "plus")
-                    }
+            Section("Colors") {
+                ForEach(tokens.colors.keys.sorted(), id: \.self) { name in
+                    colorRow(name: name, token: tokens.colors[name]!)
                 }
+                Button {
+                    mutate { theme in
+                        var index = 1
+                        while theme.colors["color\(index)"] != nil { index += 1 }
+                        theme.colors["color\(index)"] = ColorToken(light: .black, dark: .white)
+                    }
+                } label: {
+                    Label("Add color token", systemImage: "plus")
+                }
+            }
 
-                Section("Fonts") {
-                    ForEach(tokens.fonts.keys.sorted(), id: \.self) { name in
-                        fontRow(name: name, token: tokens.fonts[name]!)
-                    }
+            Section("Fonts") {
+                ForEach(tokens.fonts.keys.sorted(), id: \.self) { name in
+                    fontRow(name: name, token: tokens.fonts[name]!)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .alert("Rename token", isPresented: Binding(
-                get: { renamingToken != nil },
-                set: { if !$0 { renamingToken = nil } }
-            )) {
-                TextField("Name", text: $newName)
-                Button("Rename") {
-                    if let old = renamingToken {
-                        rename(from: old, to: newName)
-                    renamingToken = nil
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Rename token", isPresented: Binding(
+            get: { renamingToken != nil },
+            set: { if !$0 { renamingToken = nil } }
+        )) {
+            TextField("Name", text: $newName)
+            Button("Rename") {
+                if let old = renamingToken, !newName.isEmpty {
+                    rename(from: old, to: newName)
                 }
-                Button("Cancel", role: .cancel) { renamingToken = nil }
+                renamingToken = nil
             }
+            Button("Cancel", role: .cancel) { renamingToken = nil }
         }
     }
 

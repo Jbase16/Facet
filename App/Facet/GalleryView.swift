@@ -8,8 +8,11 @@ import FacetRender
 /// dark workspace surface the whole app lives on.
 struct GalleryView: View {
     @Environment(DocumentStore.self) private var store
+    @Environment(SceneStore.self) private var scenes
     @Environment(\.colorScheme) private var colorScheme
 
+    @State private var editingScene: FacetScene?
+    @State private var renamingScene: FacetScene?
     @State private var renamingDocument: WidgetDocument?
     @State private var renameText = ""
     @State private var importing = false
@@ -27,6 +30,8 @@ struct GalleryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
+                    scenesStrip
+                    sectionHeading("Widgets", count: store.documents.count)
                     LazyVGrid(columns: columns, spacing: 18) {
                         ForEach(store.documents) { document in
                             NavigationLink(value: document.id) {
@@ -102,6 +107,20 @@ struct GalleryView: View {
                 }
                 Button("Cancel", role: .cancel) { renamingDocument = nil }
             }
+            .alert("Rename scene", isPresented: Binding(
+                get: { renamingScene != nil },
+                set: { if !$0 { renamingScene = nil } }
+            )) {
+                TextField("Name", text: $renameText)
+                Button("Rename") {
+                    if var scene = renamingScene, !renameText.isEmpty {
+                        scene.name = renameText
+                        scenes.save(scene)
+                    }
+                    renamingScene = nil
+                }
+                Button("Cancel", role: .cancel) { renamingScene = nil }
+            }
             .alert("Import failed", isPresented: Binding(
                 get: { importError != nil },
                 set: { if !$0 { importError = nil } }
@@ -115,6 +134,11 @@ struct GalleryView: View {
             }
             .sheet(isPresented: $showingSources) {
                 DataSourcesView()
+            }
+            // Full screen, not a sheet: the editor draws a phone-shaped screen
+            // to scale, and a sheet's inset would shrink it below life size.
+            .fullScreenCover(item: $editingScene) { scene in
+                SceneEditorView(scene: scene) { scenes.save($0) }
             }
             .sheet(isPresented: $showingPlayground) {
                 ShapePlayground()
@@ -156,6 +180,15 @@ struct GalleryView: View {
                 if ProcessInfo.processInfo.arguments.contains("-facet-shape-playground") {
                     showingPlayground = true
                 }
+                // A scene laid out from the seeded library, straight into the
+                // scene editor:
+                //   simctl launch booted com.JasonPhillips.app -facet-open-scene
+                if ProcessInfo.processInfo.arguments.contains("-facet-open-scene") {
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(700))
+                        editingScene = Self.demoScene(from: store.documents)
+                    }
+                }
                 // Likewise for the editor (first document), after seeding.
                 if ProcessInfo.processInfo.arguments.contains("-facet-open-editor") {
                     Task {
@@ -175,13 +208,115 @@ struct GalleryView: View {
                     .font(FacetUI.title(30))
                     .kerning(-0.4)
                     .foregroundStyle(FacetUI.ink)
-                Text("\(store.documents.count) widgets")
+                Text("\(scenes.scenes.count) scenes · \(store.documents.count) widgets")
                     .font(FacetUI.label)
                     .foregroundStyle(FacetUI.inkTertiary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 6)
+    }
+
+    private func sectionHeading(_ title: String, count: Int) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title)
+                .font(FacetUI.title(17))
+                .foregroundStyle(FacetUI.ink)
+            Text("\(count)")
+                .font(FacetUI.caption)
+                .foregroundStyle(FacetUI.inkTertiary)
+            Spacer(minLength: 0)
+        }
+    }
+
+    // MARK: - Scenes
+
+    /// Scenes come first because a scene is the thing you are actually making;
+    /// the widgets below it are the parts. A horizontal strip keeps that order
+    /// without pushing the widget grid off the first screen.
+    private var scenesStrip: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("Scenes")
+                    .font(FacetUI.title(17))
+                    .foregroundStyle(FacetUI.ink)
+                Text("whole home screens")
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkTertiary)
+                Spacer(minLength: 0)
+                Button {
+                    let scene = FacetScene(name: "New Scene")
+                    scenes.save(scene)
+                    editingScene = scene
+                } label: {
+                    Label("New", systemImage: "plus")
+                        .font(FacetUI.caption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(FacetUI.accent)
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 14) {
+                    ForEach(scenes.scenes) { scene in
+                        Button {
+                            editingScene = scene
+                        } label: {
+                            SceneCell(scene: scene, documents: store.documents)
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu { contextMenu(for: scene) }
+                    }
+                    if scenes.scenes.isEmpty {
+                        emptyScenesHint
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private var emptyScenesHint: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: "rectangle.3.group")
+                .font(.system(size: 20))
+                .foregroundStyle(FacetUI.inkTertiary)
+            Text("Compose a home screen")
+                .font(FacetUI.label)
+                .foregroundStyle(FacetUI.inkSecondary)
+            Text("Place your widgets on a wallpaper and see them together.")
+                .font(FacetUI.caption)
+                .foregroundStyle(FacetUI.inkTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(width: 240, alignment: .leading)
+        .frame(height: 150)
+        .facetPanel()
+    }
+
+    @ViewBuilder
+    private func contextMenu(for scene: FacetScene) -> some View {
+        Button {
+            renameText = scene.name
+            renamingScene = scene
+        } label: {
+            Label("Rename", systemImage: "pencil")
+        }
+        Button {
+            scenes.duplicate(scene)
+        } label: {
+            Label("Duplicate", systemImage: "plus.square.on.square")
+        }
+        // No Share yet, deliberately: a `.facetscene` stores document *ids*, so
+        // on someone else's device it would open as a screen of empty slots.
+        // Sharing needs a bundle carrying the referenced widgets with it.
+        Button(role: .destructive) {
+            scenes.delete(scene)
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
     }
 
     @ViewBuilder
@@ -245,6 +380,25 @@ struct GalleryView: View {
         }
     }
 
+    /// A scene laid out by `freeSlot` itself, so the smoke test exercises the
+    /// packing rules rather than hand-picked coordinates that can't fail.
+    private static func demoScene(from documents: [WidgetDocument]) -> FacetScene {
+        var scene = FacetScene(name: "Smoke Test")
+        let wanted: [RenditionKind] = [.systemLarge, .systemMedium, .systemSmall, .systemSmall]
+        for (index, rendition) in wanted.enumerated() {
+            guard !documents.isEmpty,
+                  let slot = scene.freeSlot(for: rendition) else { continue }
+            let document = documents[index % documents.count]
+            scene.placements.append(ScenePlacement(
+                documentID: document.id,
+                rendition: rendition,
+                column: slot.column,
+                row: slot.row
+            ))
+        }
+        return scene
+    }
+
     private static func blankDocument() -> WidgetDocument {
         WidgetDocument(
             name: "Untitled",
@@ -279,6 +433,84 @@ struct GalleryView: View {
             ),
             sources: []
         )
+    }
+}
+
+/// A scene at thumbnail size: the real wallpaper with the real widgets on it,
+/// on the same grid the editor uses. Rendered small rather than drawn as
+/// abstract blocks — a scene is about how the pieces look *together*, so a
+/// diagram of it would be answering a different question.
+struct SceneCell: View {
+    let scene: FacetScene
+    let documents: [WidgetDocument]
+
+    private static let height = 150.0
+    private var scale: Double { Self.height / HomeGrid.screen.height }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack(alignment: .topLeading) {
+                backdrop
+                ForEach(scene.placements) { placement in
+                    if let document = documents.first(where: { $0.id == placement.documentID }) {
+                        widget(placement, document: document)
+                    }
+                }
+            }
+            .frame(
+                width: HomeGrid.screen.width * scale,
+                height: HomeGrid.screen.height * scale
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(FacetUI.hairline, lineWidth: 1)
+            }
+
+            HStack(spacing: 6) {
+                Text(scene.name)
+                    .font(FacetUI.label)
+                    .foregroundStyle(FacetUI.ink)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+                Text("\(scene.placements.count)")
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkTertiary)
+            }
+            .padding(.top, 8)
+            .frame(width: HomeGrid.screen.width * scale)
+        }
+    }
+
+    @ViewBuilder
+    private var backdrop: some View {
+        if let name = scene.backdrop, let image = AssetStore().thumbnail(name, for: scene.id, maxPixelSize: 240) {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } else {
+            LinearGradient(
+                colors: [FacetUI.raised, FacetUI.bg],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
+    private func widget(_ placement: ScenePlacement, document: WidgetDocument) -> some View {
+        let size = placement.rendition.designSize
+        let origin = HomeGrid.origin(column: placement.column, row: placement.row)
+        return WidgetPreview(document: document, rendition: placement.rendition, colorScheme: .dark)
+            .frame(width: size.width, height: size.height)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            // `scaleEffect` shrinks the drawn pixels but leaves the layout size
+            // alone, so the frame below has to restate the scaled size and pin
+            // it top-leading — otherwise SwiftUI centres the shrunken render in
+            // a full-size box and every widget lands offset by half its slack.
+            .scaleEffect(scale, anchor: .topLeading)
+            .frame(width: size.width * scale, height: size.height * scale, alignment: .topLeading)
+            .offset(x: origin.x * scale, y: origin.y * scale)
+            .allowsHitTesting(false)
     }
 }
 

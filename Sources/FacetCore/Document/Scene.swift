@@ -37,6 +37,23 @@ public struct ScenePlacement: Codable, Identifiable, Hashable, Sendable {
         }
     }
 
+    private enum CodingKeys: String, CodingKey {
+        case id, documentID, rendition, column, row
+    }
+
+    /// Decoded field-by-field with defaults rather than by the synthesized
+    /// initializer, so a `.facetscene` written by an older build still opens
+    /// after this struct gains a field. `documentID` is the exception: a
+    /// placement that names no design cannot be drawn, so it stays required.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        documentID = try container.decode(UUID.self, forKey: .documentID)
+        rendition = try container.decodeIfPresent(RenditionKind.self, forKey: .rendition) ?? .systemSmall
+        column = try container.decodeIfPresent(Int.self, forKey: .column) ?? 0
+        row = try container.decodeIfPresent(Int.self, forKey: .row) ?? 0
+    }
+
     public func overlaps(_ other: ScenePlacement) -> Bool {
         let a = span, b = other.span
         let columnsOverlap = column < other.column + b.columns && other.column < self.column + a.columns
@@ -110,11 +127,15 @@ public struct FacetScene: Codable, Identifiable, Hashable, Sendable {
     /// The first free slot that fits `rendition`, or nil when the screen is
     /// full — so adding a widget never silently stacks it on another.
     public func freeSlot(for rendition: RenditionKind, columns: Int = 4, rows: Int = 6) -> (column: Int, row: Int)? {
+        // A non-positive grid has no slots by definition. Without this the
+        // column step below computes to zero and `stride` traps — a crash
+        // where "no room" is the honest answer.
+        guard columns > 0, rows > 0 else { return nil }
         let probe = ScenePlacement(documentID: UUID(), rendition: rendition)
         let span = probe.span
         // Widgets snap to two-row bands, and anything wider than half the grid
         // starts at the left margin — the same rule iOS applies.
-        let columnStep = span.columns >= columns ? columns : 2
+        let columnStep = max(1, span.columns >= columns ? columns : 2)
         for row in stride(from: 0, through: rows - span.rows, by: 2) {
             for column in stride(from: 0, through: columns - span.columns, by: columnStep) {
                 var candidate = probe
