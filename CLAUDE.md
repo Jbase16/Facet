@@ -84,8 +84,19 @@ README.md has the current status and build instructions.
   (text knockouts) needs cycle detection and a second pass; it is a
   different, bigger feature. `ShapeKind` is reused, so anything the shape
   studio generates works as a mask by pasting its path.
-- Effect order is `colorAdjust → mask → blur → border → transform → glow →
-  shadow → opacity → blend`, and BOTH backends must match. SVG puts the mask
+- `LayerStyle.shadows` is a LIST, and each shadow has `inset`. Neumorphism
+  (raised/pressed), emboss and deboss are all the same trick: two shadows on
+  opposite sides, flipped inside-out. `ShadowPreset` writes ordinary values —
+  nothing about it is special-cased in the renderers. The effect only reads
+  correctly when the layer is the SAME COLOUR as what's behind it.
+  `style.shadow` survives as a first-element accessor. On disk, a lone outer
+  shadow still writes the singular `shadow` key so the common case stays
+  byte-identical; anything inset or plural writes `shadows`.
+- Effect order is `colorAdjust → mask → blur → innerShadows → border →
+  transform → glow → outerShadows → opacity → blend`, and BOTH backends must
+  match. Inset shadows sit before `transform` because they belong to the
+  layer's surface and must rotate with it; outer shadows sit after, cast by
+  the transformed silhouette in screen space. SVG puts the mask
   on an inner `<g>` so the outer group's filter runs after it — on the same
   element, SVG would apply the filter first and a shadow would be cast by the
   unclipped silhouette.

@@ -84,7 +84,9 @@ private struct NodeView: View {
     // next, so everything after is computed from the masked silhouette — blur
     // softens the cut edge, and a photo clipped to a blob drops a blob-shaped
     // shadow; the border goes on after them so an outline stays crisp on a
-    // blurred layer, and traces the layer rather than the cutout;
+    // blurred layer, and traces the layer rather than the cutout; inset
+    // shadows sit just before the border because they belong to the layer's
+    // surface and must rotate with it, unlike the outer ones;
     // scale/flip/rotation then move the finished layer; glow and shadow are
     // cast by the transformed silhouette in screen space, which keeps a
     // rotated layer's light direction fixed (and preserves how rotation +
@@ -95,10 +97,11 @@ private struct NodeView: View {
             .modifier(ColorAdjustModifier(adjust: node.colorAdjust))
             .modifier(MaskModifier(node: node))
             .modifier(BlurModifier(radius: node.blur))
+            .modifier(InnerShadowsModifier(node: node))
             .modifier(BorderModifier(node: node))
             .modifier(TransformModifier(node: node))
             .modifier(GlowModifier(glow: node.glow))
-            .modifier(ShadowModifier(shadow: node.shadow))
+            .modifier(ShadowModifier(shadows: node.outerShadows))
             .opacity(node.opacity)
             .modifier(BlendModeModifier(mode: node.blendMode))
     }
@@ -379,19 +382,100 @@ private struct NodeView: View {
 }
 
 private struct ShadowModifier: ViewModifier {
-    let shadow: ResolvedShadow?
+    let shadows: [ResolvedShadow]
 
     func body(content: Content) -> some View {
-        if let shadow {
-            content.shadow(
+        // Chained rather than merged: each `.shadow` casts from the result of
+        // the last, which is what makes a light/dark pair read as one lit
+        // object instead of two unrelated smudges.
+        shadows.reduce(AnyView(content)) { view, shadow in
+            AnyView(view.shadow(
                 color: Color(shadow.color),
                 radius: shadow.radius,
                 x: shadow.offsetX,
                 y: shadow.offsetY
-            )
-        } else {
-            content
+            ))
         }
+    }
+}
+
+/// Inset shadows, drawn over the layer and clipped to its own silhouette.
+///
+/// SwiftUI has no inset shadow for arbitrary views, so this uses the standard
+/// construction: stroke the silhouette with a band twice the blur radius,
+/// blur it, slide it, then clip back to the silhouette so only the half that
+/// falls *inside* survives. The result hugs the inner edge on the side the
+/// light comes from, which is what sells a dent.
+///
+/// Applied before `TransformModifier`, unlike glow and outer shadow: an inset
+/// shadow is part of the layer's surface, so it has to rotate with the layer
+/// rather than stay put in screen space.
+private struct InnerShadowsModifier: ViewModifier {
+    let node: RenderNode
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let shadows = node.innerShadows
+        if shadows.isEmpty {
+            content
+        } else {
+            content.overlay(alignment: .topLeading) {
+                ZStack(alignment: .topLeading) {
+                    ForEach(Array(shadows.enumerated()), id: \.offset) { _, shadow in
+                        silhouette
+                            .stroke(Color(shadow.color), lineWidth: max(shadow.radius, 0.5) * 2)
+                            .blur(radius: shadow.radius)
+                            .offset(x: shadow.offsetX, y: shadow.offsetY)
+                            .frame(width: node.rect.width, height: node.rect.height)
+                            .clipShape(silhouette)
+                    }
+                }
+                // Same frame-then-offset placement the border and mask use:
+                // `.offset` never moves layout bounds, so an overlay drawn
+                // naively lands at the canvas origin.
+                .frame(width: node.rect.width, height: node.rect.height)
+                .offset(x: node.rect.x, y: node.rect.y)
+                .allowsHitTesting(false)
+            }
+        }
+    }
+
+    /// The layer's own outline. Uses the mask's shape when there is one, so a
+    /// blob-clipped layer gets a blob-shaped dent rather than a rounded-rect
+    /// one floating inside it.
+    private var silhouette: some InsettableShape {
+        MaskOutline(mask: node.mask, cornerRadius: node.cornerRadius)
+    }
+}
+
+/// The shape an inset shadow hugs: the mask if the layer has one, otherwise
+/// the layer's rounded bounds. `InsettableShape` so it can be stroked.
+private struct MaskOutline: InsettableShape {
+    let mask: ResolvedMask?
+    let cornerRadius: Double
+    var insetAmount: Double = 0
+
+    func path(in rect: CGRect) -> Path {
+        let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        guard let mask, !mask.invert else {
+            return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).path(in: r)
+        }
+        switch mask.shape {
+        case .rectangle:
+            return RoundedRectangle(cornerRadius: mask.cornerRadius, style: .continuous).path(in: r)
+        case .circle:
+            return Circle().path(in: r)
+        case .capsule:
+            return Capsule(style: .continuous).path(in: r)
+        case .path:
+            return NormalizedPath(commands: mask.path ?? []).path(in: r)
+        }
+    }
+
+    func inset(by amount: CGFloat) -> MaskOutline {
+        var copy = self
+        copy.insetAmount += amount
+        return copy
     }
 }
 

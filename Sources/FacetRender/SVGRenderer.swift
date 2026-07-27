@@ -67,9 +67,10 @@ public enum SVGRenderer {
         var styles: [String] = []
         if let filterID = filterDefinition(node, defs: &defs) {
             attributes += " filter=\"url(#\(filterID))\""
-        } else if let shadow = node.shadow {
-            // A lone shadow keeps the plain CSS form it has always emitted;
-            // only nodes that actually need a filter chain grow one.
+        } else if node.outerShadows.count == 1, node.innerShadows.isEmpty,
+                  let shadow = node.outerShadows.first {
+            // A lone outer shadow keeps the plain CSS form it has always
+            // emitted; only nodes that actually need a filter chain grow one.
             styles.append("filter: drop-shadow(\(format(shadow.offsetX))px \(format(shadow.offsetY))px \(format(shadow.radius))px \(cssColor(shadow.color)))")
         }
         if let blend = cssBlendMode(node.blendMode) {
@@ -173,7 +174,8 @@ public enum SVGRenderer {
     /// than SwiftUI does.
     private static func filterDefinition(_ node: RenderNode, defs: inout [String]) -> String? {
         let adjust = node.colorAdjust
-        guard !adjust.isIdentity || node.blur > 0 || node.glow != nil else { return nil }
+        guard !adjust.isIdentity || node.blur > 0 || node.glow != nil
+                || node.shadows.count > 1 || !node.innerShadows.isEmpty else { return nil }
 
         var primitives = ""
         if adjust.brightness != 0 || adjust.contrast != 1 {
@@ -199,13 +201,19 @@ public enum SVGRenderer {
         if let glow = node.glow {
             primitives += dropShadow(offsetX: 0, offsetY: 0, radius: glow.radius, color: glow.color)
         }
-        if let shadow = node.shadow {
+        for shadow in node.outerShadows {
             primitives += dropShadow(
                 offsetX: shadow.offsetX,
                 offsetY: shadow.offsetY,
                 radius: shadow.radius,
                 color: shadow.color
             )
+        }
+        // Inner shadows come last so they sit over the layer, and each is a
+        // self-contained sub-chain merged back onto the result so far —
+        // `feDropShadow` has no inset form.
+        for (index, shadow) in node.innerShadows.enumerated() {
+            primitives += innerShadow(shadow, index: index)
         }
 
         let id = "fx\(defs.count)"
@@ -215,6 +223,27 @@ public enum SVGRenderer {
             "<filter id=\"\(id)\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\" color-interpolation-filters=\"sRGB\">\(primitives)</filter>"
         )
         return id
+    }
+
+    /// The canonical SVG inset shadow: invert the alpha so the *outside* of
+    /// the shape becomes the caster, blur and offset that, clip the result back
+    /// inside the shape, then paint it over what came before.
+    private static func innerShadow(_ shadow: ResolvedShadow, index: Int) -> String {
+        let base = "in\(index)"
+        var out = "<feComponentTransfer in=\"SourceAlpha\" result=\"\(base)a\">"
+        out += "<feFuncA type=\"table\" tableValues=\"1 0\"/></feComponentTransfer>"
+        out += "<feGaussianBlur in=\"\(base)a\" stdDeviation=\"\(format(shadow.radius / 2))\" result=\"\(base)b\"/>"
+        out += "<feOffset in=\"\(base)b\" dx=\"\(format(shadow.offsetX))\" dy=\"\(format(shadow.offsetY))\" result=\"\(base)c\"/>"
+        out += "<feFlood flood-color=\"\(opaqueHex(shadow.color))\""
+        if shadow.color.alpha < 1 {
+            out += " flood-opacity=\"\(String(format: "%.3f", shadow.color.alpha))\""
+        }
+        out += " result=\"\(base)d\"/>"
+        out += "<feComposite in=\"\(base)d\" in2=\"\(base)c\" operator=\"in\" result=\"\(base)e\"/>"
+        // Clip to the original silhouette, or the shadow would spill outside.
+        out += "<feComposite in=\"\(base)e\" in2=\"SourceAlpha\" operator=\"in\" result=\"\(base)f\"/>"
+        out += "<feMerge><feMergeNode/><feMergeNode in=\"\(base)f\"/></feMerge>"
+        return out
     }
 
     private static func dropShadow(offsetX: Double, offsetY: Double, radius: Double, color: ColorValue) -> String {

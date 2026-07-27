@@ -28,7 +28,7 @@ final class LayerEffectsTests: XCTestCase {
         opacity: 0.9,
         rotation: 12,
         cornerRadius: 8,
-        shadow: ShadowStyle(color: .literal(.black), radius: 4, offsetX: 1, offsetY: 2),
+        shadows: [ShadowStyle(color: .literal(.black), radius: 4, offsetX: 1, offsetY: 2)],
         blendMode: .softLight,
         blur: 3,
         border: BorderStyle(color: .literal(ColorValue(hex: "#FF0000")!), width: 2, inset: 1),
@@ -208,16 +208,16 @@ final class LayerEffectsTests: XCTestCase {
     }
 
     func testSVGShadowAloneKeepsTheLegacyDropShadowForm() {
-        let output = svg(style: LayerStyle(shadow: ShadowStyle(
+        let output = svg(style: LayerStyle(shadows: [ShadowStyle(
             color: .literal(.black), radius: 6, offsetX: 0, offsetY: 3
-        )))
+        )]))
         XCTAssertTrue(output.contains("style=\"filter: drop-shadow(0px 3px 6px #000000)\""))
         XCTAssertFalse(output.contains("<filter"), "A lone shadow must not grow a filter chain")
     }
 
     func testSVGEmitsAFilterChainForBlurGlowAndColorGrading() {
         let output = svg(style: LayerStyle(
-            shadow: ShadowStyle(color: .literal(.black), radius: 4, offsetY: 2),
+            shadows: [ShadowStyle(color: .literal(.black), radius: 4, offsetY: 2)],
             blur: 8,
             brightness: 0.25,
             contrast: 2,

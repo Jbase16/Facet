@@ -25,12 +25,108 @@ public struct ShadowStyle: Codable, Hashable, Sendable {
     public var radius: Double
     public var offsetX: Double
     public var offsetY: Double
+    /// Cast *inside* the layer's silhouette rather than behind it.
+    ///
+    /// The direction of the illusion turns entirely on this flag: the same
+    /// pair of shadows reads as raised when outside and pressed-in when
+    /// inside. Everything in the neumorphic family — emboss, deboss,
+    /// letterpress, inset — is that one inversion.
+    public var inset: Bool
 
-    public init(color: ColorRef, radius: Double, offsetX: Double = 0, offsetY: Double = 0) {
+    public init(
+        color: ColorRef,
+        radius: Double,
+        offsetX: Double = 0,
+        offsetY: Double = 0,
+        inset: Bool = false
+    ) {
         self.color = color
         self.radius = radius
         self.offsetX = offsetX
         self.offsetY = offsetY
+        self.inset = inset
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case color, radius, offsetX, offsetY, inset
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        color = try container.decode(ColorRef.self, forKey: .color)
+        radius = try container.decode(Double.self, forKey: .radius)
+        offsetX = try container.decodeIfPresent(Double.self, forKey: .offsetX) ?? 0
+        offsetY = try container.decodeIfPresent(Double.self, forKey: .offsetY) ?? 0
+        inset = try container.decodeIfPresent(Bool.self, forKey: .inset) ?? false
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(color, forKey: .color)
+        try container.encode(radius, forKey: .radius)
+        try container.encode(offsetX, forKey: .offsetX)
+        try container.encode(offsetY, forKey: .offsetY)
+        if inset { try container.encode(inset, forKey: .inset) }
+    }
+}
+
+/// Ready-made shadow pairs for the neumorphic family.
+///
+/// The effect depends on a light source: one shadow on the lit side, one
+/// opposite. Getting the pairing right by hand is fiddly enough that people
+/// conclude the feature is broken, so the presets exist to hand you a correct
+/// starting point. They write ordinary shadow values — nothing about them is
+/// special-cased in the renderers.
+///
+/// All of them assume the layer is the *same colour as what's behind it*.
+/// That is the load-bearing rule: a differently-coloured layer reads as a card
+/// sitting on a surface, not as the surface itself deformed.
+public enum ShadowPreset: String, CaseIterable, Sendable {
+    /// Extruded — pushed up out of the surface.
+    case raised
+    /// Debossed — a coin pressed into clay and lifted away.
+    case pressed
+    /// Both at once: a rim of light above, shade below, on a shallow relief.
+    case embossed
+
+    public var displayName: String {
+        switch self {
+        case .raised: return "Raised"
+        case .pressed: return "Pressed"
+        case .embossed: return "Embossed"
+        }
+    }
+
+    /// `light`/`dark` are usually a tint and a shade of the surface colour
+    /// rather than white and black — pure black reads as dirt on the material.
+    public func shadows(
+        light: ColorRef = .literal(ColorValue(hex: "#FFFFFFB3")!),
+        dark: ColorRef = .literal(ColorValue(hex: "#00000059")!),
+        distance: Double = 6,
+        softness: Double = 10
+    ) -> [ShadowStyle] {
+        switch self {
+        case .raised:
+            return [
+                ShadowStyle(color: light, radius: softness, offsetX: -distance, offsetY: -distance),
+                ShadowStyle(color: dark, radius: softness, offsetX: distance, offsetY: distance),
+            ]
+        case .pressed:
+            // The same pair, inside and with the light source swapped: the
+            // near wall of a dent is the one facing away from the light.
+            return [
+                ShadowStyle(color: dark, radius: softness, offsetX: distance, offsetY: distance, inset: true),
+                ShadowStyle(color: light, radius: softness, offsetX: -distance, offsetY: -distance, inset: true),
+            ]
+        case .embossed:
+            // Shallower and tighter than `raised`: a relief in the surface
+            // rather than an object standing on it.
+            return [
+                ShadowStyle(color: light, radius: softness / 2, offsetX: -distance / 2, offsetY: -distance / 2, inset: true),
+                ShadowStyle(color: dark, radius: softness / 2, offsetX: distance / 2, offsetY: distance / 2, inset: true),
+                ShadowStyle(color: dark, radius: softness, offsetX: distance / 2, offsetY: distance / 2),
+            ]
+        }
     }
 }
 
@@ -118,7 +214,16 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     /// Rotation in degrees, clockwise.
     public var rotation: Double
     public var cornerRadius: Double
-    public var shadow: ShadowStyle?
+    /// A list, because the neumorphic family needs two at once — one on the
+    /// lit side, one opposite. Documents written when this was a single
+    /// optional decode into a one-element list.
+    public var shadows: [ShadowStyle]
+
+    /// The first shadow, for the many call sites that only ever meant one.
+    public var shadow: ShadowStyle? {
+        get { shadows.first }
+        set { shadows = newValue.map { [$0] } ?? [] }
+    }
 
     public var blendMode: BlendMode?
     /// Gaussian blur radius in points, 0...50.
@@ -148,7 +253,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         opacity: Double = 1.0,
         rotation: Double = 0,
         cornerRadius: Double = 0,
-        shadow: ShadowStyle? = nil,
+        shadows: [ShadowStyle] = [],
         blendMode: BlendMode? = nil,
         blur: Double? = nil,
         border: BorderStyle? = nil,
@@ -165,7 +270,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         self.opacity = opacity
         self.rotation = rotation
         self.cornerRadius = cornerRadius
-        self.shadow = shadow
+        self.shadows = shadows
         self.blendMode = blendMode
         self.blur = blur
         self.border = border
@@ -183,7 +288,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     public static let plain = LayerStyle()
 
     private enum CodingKeys: String, CodingKey {
-        case opacity, rotation, cornerRadius, shadow
+        case opacity, rotation, cornerRadius, shadow, shadows
         case blendMode, blur, border, scale, flipHorizontal, flipVertical
         case brightness, contrast, saturation, hueRotation, glow, mask
     }
@@ -193,7 +298,15 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         opacity = try container.decodeIfPresent(Double.self, forKey: .opacity) ?? 1.0
         rotation = try container.decodeIfPresent(Double.self, forKey: .rotation) ?? 0
         cornerRadius = try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? 0
-        shadow = try container.decodeIfPresent(ShadowStyle.self, forKey: .shadow)
+        // `shadows` is the current form; `shadow` is what documents written
+        // before the neumorphic pass carry. Reading both means no migration.
+        if let list = try container.decodeIfPresent([ShadowStyle].self, forKey: .shadows) {
+            shadows = list
+        } else if let single = try container.decodeIfPresent(ShadowStyle.self, forKey: .shadow) {
+            shadows = [single]
+        } else {
+            shadows = []
+        }
         blendMode = try container.decodeIfPresent(BlendMode.self, forKey: .blendMode)
         blur = try container.decodeIfPresent(Double.self, forKey: .blur)
         border = try container.decodeIfPresent(BorderStyle.self, forKey: .border)
@@ -213,7 +326,14 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         try container.encode(opacity, forKey: .opacity)
         try container.encode(rotation, forKey: .rotation)
         try container.encode(cornerRadius, forKey: .cornerRadius)
-        try container.encodeIfPresent(shadow, forKey: .shadow)
+        // A lone outer shadow keeps writing the legacy singular key, so the
+        // overwhelmingly common case stays byte-identical through a round trip
+        // and older builds can still read it.
+        if shadows.count == 1, !shadows[0].inset {
+            try container.encode(shadows[0], forKey: .shadow)
+        } else if !shadows.isEmpty {
+            try container.encode(shadows, forKey: .shadows)
+        }
         try container.encodeIfPresent(blendMode, forKey: .blendMode)
         try container.encodeIfPresent(blur, forKey: .blur)
         try container.encodeIfPresent(border, forKey: .border)

@@ -36,6 +36,8 @@ public struct ResolvedShadow: Sendable, Equatable {
     public var radius: Double
     public var offsetX: Double
     public var offsetY: Double
+    /// Cast inside the layer's silhouette rather than behind it.
+    public var inset: Bool = false
 }
 
 /// A stroke inside the node's rect, following its corner radius.
@@ -298,7 +300,12 @@ public struct RenderNode: Sendable, Equatable {
     public var opacity: Double
     public var rotation: Double
     public var cornerRadius: Double
-    public var shadow: ResolvedShadow?
+    public var shadows: [ResolvedShadow]
+
+    /// Outer shadows fall behind the layer; inset ones are drawn over it.
+    /// Split here so neither renderer has to filter the list twice.
+    public var outerShadows: [ResolvedShadow] { shadows.filter { !$0.inset } }
+    public var innerShadows: [ResolvedShadow] { shadows.filter(\.inset) }
     public var blendMode: BlendMode
     /// Gaussian blur radius in points, 0...50.
     public var blur: Double
@@ -324,7 +331,7 @@ public struct RenderNode: Sendable, Equatable {
         opacity: Double = 1,
         rotation: Double = 0,
         cornerRadius: Double = 0,
-        shadow: ResolvedShadow? = nil,
+        shadows: [ResolvedShadow] = [],
         blendMode: BlendMode = .normal,
         blur: Double = 0,
         border: ResolvedBorder? = nil,
@@ -344,7 +351,7 @@ public struct RenderNode: Sendable, Equatable {
         self.opacity = opacity
         self.rotation = rotation
         self.cornerRadius = cornerRadius
-        self.shadow = shadow
+        self.shadows = shadows
         self.blendMode = blendMode
         self.blur = blur
         self.border = border

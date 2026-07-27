@@ -49,6 +49,7 @@ struct InspectorView: View {
                     layoutSection
                     contentSection
                     effectsSection
+                    depthSection
                     maskSection
                     outlineSection
                     interactionSection
@@ -551,22 +552,107 @@ struct InspectorView: View {
             sliderRow("Corner radius", value: layer.style.cornerRadius, range: 0...60, format: { "\(Int($0))" }) { value in
                 apply { $0.style.cornerRadius = value }
             }
-            Toggle("Shadow", isOn: Binding(
-                get: { layer.style.shadow != nil },
-                set: { on in
-                    apply {
-                        $0.style.shadow = on
-                            ? ShadowStyle(color: .literal(ColorValue(red: 0, green: 0, blue: 0, alpha: 0.4)), radius: 6, offsetY: 3)
-                            : nil
+        }
+    }
+
+    // MARK: - Depth
+
+    /// Shadows, as a list rather than a single optional — the neumorphic
+    /// family needs a light one and a dark one at once.
+    private var depthSection: some View {
+        Section {
+            HStack(spacing: 8) {
+                ForEach(ShadowPreset.allCases, id: \.self) { preset in
+                    Button(preset.displayName) {
+                        apply { $0.style.shadows = preset.shadows() }
                     }
+                    .buttonStyle(.plain)
+                    .font(FacetUI.caption)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity)
+                    .background(FacetUI.surface, in: Capsule())
+                    .foregroundStyle(FacetUI.ink)
                 }
-            ))
-            if let shadow = layer.style.shadow {
-                sliderRow("Shadow radius", value: shadow.radius, range: 0...30, format: { "\(Int($0))" }) { value in
-                    apply { $0.style.shadow?.radius = value }
+                if !layer.style.shadows.isEmpty {
+                    Button {
+                        apply { $0.style.shadows = [] }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(FacetUI.inkTertiary)
+                    .accessibilityLabel("Remove all shadows")
                 }
             }
+
+            ForEach(Array(layer.style.shadows.enumerated()), id: \.offset) { index, shadow in
+                shadowRow(index: index, shadow: shadow)
+            }
+
+            Button {
+                apply {
+                    $0.style.shadows.append(
+                        FacetCore.ShadowStyle(color: .literal(ColorValue(red: 0, green: 0, blue: 0, alpha: 0.4)),
+                                    radius: 6, offsetY: 3)
+                    )
+                }
+            } label: {
+                Label("Add shadow", systemImage: "plus")
+                    .font(FacetUI.caption)
+            }
+        } header: {
+            Text("Depth").facetEyebrow()
+        } footer: {
+            Text("Raised and Pressed only read as one material if this layer is the same colour as what sits behind it. A different colour looks like a card on a surface, not the surface itself.")
+                .font(FacetUI.caption)
+                .foregroundStyle(FacetUI.inkTertiary)
         }
+    }
+
+    @ViewBuilder
+    private func shadowRow(index: Int, shadow: FacetCore.ShadowStyle) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(shadow.inset ? "Inner" : "Outer")
+                    .font(FacetUI.label)
+                    .foregroundStyle(FacetUI.ink)
+                Spacer()
+                ColorRefPicker(
+                    label: "Shadow colour", tokens: tokens.colors, scheme: scheme,
+                    selection: Binding(
+                        get: { shadow.color },
+                        set: { value in apply { $0.style.shadows[index].color = value } }
+                    )
+                )
+                Button {
+                    apply { $0.style.shadows.remove(at: index) }
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 12))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(FacetUI.inkTertiary)
+                .accessibilityLabel("Delete shadow \(index + 1)")
+            }
+
+            Toggle("Inside the shape", isOn: Binding(
+                get: { shadow.inset },
+                set: { on in apply { $0.style.shadows[index].inset = on } }
+            ))
+            .font(FacetUI.caption)
+
+            sliderRow("Blur", value: shadow.radius, range: 0...40, format: { "\(Int($0))" }) { value in
+                apply { $0.style.shadows[index].radius = value }
+            }
+            sliderRow("Offset X", value: shadow.offsetX, range: -30...30, format: { "\(Int($0))" }) { value in
+                apply { $0.style.shadows[index].offsetX = value }
+            }
+            sliderRow("Offset Y", value: shadow.offsetY, range: -30...30, format: { "\(Int($0))" }) { value in
+                apply { $0.style.shadows[index].offsetY = value }
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     // MARK: - Per-type

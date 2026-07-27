@@ -161,12 +161,13 @@ public struct DocumentResolver {
             opacity: opacity,
             rotation: style.rotation,
             cornerRadius: style.cornerRadius,
-            shadow: style.shadow.map {
+            shadows: style.shadows.map {
                 ResolvedShadow(
                     color: resolveColor($0.color),
-                    radius: $0.radius,
+                    radius: max(0, $0.radius),
                     offsetX: $0.offsetX,
-                    offsetY: $0.offsetY
+                    offsetY: $0.offsetY,
+                    inset: $0.inset
                 )
             },
             blendMode: style.blendMode ?? .normal,
