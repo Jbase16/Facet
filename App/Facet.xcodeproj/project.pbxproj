@@ -25,6 +25,7 @@
 		3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E1F7508053F63AC77BC8A0 /* EditorView.swift */; };
 		4908BC9E49EA2674F52E0AB5 /* SceneEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */; };
 		49F0A851E07FBEF658AAE78E /* AppCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED98CA53137812BF667A5C2 /* AppCatalog.swift */; };
+		5378697F6274C3D2BCEFA69E /* ScenePaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */; };
 		5EDD7A3B4448D21F485D4DF1 /* AssetBundleCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */; };
 		6D1B7841CD3B72D88876B202 /* FacetData in Frameworks */ = {isa = PBXBuildFile; productRef = F9F468B849C3525792800F83 /* FacetData */; };
 		75BF8C13A5C3014A2697C6FE /* FacetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6FC15447F6267AC8764F938F /* FacetCore */; };
@@ -133,6 +134,7 @@
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FacetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePaletteView.swift; sourceTree = "<group>"; };
 		E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetBundleCodec.swift; sourceTree = "<group>"; };
 		E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftMapper.swift; sourceTree = "<group>"; };
 		F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDataSources.swift; sourceTree = "<group>"; };
@@ -284,6 +286,7 @@
 			isa = PBXGroup;
 			children = (
 				B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */,
+				D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */,
 			);
 			path = Scenes;
 			sourceTree = "<group>";
@@ -455,6 +458,7 @@
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,
 				4908BC9E49EA2674F52E0AB5 /* SceneEditorView.swift in Sources */,
+				5378697F6274C3D2BCEFA69E /* ScenePaletteView.swift in Sources */,
 				7DBA2DF9407F2F01D91FAAFC /* SceneRepository.swift in Sources */,
 				A3AE4B68B94873D25416AB48 /* ShapePlayground.swift in Sources */,
 				F024C274E822725E25BC3DAD /* ShapeStudioView.swift in Sources */,

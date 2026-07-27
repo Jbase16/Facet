@@ -35,6 +35,7 @@ struct SceneEditorView: View {
     @State private var wallpaperItem: PhotosPickerItem?
     @State private var pickingWallpaper = false
     @State private var addingWidget = false
+    @State private var editingPalette = false
     @State private var scheme: FacetCore.ColorScheme = .dark
     @State private var notice: String?
 
@@ -61,13 +62,28 @@ struct SceneEditorView: View {
             tools
         }
         .background(FacetUI.bg)
-        .task { loadLibrary() }
+        .task {
+            loadLibrary()
+            // simctl launch booted com.JasonPhillips.app -facet-open-scene -facet-scene-palette
+            if ProcessInfo.processInfo.arguments.contains("-facet-scene-palette") {
+                editingPalette = true
+            }
+        }
         .task(id: scene.backdrop) { loadWallpaper() }
         .photosPicker(isPresented: $pickingWallpaper, selection: $wallpaperItem, matching: .images)
         .onChange(of: wallpaperItem) { importWallpaper() }
+        .sheet(isPresented: $editingPalette) {
+            // Only the placed widgets define what is worth overriding, so the
+            // sheet is driven by the scene's own contents.
+            ScenePaletteView(
+                palette: $scene.palette,
+                documents: scene.placements.compactMap { documentsByID[$0.documentID] }
+            )
+        }
         .sheet(isPresented: $addingWidget) {
             AddPlacementSheet(
                 documents: library,
+                palette: scene.palette,
                 scheme: scheme,
                 hasRoom: { scene.freeSlot(for: $0) != nil },
                 onAdd: { document, rendition in add(document, rendition: rendition) }
@@ -236,8 +252,10 @@ struct SceneEditorView: View {
     @ViewBuilder
     private func content(for placement: ScenePlacement, snapshots: SnapshotSet) -> some View {
         if let document = documentsByID[placement.documentID] {
+            // Themed by the scene, not by the widget: this is where a Scene
+            // stops being a layout and starts being a look.
             let resolved = DocumentResolver.resolve(
-                document: document,
+                document: document.applying(palette: scene.palette),
                 snapshots: snapshots,
                 environment: RenderEnvironment(rendition: placement.rendition, colorScheme: scheme)
             )
@@ -429,6 +447,14 @@ struct SceneEditorView: View {
             }
             .buttonStyle(FacetToolButton())
             .accessibilityLabel("Choose wallpaper")
+
+            Button {
+                editingPalette = true
+            } label: {
+                Image(systemName: scene.palette.colors.isEmpty ? "paintpalette" : "paintpalette.fill")
+            }
+            .buttonStyle(FacetToolButton(prominent: !scene.palette.colors.isEmpty))
+            .accessibilityLabel("Scene palette")
 
             Button {
                 scheme = scheme == .dark ? .light : .dark
@@ -661,6 +687,9 @@ struct SceneEditorView: View {
 /// document instead of arriving as a rejection afterwards.
 private struct AddPlacementSheet: View {
     let documents: [WidgetDocument]
+    /// The scene's palette, so every row previews the widget as it will look
+    /// once placed rather than as it looks alone.
+    let palette: ThemeTokens
     let scheme: FacetCore.ColorScheme
     let hasRoom: (RenditionKind) -> Bool
     let onAdd: (WidgetDocument, RenditionKind) -> Void
@@ -757,7 +786,9 @@ private struct AddPlacementSheet: View {
     /// widget looks like *now*, and the resolver is cheap at this size.
     private func thumbnail(_ document: WidgetDocument) -> some View {
         let resolved = DocumentResolver.resolve(
-            document: document,
+            // The picker previews what the widget will look like *in this
+            // scene*, so you choose against the palette you'll actually get.
+            document: document.applying(palette: palette),
             snapshots: SampleData.snapshotSet(),
             environment: RenderEnvironment(rendition: .systemSmall, colorScheme: scheme)
         )

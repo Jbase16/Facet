@@ -122,6 +122,31 @@ public struct ThemeTokens: Codable, Hashable, Sendable {
     }
 
     public static let empty = ThemeTokens()
+
+    /// `override`'s entries win; everything it doesn't name is left alone.
+    ///
+    /// This is what lets a Scene recolour the widgets standing on it without
+    /// knowing anything about them. A scene that defines only `accent` shifts
+    /// every layer that referenced `token("accent")` and touches nothing else,
+    /// so a widget keeps its own typography and its own incidental colours —
+    /// merging, not replacing, is the whole reason one palette can be applied
+    /// to designs that were never built for each other.
+    ///
+    /// Layers using literal colours are unaffected by design: a literal is an
+    /// author saying "this exact colour", and a scene does not get to overrule
+    /// that.
+    public func merging(_ override: ThemeTokens) -> ThemeTokens {
+        guard !override.isEmpty else { return self }
+        return ThemeTokens(
+            colors: colors.merging(override.colors) { _, new in new },
+            fonts: fonts.merging(override.fonts) { _, new in new },
+            spacing: spacing.merging(override.spacing) { _, new in new }
+        )
+    }
+
+    public var isEmpty: Bool {
+        colors.isEmpty && fonts.isEmpty && spacing.isEmpty
+    }
 }
 
 /// A color reference: either a token name or a literal value.

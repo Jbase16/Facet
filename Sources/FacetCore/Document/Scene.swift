@@ -150,6 +150,21 @@ public struct FacetScene: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
+public extension WidgetDocument {
+    /// The same design, re-themed by a scene's palette.
+    ///
+    /// A copy rather than a mutation: the widget on its own is unchanged, and
+    /// the same document placed in two scenes shows each scene's colours.
+    /// That is the point of storing a reference in `ScenePlacement` instead of
+    /// a copy — one design, themed per screen.
+    func applying(palette: ThemeTokens) -> WidgetDocument {
+        guard !palette.isEmpty else { return self }
+        var themed = self
+        themed.tokens = tokens.merging(palette)
+        return themed
+    }
+}
+
 /// Serialization for the portable `.facetscene` format — the same plain,
 /// diffable JSON the widget format uses, so a scene is shareable as one file.
 public enum SceneFile {

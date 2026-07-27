@@ -186,7 +186,10 @@ struct GalleryView: View {
                 if ProcessInfo.processInfo.arguments.contains("-facet-open-scene") {
                     Task {
                         try? await Task.sleep(for: .milliseconds(700))
-                        editingScene = Self.demoScene(from: store.documents)
+                        // A stored scene if there is one — that is what you
+                        // want when checking a saved palette or layout;
+                        // otherwise a throwaway laid out from the library.
+                        editingScene = scenes.scenes.first ?? Self.demoScene(from: store.documents)
                     }
                 }
                 // Likewise for the editor (first document), after seeding.
@@ -500,7 +503,11 @@ struct SceneCell: View {
     private func widget(_ placement: ScenePlacement, document: WidgetDocument) -> some View {
         let size = placement.rendition.designSize
         let origin = HomeGrid.origin(column: placement.column, row: placement.row)
-        return WidgetPreview(document: document, rendition: placement.rendition, colorScheme: .dark)
+        return WidgetPreview(
+            document: document.applying(palette: scene.palette),
+            rendition: placement.rendition,
+            colorScheme: .dark
+        )
             .frame(width: size.width, height: size.height)
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             // `scaleEffect` shrinks the drawn pixels but leaves the layout size

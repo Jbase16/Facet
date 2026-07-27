@@ -13,7 +13,11 @@ README.md has the current status and build instructions.
   decoding (see the v1-compat pattern: optional fields, string-form fills).
   `Document/Scene.swift` is the *scene* document: a whole home screen
   (wallpaper + widget placements + shared palette). Placements reference
-  widgets by id, never copy them, so the two have independent lifetimes.
+  widgets by id, never copy them, so the two have independent lifetimes —
+  and so one design takes on each scene's palette via
+  `document.applying(palette:)`, which merges (never replaces) the scene's
+  `ThemeTokens` over the widget's own. Layers using literal colours are
+  deliberately immune: a literal is the author saying "this exact colour".
 - `Sources/FacetData` — data sources, snapshot cache, refresh planner,
   URLJSONSource (custom APIs), AstronomySource (computed sun/moon).
 - `Sources/FacetRender` — DocumentResolver (pure: document + data + env →
