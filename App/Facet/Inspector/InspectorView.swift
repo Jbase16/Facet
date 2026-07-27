@@ -395,6 +395,19 @@ struct InspectorView: View {
                     }
                 }
 
+            Toggle(isOn: Binding(
+                get: { layer.hiddenWhenSimplified },
+                set: { value in apply { $0.hiddenWhenSimplified = value } }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Hide when simplified")
+                        .font(FacetUI.label)
+                    Text("iOS shows a reduced version of a widget in some places. Turn this on for decoration, off for the thing the widget is actually for.")
+                        .font(FacetUI.caption)
+                        .foregroundStyle(FacetUI.inkTertiary)
+                }
+            }
+
             HStack {
                 TextField("Tap opens URL — supports {expressions}", text: $tapURLText, axis: .vertical)
                     .font(.system(.footnote, design: .monospaced))

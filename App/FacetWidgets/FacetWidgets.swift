@@ -33,10 +33,24 @@ struct FacetWidget: Widget {
         }
         .configurationDisplayName("Facet")
         .description("Your Facet design, live. Long-press to choose which one.")
-        .supportedFamilies([
+        .supportedFamilies(Self.families)
+    }
+
+    /// Built at runtime rather than as an array literal: the extra-large
+    /// families are gated on newer systems, and an unavailable case cannot
+    /// appear in a literal compiled against a 17 deployment target.
+    private static var families: [WidgetFamily] {
+        var families: [WidgetFamily] = [
             .systemSmall, .systemMedium, .systemLarge,
             .accessoryCircular, .accessoryRectangular, .accessoryInline,
-        ])
+        ]
+        // iPad-only; harmless to declare on iPhone, where the system simply
+        // never offers them.
+        families.append(.systemExtraLarge)
+        if #available(iOS 27.0, *) {
+            families.append(.systemExtraLargePortrait)
+        }
+        return families
     }
 }
 
@@ -94,10 +108,43 @@ struct FacetTimelineProvider: AppIntentTimelineProvider {
     }
 }
 
+/// Reads the system's requested level of detail and hands it to the renderer.
+///
+/// Split into its own view because `\.levelOfDetail` is iOS 26+ and the app's
+/// deployment target is 17 — a property wrapper can't be conditionally
+/// declared, but a whole view can be conditionally instantiated.
+@available(iOS 26.0, *)
+private struct DetailAwareEntryView: View {
+    @Environment(\.levelOfDetail) private var levelOfDetail
+    let entry: FacetEntry
+
+    var body: some View {
+        FacetWidgetBody(
+            entry: entry,
+            detail: levelOfDetail == .simplified ? .simplified : .full
+        )
+    }
+}
+
 struct FacetWidgetEntryView: View {
+    let entry: FacetEntry
+
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            DetailAwareEntryView(entry: entry)
+        } else {
+            // Before iOS 26 the system never asks for less, so full detail is
+            // not a fallback here — it is the only thing that was ever drawn.
+            FacetWidgetBody(entry: entry, detail: .full)
+        }
+    }
+}
+
+struct FacetWidgetBody: View {
     @Environment(\.widgetFamily) private var family
     @Environment(\.colorScheme) private var colorScheme
     let entry: FacetEntry
+    let detail: DetailLevel
 
     var body: some View {
         if let document = entry.document {
@@ -110,7 +157,8 @@ struct FacetWidgetEntryView: View {
                             rendition: rendition,
                             colorScheme: colorScheme == .dark ? .dark : .light,
                             canvasWidth: proxy.size.width,
-                            canvasHeight: proxy.size.height
+                            canvasHeight: proxy.size.height,
+                            detail: detail
                         )
                     ),
                     interactive: true
@@ -129,10 +177,17 @@ struct FacetWidgetEntryView: View {
         switch family {
         case .systemMedium: return .systemMedium
         case .systemLarge: return .systemLarge
+        case .systemExtraLarge: return .systemExtraLarge
         case .accessoryCircular: return .accessoryCircular
         case .accessoryRectangular: return .accessoryRectangular
         case .accessoryInline: return .accessoryInline
-        default: return .systemSmall
+        default:
+            // `systemExtraLargePortrait` is iOS 27+, so it cannot appear in a
+            // switch case compiled against a 17 deployment target.
+            if #available(iOS 27.0, *), family == .systemExtraLargePortrait {
+                return .systemExtraLargePortrait
+            }
+            return .systemSmall
         }
     }
 }

@@ -36,6 +36,26 @@ public struct DocumentResolver {
 
     // MARK: - Layer resolution
 
+    /// Whether `resolveLayer` would produce a node for this layer, without
+    /// producing one. Stack layout needs the answer up front to size cells,
+    /// and any divergence between the two shows up as a hole in the stack.
+    ///
+    /// Deliberately non-mutating: a bad `visibleWhen` is reported once, when
+    /// `resolveLayer` actually runs, rather than twice.
+    private func willRender(_ layer: Layer) -> Bool {
+        let patch = document.patch(for: layer.id, in: environment.rendition)
+        if patch?.isHidden ?? layer.isHidden { return false }
+        if environment.detail == .simplified, layer.hiddenWhenSimplified { return false }
+        if let condition = layer.visibleWhen, !condition.isEmpty {
+            // Fail open on a broken expression, matching `resolveLayer`.
+            guard let visible = try? Evaluator.evaluate(condition, context: context).asBool() else {
+                return true
+            }
+            return visible
+        }
+        return true
+    }
+
     private mutating func resolveLayer(_ layer: Layer, in parentRect: Rect) -> RenderNode? {
         var frame = layer.frame
         var hidden = layer.isHidden
@@ -49,6 +69,11 @@ public struct DocumentResolver {
             fontSizeOverride = patch.fontSize
         }
         guard !hidden else { return nil }
+
+        // The system asked for less. Layers that opted in drop out entirely —
+        // including their subtrees, since a container marked as decoration
+        // takes its contents with it.
+        if environment.detail == .simplified, layer.hiddenWhenSimplified { return nil }
 
         // Conditional visibility: expression-gated layers ("low battery
         // warning", "weekend banner"). Errors fail open with a diagnostic —
@@ -218,10 +243,11 @@ public struct DocumentResolver {
 
         case .horizontal, .vertical:
             let isHorizontal = container.layout == .horizontal
-            let visible = container.children.filter { child in
-                let patch = document.patch(for: child.id, in: environment.rendition)
-                return !(patch?.isHidden ?? child.isHidden)
-            }
+            // This filter has to ask exactly the question `resolveLayer` asks.
+            // When it only checked `isHidden`, a layer dropped by `visibleWhen`
+            // still got a slot in the stack, so a condition that went false
+            // left a gap instead of closing it up.
+            let visible = container.children.filter(willRender)
             guard !visible.isEmpty else { return [] }
 
             let mainAvailable = isHorizontal ? content.width : content.height

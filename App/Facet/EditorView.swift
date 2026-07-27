@@ -20,6 +20,10 @@ struct EditorView: View {
     @State private var selectedLayerID: UUID?
     @State private var rendition: RenditionKind = .systemSmall
     @State private var scheme: FacetCore.ColorScheme = .light
+    /// Previews what the system draws when it asks for a reduced rendering.
+    /// Without this the "hide when simplified" toggle would have no visible
+    /// effect until the widget was on a home screen.
+    @State private var detail: DetailLevel = .full
     @State private var undoStack: [WidgetDocument] = []
     @State private var lastUndoPush: Date = .distantPast
     @State private var dragStartFrame: LayerFrame?
@@ -283,7 +287,7 @@ struct EditorView: View {
         DocumentResolver.resolve(
             document: document,
             snapshots: SampleData.snapshotSet(),
-            environment: RenderEnvironment(rendition: rendition, colorScheme: scheme)
+            environment: RenderEnvironment(rendition: rendition, colorScheme: scheme, detail: detail)
         )
     }
 
@@ -610,22 +614,71 @@ struct EditorView: View {
 
     private var controls: some View {
         VStack(spacing: 10) {
-            Picker("Rendition", selection: $rendition) {
-                Text("Small").tag(RenditionKind.systemSmall)
-                Text("Medium").tag(RenditionKind.systemMedium)
-                Text("Large").tag(RenditionKind.systemLarge)
-                Text("Lock ◯").tag(RenditionKind.accessoryCircular)
-                Text("Lock ▭").tag(RenditionKind.accessoryRectangular)
-            }
-            .pickerStyle(.segmented)
-
-            HStack(spacing: 10) {
-                Picker("Scheme", selection: $scheme) {
-                    Text("Light").tag(FacetCore.ColorScheme.light)
-                    Text("Dark").tag(FacetCore.ColorScheme.dark)
+            // Three segments, not eight. The home-screen sizes are what you
+            // flip between while designing; the Lock Screen and iPad surfaces
+            // are occasional, so they sit in a menu instead of squeezing the
+            // control that gets used constantly.
+            HStack(spacing: 8) {
+                Picker("Rendition", selection: $rendition) {
+                    ForEach(RenditionKind.homeScreenSizes, id: \.self) { size in
+                        Text(size.displayName).tag(size)
+                    }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 124)
+
+                Menu {
+                    Picker("Other surfaces", selection: $rendition) {
+                        ForEach(RenditionKind.secondarySurfaces, id: \.self) { surface in
+                            Text(surface.displayName).tag(surface)
+                        }
+                    }
+                } label: {
+                    Image(systemName: rendition.isAccessory || rendition.isExtraLarge
+                          ? "ellipsis.circle.fill"
+                          : "ellipsis.circle")
+                }
+                .buttonStyle(FacetToolButton(prominent: rendition.isAccessory || rendition.isExtraLarge))
+                .accessibilityLabel("Other surfaces")
+
+                // Lives on the size row, not the tool row below: this is a
+                // question about *what* is being drawn, same as the rendition,
+                // and the tool row is already full to the edge.
+                Button {
+                    withAnimation(.snappy) {
+                        detail = detail == .full ? .simplified : .full
+                    }
+                } label: {
+                    Image(systemName: detail == .simplified
+                          ? "square.dashed.inset.filled"
+                          : "square.dashed")
+                }
+                .buttonStyle(FacetToolButton(prominent: detail == .simplified))
+                .accessibilityLabel(detail == .simplified ? "Showing simplified" : "Showing full detail")
+            }
+
+            if rendition.isAccessory || rendition.isExtraLarge {
+                // The segmented control can't show which one is active once
+                // you leave the three home sizes, so name it here.
+                Text(rendition.displayName)
+                    .font(FacetUI.caption)
+                    .foregroundStyle(FacetUI.inkSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            HStack(spacing: 10) {
+                // A 124pt segmented control for a two-state choice was pushing
+                // this row past the screen edge — the rightmost tool was being
+                // clipped. Light/dark is binary, so it gets a button like every
+                // other control here, and the row fits.
+                Button {
+                    withAnimation(.snappy) {
+                        scheme = scheme == .light ? .dark : .light
+                    }
+                } label: {
+                    Image(systemName: scheme == .dark ? "moon.fill" : "sun.max.fill")
+                }
+                .buttonStyle(FacetToolButton())
+                .accessibilityLabel(scheme == .dark ? "Dark appearance" : "Light appearance")
 
                 Spacer()
 

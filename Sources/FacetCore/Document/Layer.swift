@@ -504,6 +504,12 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
     /// (e.g. `battery.level < 0.2`). nil means always visible. Evaluation
     /// errors fail open — a broken condition shouldn't blank a widget.
     public var visibleWhen: String?
+    /// Drop this layer when the system asks for a simplified rendering
+    /// (WidgetKit's `LevelOfDetail.simplified`, iOS 26+). Decoration and
+    /// secondary labels should set this; the one number the widget exists to
+    /// show should not. Defaults to false, so a document written before this
+    /// existed renders exactly as it always did.
+    public var hiddenWhenSimplified: Bool
     public var tapAction: TapAction?
     public var content: LayerContent
 
@@ -514,6 +520,7 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         style: LayerStyle = .plain,
         isHidden: Bool = false,
         visibleWhen: String? = nil,
+        hiddenWhenSimplified: Bool = false,
         tapAction: TapAction? = nil,
         content: LayerContent
     ) {
@@ -523,6 +530,7 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         self.style = style
         self.isHidden = isHidden
         self.visibleWhen = visibleWhen
+        self.hiddenWhenSimplified = hiddenWhenSimplified
         self.tapAction = tapAction
         self.content = content
     }
@@ -558,7 +566,7 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, frame, style, isHidden, visibleWhen, tapAction, type
+        case id, name, frame, style, isHidden, visibleWhen, hiddenWhenSimplified, tapAction, type
         case text, symbol, shape, image, gauge, line, chart, container
     }
 
@@ -570,6 +578,7 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         style = try container.decodeIfPresent(LayerStyle.self, forKey: .style) ?? .plain
         isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
         visibleWhen = try container.decodeIfPresent(String.self, forKey: .visibleWhen)
+        hiddenWhenSimplified = try container.decodeIfPresent(Bool.self, forKey: .hiddenWhenSimplified) ?? false
         tapAction = try container.decodeIfPresent(TapAction.self, forKey: .tapAction)
         let type = try container.decode(String.self, forKey: .type)
         switch type {
@@ -598,6 +607,9 @@ public struct Layer: Codable, Identifiable, Sendable, Hashable {
         try container.encode(style, forKey: .style)
         if isHidden { try container.encode(isHidden, forKey: .isHidden) }
         try container.encodeIfPresent(visibleWhen, forKey: .visibleWhen)
+        // Absent stays absent: only write the flag when it is actually set, so
+        // documents that never touch it round-trip byte-identical.
+        if hiddenWhenSimplified { try container.encode(hiddenWhenSimplified, forKey: .hiddenWhenSimplified) }
         try container.encodeIfPresent(tapAction, forKey: .tapAction)
         switch content {
         case .text(let value):

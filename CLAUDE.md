@@ -62,6 +62,23 @@ README.md has the current status and build instructions.
   .entitlements files — rename all three together or not at all.
 - Editor: `systemSmall` is the base design; geometry edits in any other
   rendition record `LayerPatch` overrides instead of mutating the base.
+- The authoritative source for any SDK question is the SDK itself, not a
+  search. `xcrun --sdk iphoneos --show-sdk-path`, then read
+  `.../Modules/<Framework>.swiftmodule/arm64e-apple-ios.swiftinterface` —
+  every public declaration with its exact `@available`. Searching turned up
+  iOS 17/18 answers for an iOS 27 question more than once.
+- Widget background transparency does not exist on iOS 27 and is not coming
+  by API. `containerBackground` is unchanged since iOS 17; `WidgetTexture`
+  (`.glass`/`.paper`) is visionOS-only, `@available(iOS, unavailable)`.
+  The wallpaper-crop illusion is the only route.
+- `DetailLevel` mirrors WidgetKit's `LevelOfDetail` (iOS 26+) but is our own
+  type — FacetCore builds on Linux, where WidgetKit doesn't exist. The
+  mapping happens once, in `FacetWidgets.swift`, behind the only
+  `#available(iOS 26)` in the app.
+- Anything that decides whether a layer renders must go in
+  `DocumentResolver.willRender`, not inline. Stack layout sizes its cells
+  from that predicate in a pre-pass; when the two disagreed, a hidden layer
+  kept its slot and left a hole.
 - Home-screen grid constants live in `App/Facet/HomeGrid.swift` and nowhere
   else. `HomeScreenPreview`, `SceneEditorView` and `SceneCell` all draw the
   same grid; when each kept a private copy they agreed only by luck.

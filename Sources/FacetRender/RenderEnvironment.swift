@@ -11,18 +11,23 @@ public struct RenderEnvironment: Sendable {
     /// device, WidgetKit supplies the actual size.
     public var canvasWidth: Double
     public var canvasHeight: Double
+    /// How much the system wants drawn. `.full` everywhere except where
+    /// WidgetKit asks for a reduced rendering (iOS 26+ `LevelOfDetail`).
+    public var detail: DetailLevel
 
     public init(
         rendition: RenditionKind,
         colorScheme: ColorScheme = .light,
         canvasWidth: Double? = nil,
-        canvasHeight: Double? = nil
+        canvasHeight: Double? = nil,
+        detail: DetailLevel = .full
     ) {
         self.rendition = rendition
         self.colorScheme = colorScheme
         let design = rendition.designSize
         self.canvasWidth = canvasWidth ?? design.width
         self.canvasHeight = canvasHeight ?? design.height
+        self.detail = detail
     }
 }
 
@@ -36,6 +41,10 @@ struct ResolutionContext: EvaluationContext {
         switch path {
         case "env.rendition": return .string(environment.rendition.rawValue)
         case "env.dark": return .bool(environment.colorScheme == .dark)
+        // Exposed as an expression variable too, so a `visibleWhen` can make
+        // a finer decision than the layer flag's all-or-nothing drop.
+        case "env.detail": return .string(environment.detail.rawValue)
+        case "env.simplified": return .bool(environment.detail == .simplified)
         default: return snapshots.value(forVariable: path)
         }
     }
