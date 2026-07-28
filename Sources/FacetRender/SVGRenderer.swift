@@ -96,7 +96,11 @@ public enum SVGRenderer {
         switch node.kind {
         case .group(let background):
             if let background {
-                output += "\(indent)  <rect x=\"\(format(node.rect.x))\" y=\"\(format(node.rect.y))\" width=\"\(format(node.rect.width))\" height=\"\(format(node.rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(paint(background, defs: &defs))\"/>\n"
+                let element = outlineElement(
+                    node.corners, in: node.rect,
+                    attributes: " fill=\"\(paint(background, defs: &defs))\""
+                )
+                output += "\(indent)  \(element)\n"
             }
         case .shape(let shape):
             output += indent + "  " + shapeElement(shape, in: node, defs: &defs) + "\n"
@@ -118,7 +122,13 @@ public enum SVGRenderer {
             output += "\(indent)  <rect x=\"\(format(x))\" y=\"\(format(y))\" width=\"\(format(side))\" height=\"\(format(side))\" rx=\"\(format(side * 0.22))\" fill=\"\(cssColor(symbol.color))\" fill-opacity=\"0.25\"/>\n"
             output += "\(indent)  <text x=\"\(format(node.rect.midX))\" y=\"\(format(node.rect.midY))\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"system-ui\" font-size=\"\(format(side * 0.42))\" fill=\"\(cssColor(symbol.color))\">\(escape(shortSymbolLabel(symbol.systemName)))</text>\n"
         case .image(let image):
-            output += "\(indent)  <rect x=\"\(format(node.rect.x))\" y=\"\(format(node.rect.y))\" width=\"\(format(node.rect.width))\" height=\"\(format(node.rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"#8884\" stroke=\"#8888\" stroke-dasharray=\"4 3\"/>\n"
+            // The placeholder box is clipped by the layer's outline in the
+            // SwiftUI backend, so it takes the same profile here.
+            let element = outlineElement(
+                node.corners, in: node.rect,
+                attributes: " fill=\"#8884\" stroke=\"#8888\" stroke-dasharray=\"4 3\""
+            )
+            output += "\(indent)  \(element)\n"
             output += "\(indent)  <text x=\"\(format(node.rect.midX))\" y=\"\(format(node.rect.midY))\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"system-ui\" font-size=\"10\" fill=\"#888\">\(escape(image.assetName))</text>\n"
         case .gauge(let gauge):
             output += gaugeElements(gauge, in: node.rect, indent: indent + "  ")
@@ -259,9 +269,10 @@ public enum SVGRenderer {
         // SVG strokes straddle the path, SwiftUI's strokeBorder sits inside
         // it; pull the rect in by half the width so both land in the same place.
         let inset = border.inset + border.width / 2
-        let radius = max(0, max(0, node.cornerRadius - border.inset) - border.width / 2)
-        let rect = node.rect.insetBy(inset)
-        return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"none\" stroke=\"\(cssColor(border.color))\" stroke-width=\"\(format(border.width))\"/>"
+        return outlineElement(
+            node.corners.inset(by: inset), in: node.rect.insetBy(inset),
+            attributes: " fill=\"none\" stroke=\"\(cssColor(border.color))\" stroke-width=\"\(format(border.width))\""
+        )
     }
 
     /// nil for `.normal`, so unblended nodes emit no style attribute at all.
@@ -307,7 +318,7 @@ public enum SVGRenderer {
             let radius = min(rect.width, rect.height) / 2
             return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"\(fill)\"\(stroke)/>"
         case .rectangle:
-            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"\(fill)\"\(stroke)/>"
+            return outlineElement(node.corners, in: rect, attributes: " fill=\"\(fill)\"\(stroke)")
         case .path:
             // Normalized commands scale into the node's rect, so the same
             // outline works at every widget size.
@@ -383,6 +394,28 @@ public enum SVGRenderer {
             let commands = mask.path ?? []
             return "<path d=\"\(pathDescription(commands, in: rect))\" fill=\"\(fill)\"/>"
         }
+    }
+
+    // MARK: - Outlines
+
+    /// The one place this backend turns a corner profile into an element.
+    ///
+    /// A plain uniform rounded profile stays a `<rect rx=…>` — the form every
+    /// existing document produces and several tests pin — and anything else
+    /// becomes a `<path>` built by `CornerProfile`, the same commands the
+    /// SwiftUI backend draws. Every site that used to write its own `rx=`
+    /// from a layer's corner radius now calls this, which is the whole point:
+    /// two backends, one outline.
+    private static func outlineElement(
+        _ profile: CornerProfile,
+        in rect: Rect,
+        attributes: String
+    ) -> String {
+        if let radius = profile.simpleRadius {
+            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\"\(attributes)/>"
+        }
+        let commands = profile.outline(width: rect.width, height: rect.height)
+        return "<path d=\"\(pathDescription(commands, in: rect))\"\(attributes)/>"
     }
 
     private static func pathDescription(_ commands: [PathCommand], in rect: Rect) -> String {

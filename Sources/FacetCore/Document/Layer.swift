@@ -213,11 +213,22 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     public var opacity: Double
     /// Rotation in degrees, clockwise.
     public var rotation: Double
-    public var cornerRadius: Double
+    /// Four radii and a corner style. Documents written when this was a lone
+    /// `cornerRadius: Double` decode into a uniform `.rounded` profile, and a
+    /// profile that is still exactly that writes the old key back out.
+    public var corners: CornerProfile
     /// A list, because the neumorphic family needs two at once — one on the
     /// lit side, one opposite. Documents written when this was a single
     /// optional decode into a one-element list.
     public var shadows: [ShadowStyle]
+
+    /// The corner radius, for the call sites that only ever meant one number.
+    /// Reading a mixed profile gives the largest of the four; writing makes
+    /// all four equal and leaves the style alone.
+    public var cornerRadius: Double {
+        get { corners.radii.maximum }
+        set { corners.radii = CornerRadii(newValue) }
+    }
 
     /// The first shadow, for the many call sites that only ever meant one.
     public var shadow: ShadowStyle? {
@@ -253,6 +264,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         opacity: Double = 1.0,
         rotation: Double = 0,
         cornerRadius: Double = 0,
+        corners: CornerProfile? = nil,
         shadows: [ShadowStyle] = [],
         blendMode: BlendMode? = nil,
         blur: Double? = nil,
@@ -269,7 +281,9 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     ) {
         self.opacity = opacity
         self.rotation = rotation
-        self.cornerRadius = cornerRadius
+        // `cornerRadius:` stays for the hundreds of call sites that only want
+        // one number; `corners:` wins when a caller has a real profile.
+        self.corners = corners ?? CornerProfile(radius: cornerRadius)
         self.shadows = shadows
         self.blendMode = blendMode
         self.blur = blur
@@ -288,7 +302,7 @@ public struct LayerStyle: Codable, Hashable, Sendable {
     public static let plain = LayerStyle()
 
     private enum CodingKeys: String, CodingKey {
-        case opacity, rotation, cornerRadius, shadow, shadows
+        case opacity, rotation, cornerRadius, corners, shadow, shadows
         case blendMode, blur, border, scale, flipHorizontal, flipVertical
         case brightness, contrast, saturation, hueRotation, glow, mask
     }
@@ -297,7 +311,16 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         opacity = try container.decodeIfPresent(Double.self, forKey: .opacity) ?? 1.0
         rotation = try container.decodeIfPresent(Double.self, forKey: .rotation) ?? 0
-        cornerRadius = try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? 0
+        // `corners` is the current form and wins outright; `cornerRadius` is
+        // what every document written before corner profiles carries, and it
+        // means a uniform rounded profile. Reading both means no migration.
+        if let profile = try container.decodeIfPresent(CornerProfile.self, forKey: .corners) {
+            corners = profile
+        } else {
+            corners = CornerProfile(
+                radius: try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? 0
+            )
+        }
         // `shadows` is the current form; `shadow` is what documents written
         // before the neumorphic pass carry. Reading both means no migration.
         if let list = try container.decodeIfPresent([ShadowStyle].self, forKey: .shadows) {
@@ -325,7 +348,15 @@ public struct LayerStyle: Codable, Hashable, Sendable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(opacity, forKey: .opacity)
         try container.encode(rotation, forKey: .rotation)
-        try container.encode(cornerRadius, forKey: .cornerRadius)
+        // A plain uniform rounded profile keeps writing the legacy scalar and
+        // nothing else, so every document that predates corner profiles — that
+        // is, all of them — round-trips byte-identical and older builds can
+        // still read it. Anything shaped or unlinked writes `corners` instead.
+        if corners.isLegacyForm {
+            try container.encode(cornerRadius, forKey: .cornerRadius)
+        } else {
+            try container.encode(corners, forKey: .corners)
+        }
         // A lone outer shadow keeps writing the legacy singular key, so the
         // overwhelmingly common case stays byte-identical through a round trip
         // and older builds can still read it.

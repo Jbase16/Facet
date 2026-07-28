@@ -160,7 +160,9 @@ public struct DocumentResolver {
             rect: rect,
             opacity: opacity,
             rotation: style.rotation,
-            cornerRadius: style.cornerRadius,
+            // Sanitized here rather than in either renderer: a NaN radius from
+            // a corrupt document used to travel straight into the drawing code.
+            corners: CornerProfile(style: style.corners.style, radii: style.corners.radii.sanitized),
             shadows: style.shadows.map {
                 ResolvedShadow(
                     color: resolveColor($0.color),
@@ -251,7 +253,13 @@ public struct DocumentResolver {
         return ResolvedMask(
             shape: mask.shape,
             path: outline,
-            cornerRadius: clamp(mask.cornerRadius, to: 0...500, default: 0),
+            // A mask with no style of its own follows the layer's, so setting
+            // a layer to chamfered chamfers its clip too instead of leaving a
+            // rounded window inside a bevelled card.
+            corners: CornerProfile(
+                style: mask.cornerStyle ?? layer.style.corners.style,
+                radii: mask.corners.map { clamp($0, to: 0...500, default: 0) }
+            ),
             rect: maskRect,
             fade: resolveFade(mask.fade),
             invert: mask.invert

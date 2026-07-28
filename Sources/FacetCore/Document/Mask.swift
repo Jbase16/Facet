@@ -71,7 +71,20 @@ public struct LayerMask: Codable, Hashable, Sendable {
     /// `shape == .path`.
     public var pathData: String?
     /// Corner rounding for `.rectangle`, in points. Ignored otherwise.
-    public var cornerRadius: Double
+    /// Documents written when this was a lone `cornerRadius` decode into four
+    /// equal radii.
+    public var corners: CornerRadii
+    /// The corner style the clip is cut with. nil follows the layer's own —
+    /// which is what you want almost always: a chamfered layer masked to a
+    /// rounded rectangle looks like a mistake, not a choice.
+    public var cornerStyle: CornerStyle?
+
+    /// The mask's corner radius, for call sites that only ever meant one
+    /// number. Reading a mixed set gives the largest; writing sets all four.
+    public var cornerRadius: Double {
+        get { corners.maximum }
+        set { corners = CornerRadii(newValue) }
+    }
     /// Where the shape sits inside the layer, in the same normalized
     /// coordinates as `LayerFrame`. nil fills the layer exactly.
     public var frame: LayerFrame?
@@ -85,13 +98,16 @@ public struct LayerMask: Codable, Hashable, Sendable {
         shape: ShapeKind = .rectangle,
         pathData: String? = nil,
         cornerRadius: Double = 0,
+        corners: CornerRadii? = nil,
+        cornerStyle: CornerStyle? = nil,
         frame: LayerFrame? = nil,
         fade: MaskFade? = nil,
         invert: Bool = false
     ) {
         self.shape = shape
         self.pathData = pathData
-        self.cornerRadius = cornerRadius
+        self.corners = corners ?? CornerRadii(cornerRadius)
+        self.cornerStyle = cornerStyle
         self.frame = frame
         self.fade = fade
         self.invert = invert
@@ -103,21 +119,30 @@ public struct LayerMask: Codable, Hashable, Sendable {
         guard !invert else { return false }
         guard fade == nil, frame == nil else { return false }
         switch shape {
-        case .rectangle: return cornerRadius == 0
+        // Square corners clip nothing whatever style they are cut in, so the
+        // style alone never makes a full-bleed rectangle worth compositing.
+        case .rectangle: return corners.isZero
         case .path: return pathData?.isEmpty ?? true
         case .circle, .capsule: return false
         }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case shape, pathData, cornerRadius, frame, fade, invert
+        case shape, pathData, cornerRadius, corners, cornerStyle, frame, fade, invert
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         shape = try container.decodeIfPresent(ShapeKind.self, forKey: .shape) ?? .rectangle
         pathData = try container.decodeIfPresent(String.self, forKey: .pathData)
-        cornerRadius = try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? 0
+        // Same rule as `LayerStyle`: the per-corner form wins, the legacy
+        // scalar means four equal radii, and absent means square.
+        if let radii = try container.decodeIfPresent(CornerRadii.self, forKey: .corners) {
+            corners = radii
+        } else {
+            corners = CornerRadii(try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? 0)
+        }
+        cornerStyle = try container.decodeIfPresent(CornerStyle.self, forKey: .cornerStyle)
         frame = try container.decodeIfPresent(LayerFrame.self, forKey: .frame)
         fade = try container.decodeIfPresent(MaskFade.self, forKey: .fade)
         invert = try container.decodeIfPresent(Bool.self, forKey: .invert) ?? false
@@ -127,7 +152,12 @@ public struct LayerMask: Codable, Hashable, Sendable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(shape, forKey: .shape)
         try container.encodeIfPresent(pathData, forKey: .pathData)
-        if cornerRadius != 0 { try container.encode(cornerRadius, forKey: .cornerRadius) }
+        if let uniform = corners.uniform {
+            if uniform != 0 { try container.encode(uniform, forKey: .cornerRadius) }
+        } else {
+            try container.encode(corners, forKey: .corners)
+        }
+        try container.encodeIfPresent(cornerStyle, forKey: .cornerStyle)
         try container.encodeIfPresent(frame, forKey: .frame)
         try container.encodeIfPresent(fade, forKey: .fade)
         if invert { try container.encode(invert, forKey: .invert) }
