@@ -101,14 +101,14 @@ public struct DocumentResolver {
         case .text(let content):
             kind = .text(resolveText(content, layer: layer, fontSizeOverride: fontSizeOverride))
         case .symbol(let content):
-            var resolved = ResolvedSymbol(
+            // `resolveFill` already collapses a gradient to the accessory
+            // monochrome, so the accessory rule lives in exactly one place.
+            kind = .symbol(ResolvedSymbol(
                 systemName: content.systemName,
-                color: resolveColor(content.color),
+                fill: resolveFill(content.fill),
                 size: fontSizeOverride ?? content.size,
                 weight: content.weight
-            )
-            if environment.rendition.isAccessory { resolved.color = accessoryColor(resolved.color) }
-            kind = .symbol(resolved)
+            ))
         case .shape(let content):
             var outline: [PathCommand]?
             if content.kind == .path {
@@ -384,12 +384,10 @@ public struct DocumentResolver {
         }
         var font = resolveFont(content.font)
         if let fontSizeOverride { font.size = fontSizeOverride }
-        var color = resolveColor(content.color)
-        if environment.rendition.isAccessory { color = accessoryColor(color) }
         return ResolvedText(
             text: text,
             font: font,
-            color: color,
+            fill: resolveFill(content.fill),
             alignment: content.alignment,
             maxLines: content.maxLines,
             letterSpacing: content.letterSpacing ?? 0
@@ -500,7 +498,14 @@ public struct DocumentResolver {
     // MARK: - Token resolution
 
     private func resolveFill(_ fill: Fill) -> ResolvedFill {
-        // Accessory surfaces are monochrome; collapse gradients to vibrant white.
+        // Accessory surfaces are monochrome; collapse gradients to vibrant
+        // white. Deliberately a collapse and not a refusal: the Lock Screen
+        // tints everything to the vibrant material anyway, so a gradient
+        // headline degrades to the flat accessory colour it would have become
+        // regardless, rather than rendering a gradient the system will not
+        // honour. Alpha survives from the first stop, which is the one lever
+        // an accessory layer still has. Text, symbols, shapes and container
+        // backgrounds all arrive here, so the rule is stated once.
         if environment.rendition.isAccessory {
             return .solid(accessoryColor(primaryColor(of: fill)))
         }

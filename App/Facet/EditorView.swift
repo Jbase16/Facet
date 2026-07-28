@@ -871,8 +871,8 @@ struct EditorView: View {
     /// Sets whatever counts as a layer's main colour, across content types.
     private static func setPrimaryColor(_ layer: inout Layer, to color: ColorValue) {
         switch layer.content {
-        case .text(var content): content.color = .literal(color); layer.content = .text(content)
-        case .symbol(var content): content.color = .literal(color); layer.content = .symbol(content)
+        case .text(var content): content.fill = .literal(color); layer.content = .text(content)
+        case .symbol(var content): content.fill = .literal(color); layer.content = .symbol(content)
         case .shape(var content): content.fill = .literal(color); layer.content = .shape(content)
         case .gauge(var content): content.tint = .literal(color); layer.content = .gauge(content)
         case .line(var content): content.color = .literal(color); layer.content = .line(content)

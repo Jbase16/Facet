@@ -215,6 +215,14 @@ public enum Fill: Codable, Hashable, Sendable {
     public static func token(_ name: String) -> Fill { .color(.token(name)) }
     public static func literal(_ color: ColorValue) -> Fill { .color(.literal(color)) }
 
+    /// True when this paint serializes as a plain `ColorRef` string. Layers
+    /// that kept a legacy `color` key use it to decide which key to write, so
+    /// a solid paint stays byte-identical on disk.
+    public var isSolid: Bool {
+        if case .color = self { return true }
+        return false
+    }
+
     private enum CodingKeys: String, CodingKey {
         case type, gradient
     }
