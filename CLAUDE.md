@@ -103,6 +103,22 @@ README.md has the current status and build instructions.
 - A circle shape or mask is INSCRIBED (`Circle()` / `r = min(w,h)/2`), never
   stretched. `Ellipse()` fills the rect and silently diverges from SVG on any
   non-square layer.
+- A radial *gradient* is the opposite: it STRETCHES. SVG's default
+  `objectBoundingBox` units map the ramp through the element's own box, so on a
+  wide layer it is an ellipse reaching the left/right edge midpoints. The
+  SwiftUI side must be `EllipticalGradient(endRadiusFraction: 0.5)`;
+  `RadialGradient(endRadius:)` takes points, stays round, and washes out on
+  anything non-square. Fractions also let one paint serve a shape filling the
+  layer and a line of text occupying a fraction of it — which is how gradient
+  text matches across backends. `MaskModifier.fadeStyle` still uses the round
+  form and has the same latent divergence.
+- Text and symbols paint with `Fill`, not `ColorRef` — they take gradients like
+  shapes. A solid paint still writes the legacy `color` key as a plain string,
+  so existing documents are byte-identical and unmigrated; only a gradient
+  writes `fill`. Line, gauge and chart paints are deliberately still
+  `ColorRef`: they are STROKES, where the two backends resolve gradient
+  geometry against different boxes (SVG the path bbox, SwiftUI the view
+  bounds) and a horizontal line's bbox is degenerate in SVG.
 - Verify renderer work by rendering and looking, in BOTH backends. Two real
   bugs in the mask pass — the ellipse divergence and a stale simulator
   binary reading as "masks don't work" — were invisible to a green suite.
