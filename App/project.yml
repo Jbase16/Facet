@@ -20,6 +20,7 @@ schemes:
       targets:
         Facet: all
         FacetWidgets: [run, profile, archive]
+        FacetAppTests: [test]
     run:
       config: Debug
       # The widget extension is embedded in the app; running the app is
@@ -27,6 +28,10 @@ schemes:
       askForAppToLaunch: false
     test:
       config: Debug
+      # Without this the target builds but nothing runs it, which reads as
+      # "the tests pass" when in fact none executed.
+      targets:
+        - FacetAppTests
     profile:
       config: Release
     analyze:
@@ -86,3 +91,19 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.JasonPhillips.app.widgets
         CODE_SIGN_ENTITLEMENTS: FacetWidgets/FacetWidgets.entitlements
+
+  # App/Shared is compiled into the app and the widget extension, so no
+  # package test can reach it — AssetStore, AssetBundleCodec and the App Group
+  # plumbing were untestable. This target exists to close that: it links the
+  # app and runs against a temp directory rather than the real container.
+  FacetAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ../Tests/FacetAppTests
+    dependencies:
+      - target: Facet
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.JasonPhillips.app.tests

@@ -40,6 +40,17 @@ README.md has the current status and build instructions.
 ## Build & test
 
 - Packages: `swift build` / `swift test` (works on macOS and Linux).
+- App-side code (`App/Shared`, `App/Facet`) is NOT in the package, so
+  `swift test` cannot see it. It has its own target, `FacetAppTests`
+  (`Tests/FacetAppTests`, declared in project.yml and wired into the `Facet`
+  scheme's test action). Run it with
+  `xcodebuild -project App/Facet.xcodeproj -scheme Facet -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`.
+  These run in the simulator, so their temp directory is the *simulator's* —
+  never assert on a fixed path outside the test's own root, or a previous
+  run's leftovers fail the next one.
+- `AssetStore` and `AssetBundleCodec` take an injectable `store`/`root` so
+  tests hit a temp directory instead of the real App Group container. Keep it
+  that way: anything that hard-codes `AssetStore()` internally is untestable.
 - Headless smoke tests: `xcrun simctl launch booted com.JasonPhillips.app
   -facet-show-sources` (or `-facet-open-editor`, `-facet-open-scene`) opens
   a screen directly.

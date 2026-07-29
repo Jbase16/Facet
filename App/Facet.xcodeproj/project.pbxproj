@@ -36,6 +36,7 @@
 		7D32B2B277022511E2CA8902 /* FacetImageProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */; };
 		7DBA2DF9407F2F01D91FAAFC /* SceneRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 556DD7FBC61EA27E724CCCEB /* SceneRepository.swift */; };
 		81A2DF164512F4EC8C6A9C26 /* FacetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DA8915E10ABBF586F49CD /* FacetApp.swift */; };
+		854CB12159BB5BFFF2B99453 /* AssetBundleCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EABBE23966F0F65B15673D /* AssetBundleCodecTests.swift */; };
 		89EFB6D27811521B0CC4BC18 /* FacetUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EA27D153D75EBEFECD233 /* FacetUI.swift */; };
 		8E839DD21F60F83FED2616A7 /* WeatherSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A5CCA0565292A65A784FC56 /* WeatherSource.swift */; };
 		8E963D04A9098EEBCF7C55E0 /* DraftMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */; };
@@ -75,6 +76,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 62BD7B05E4AB06C4471C0EC7;
 			remoteInfo = FacetWidgets;
+		};
+		C563AC5329411914393C1669 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 656C45BF7AA2B61B18699ACB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC7521770DC7FDE92CC3BE30;
+			remoteInfo = Facet;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -139,7 +147,9 @@
 		D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePaletteView.swift; sourceTree = "<group>"; };
 		E08867C049E6FC5764C60E2A /* AssetBundleCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetBundleCodec.swift; sourceTree = "<group>"; };
 		E7328A4EEBEB9B4DB2CD7BE0 /* DraftMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftMapper.swift; sourceTree = "<group>"; };
+		EEC4499CF1718DF5EB4D4A11 /* FacetAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FacetAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F2541AF17A0721C21A161E7B /* DeviceDataSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDataSources.swift; sourceTree = "<group>"; };
+		F7EABBE23966F0F65B15673D /* AssetBundleCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetBundleCodecTests.swift; sourceTree = "<group>"; };
 		FC97288BBFA9D1E86C7C3E4A /* ShapeStudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeStudioView.swift; sourceTree = "<group>"; };
 		FDCDD438B19B558DE0B8232F /* RemindersSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersSource.swift; sourceTree = "<group>"; };
 		FE2D711E3E872C3BA2EE4C85 /* FacetWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FacetWidgets.entitlements; sourceTree = "<group>"; };
@@ -249,6 +259,14 @@
 			path = Fonts;
 			sourceTree = "<group>";
 		};
+		53FECABED44DAEA4D85028F9 /* FacetAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				F7EABBE23966F0F65B15673D /* AssetBundleCodecTests.swift */,
+			);
+			path = FacetAppTests;
+			sourceTree = "<group>";
+		};
 		5BAE8323F8A46D8204007A7B /* Assets */ = {
 			isa = PBXGroup;
 			children = (
@@ -294,13 +312,31 @@
 			path = Scenes;
 			sourceTree = "<group>";
 		};
+		ADC1F0B7617896B8EAB400F2 /* Facet */ = {
+			isa = PBXGroup;
+			children = (
+				C7095D831F3BCB04E64A560A /* Tests */,
+			);
+			name = Facet;
+			path = ..;
+			sourceTree = "<group>";
+		};
 		B1D22D4C52782EC8D4C4FABF /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				973EC022838148FEC7718A70 /* Facet.app */,
+				EEC4499CF1718DF5EB4D4A11 /* FacetAppTests.xctest */,
 				D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C7095D831F3BCB04E64A560A /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				53FECABED44DAEA4D85028F9 /* FacetAppTests */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		D3584E435834C638BF5DABE8 /* Assets */ = {
@@ -315,6 +351,7 @@
 			isa = PBXGroup;
 			children = (
 				2BEB9A8BADA9F735BCE0E221 /* Facet */,
+				ADC1F0B7617896B8EAB400F2 /* Facet */,
 				86825C1AE434587491EF87A5 /* FacetWidgets */,
 				25C8F9F9D24BB793C165D9EB /* Packages */,
 				39BF147087D335224312B780 /* Shared */,
@@ -334,6 +371,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		388024244F4C4816C3FEC372 /* FacetAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B094D8B3309902703DE3AB7C /* Build configuration list for PBXNativeTarget "FacetAppTests" */;
+			buildPhases = (
+				509D7742BC299F3C4C5621EE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4CF5814020936280526216A7 /* PBXTargetDependency */,
+			);
+			name = FacetAppTests;
+			packageProductDependencies = (
+			);
+			productName = FacetAppTests;
+			productReference = EEC4499CF1718DF5EB4D4A11 /* FacetAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		62BD7B05E4AB06C4471C0EC7 /* FacetWidgets */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4E615A3412750BAF87181402 /* Build configuration list for PBXNativeTarget "FacetWidgets" */;
@@ -411,6 +466,7 @@
 			targets = (
 				DC7521770DC7FDE92CC3BE30 /* Facet */,
 				62BD7B05E4AB06C4471C0EC7 /* FacetWidgets */,
+				388024244F4C4816C3FEC372 /* FacetAppTests */,
 			);
 		};
 /* End PBXProject section */
@@ -476,6 +532,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		509D7742BC299F3C4C5621EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				854CB12159BB5BFFF2B99453 /* AssetBundleCodecTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AC08366E274E29D6E4D21C9F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -497,6 +561,11 @@
 			isa = PBXTargetDependency;
 			target = 62BD7B05E4AB06C4471C0EC7 /* FacetWidgets */;
 			targetProxy = 5DE0BD23C24ABE61E3BEAC5A /* PBXContainerItemProxy */;
+		};
+		4CF5814020936280526216A7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC7521770DC7FDE92CC3BE30 /* Facet */;
+			targetProxy = C563AC5329411914393C1669 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -523,6 +592,23 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.JasonPhillips.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3E1B7471CFE2086566D37CF3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.JasonPhillips.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Facet.app/Facet";
 			};
 			name = Release;
 		};
@@ -588,6 +674,23 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		67693C1BF36CF6FFBFD55AC1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.JasonPhillips.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Facet.app/Facet";
 			};
 			name = Debug;
 		};
@@ -732,6 +835,15 @@
 			buildConfigurations = (
 				45B3A3A4186A0F859763AD92 /* Debug */,
 				89FD18528F708D6CA79AC16C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B094D8B3309902703DE3AB7C /* Build configuration list for PBXNativeTarget "FacetAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67693C1BF36CF6FFBFD55AC1 /* Debug */,
+				3E1B7471CFE2086566D37CF3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

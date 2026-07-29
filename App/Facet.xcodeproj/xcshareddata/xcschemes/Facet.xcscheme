@@ -22,6 +22,20 @@
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "388024244F4C4816C3FEC372"
+               BuildableName = "FacetAppTests.xctest"
+               BlueprintName = "FacetAppTests"
+               ReferencedContainer = "container:Facet.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
             buildForTesting = "NO"
             buildForRunning = "YES"
             buildForProfiling = "YES"
@@ -53,6 +67,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "388024244F4C4816C3FEC372"
+               BuildableName = "FacetAppTests.xctest"
+               BlueprintName = "FacetAppTests"
+               ReferencedContainer = "container:Facet.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

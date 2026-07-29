@@ -18,8 +18,7 @@ import ImageIO
 enum AssetBundleCodec {
     /// Every asset for `documentID`, or nil when there are none — callers
     /// skip writing an empty sidecar rather than shipping `{}`.
-    static func encodeBundle(documentID: UUID) throws -> Data? {
-        let store = AssetStore()
+    static func encodeBundle(documentID: UUID, store: AssetStore = AssetStore()) throws -> Data? {
         let names = store.list(for: documentID)
         guard !names.isEmpty else { return nil }
 
@@ -45,14 +44,14 @@ enum AssetBundleCodec {
     /// the name must match the store's generated shape (blocking `../` path
     /// escapes) and the bytes must actually decode as an image. A `.facet`
     /// file is not permitted to drop arbitrary files into the App Group.
-    static func importBundle(_ data: Data, into documentID: UUID) throws {
+    static func importBundle(_ data: Data, into documentID: UUID, store: AssetStore = AssetStore()) throws {
         let payload: [String: String]
         do {
             payload = try JSONDecoder().decode([String: String].self, from: data)
         } catch {
             throw AssetBundleError.malformedPayload
         }
-        try install([documentID: payload])
+        try install([documentID: payload], store: store)
     }
 
     // MARK: - Many owners at once
@@ -70,9 +69,9 @@ enum AssetBundleCodec {
     /// content hash, so the same photo in two widgets has one name and gets
     /// carried once.
     static func gather(
-        _ owners: [(id: UUID, names: [String]?)]
+        _ owners: [(id: UUID, names: [String]?)],
+        store: AssetStore = AssetStore()
     ) -> (blobs: [String: String], assets: [UUID: [String]]) {
-        let store = AssetStore()
         var blobs: [String: String] = [:]
         var assets: [UUID: [String]] = [:]
 
@@ -105,8 +104,7 @@ enum AssetBundleCodec {
     /// name must match the store's generated shape (blocking `../` path escapes)
     /// and the bytes must actually decode as an image. A shared file is not
     /// permitted to drop arbitrary files into the App Group.
-    static func install(_ assets: [UUID: [String: String]]) throws {
-        let store = AssetStore()
+    static func install(_ assets: [UUID: [String: String]], store: AssetStore = AssetStore()) throws {
         for (owner, payload) in assets {
             for (name, base64) in payload {
                 let bytes = try decoded(name: name, base64: base64)
