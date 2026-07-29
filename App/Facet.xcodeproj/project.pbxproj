@@ -99,6 +99,7 @@
 		300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceStore.swift; sourceTree = "<group>"; };
 		3493883341D6B22D1F294A1E /* ThemeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeEditorView.swift; sourceTree = "<group>"; };
 		36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorRefPicker.swift; sourceTree = "<group>"; };
+		38EB12343C6EBC8EC972617E /* Facet */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Facet; path = ..; sourceTree = SOURCE_ROOT; };
 		3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGeneratorService.swift; sourceTree = "<group>"; };
 		402DA8915E10ABBF586F49CD /* FacetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetApp.swift; sourceTree = "<group>"; };
 		4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetImageProviderFactory.swift; sourceTree = "<group>"; };
@@ -133,7 +134,6 @@
 		CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenPreview.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		CE4D2A424FC09BB6CDD45477 /* SceneBundleIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneBundleIO.swift; sourceTree = "<group>"; };
-		D1786322E98FB35CB04A7ADA /* scenebundle */ = {isa = PBXFileReference; lastKnownFileType = folder; name = scenebundle; path = ..; sourceTree = SOURCE_ROOT; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FacetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePaletteView.swift; sourceTree = "<group>"; };
@@ -196,7 +196,7 @@
 		25C8F9F9D24BB793C165D9EB /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				D1786322E98FB35CB04A7ADA /* scenebundle */,
+				38EB12343C6EBC8EC972617E /* Facet */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
