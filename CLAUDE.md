@@ -110,8 +110,9 @@ README.md has the current status and build instructions.
   `RadialGradient(endRadius:)` takes points, stays round, and washes out on
   anything non-square. Fractions also let one paint serve a shape filling the
   layer and a line of text occupying a fraction of it — which is how gradient
-  text matches across backends. `MaskModifier.fadeStyle` still uses the round
-  form and has the same latent divergence.
+  text matches across backends. This applies to `MaskModifier.fadeStyle` too —
+  a radial mask fade is a vignette, and the round form left it circular in
+  SwiftUI and oval in SVG on every non-square layer.
 - Text and symbols paint with `Fill`, not `ColorRef` — they take gradients like
   shapes. A solid paint still writes the legacy `color` key as a plain string,
   so existing documents are byte-identical and unmigrated; only a gradient

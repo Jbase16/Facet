@@ -646,7 +646,7 @@ private struct MaskModifier: ViewModifier {
         let shape = MaskShapeView(shape: mask.shape, path: mask.path, cornerRadius: mask.cornerRadius)
         Group {
             if let fade = mask.fade {
-                shape.foregroundStyle(fadeStyle(fade, in: mask.rect))
+                shape.foregroundStyle(fadeStyle(fade))
             } else {
                 shape.foregroundStyle(.white)
             }
@@ -655,7 +655,7 @@ private struct MaskModifier: ViewModifier {
         .offset(x: mask.rect.x, y: mask.rect.y)
     }
 
-    private func fadeStyle(_ fade: ResolvedMask.Fade, in rect: Rect) -> AnyShapeStyle {
+    private func fadeStyle(_ fade: ResolvedMask.Fade) -> AnyShapeStyle {
         let stops = fade.stops.map {
             Gradient.Stop(color: .white.opacity($0.alpha), location: $0.position)
         }
@@ -672,11 +672,17 @@ private struct MaskModifier: ViewModifier {
                 endPoint: UnitPoint(x: 0.5 + dx, y: 0.5 + dy)
             ))
         case .radial:
-            return AnyShapeStyle(RadialGradient(
+            // Elliptical, not circular, for the same reason `shapeStyle` is:
+            // SVG's `<radialGradient>` defaults to objectBoundingBox units, so
+            // the ramp stretches through the element's box. A point radius
+            // would leave a vignette circular in SwiftUI and oval in SVG on
+            // every non-square layer. `endRadiusFraction: 0.5` is exactly
+            // SVG's `r="50%"`, and being a fraction it needs no rect at all.
+            return AnyShapeStyle(EllipticalGradient(
                 stops: stops,
                 center: .center,
-                startRadius: 0,
-                endRadius: max(rect.width, rect.height) / 2
+                startRadiusFraction: 0,
+                endRadiusFraction: 0.5
             ))
         }
     }
