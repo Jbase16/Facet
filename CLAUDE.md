@@ -103,6 +103,24 @@ README.md has the current status and build instructions.
 - A circle shape or mask is INSCRIBED (`Circle()` / `r = min(w,h)/2`), never
   stretched. `Ellipse()` fills the rect and silently diverges from SVG on any
   non-square layer.
+- A layer's outline comes from `CornerProfile` (FacetCore/Geometry) and
+  NOWHERE else. Four radii in points plus a style (`rounded`, `chamfered`,
+  `inverted`, `scalloped`); `outline(width:height:)` returns normalized
+  `[PathCommand]`, which is why it needs the size — a corner is circular in
+  points, so it is elliptical in a non-square layer's 0...1 space. Both
+  backends have exactly one site that turns a profile into geometry —
+  `CornerShape` in SwiftUI, `outlineElement` in SVG — and every background,
+  fill, clip, border, mask and inset-shadow dent goes through it. Do not
+  reconstruct a rounded rectangle anywhere else; nine hand-rolled copies is
+  what this replaced. A uniform `.rounded` profile keeps the native fast path
+  (`RoundedRectangle(style: .continuous)` / `rx=`), so the backends still
+  differ there exactly as much as they always have — squircle vs circular arc,
+  invisible at widget radii, obvious at half the edge.
+- On disk, `LayerStyle` still writes the singular `cornerRadius` whenever the
+  profile is a plain uniform rounded one, so every pre-profile document round
+  trips byte-identical; anything styled or unlinked writes `corners` instead.
+  `LayerMask` follows the same rule and adds `cornerStyle`, whose absence
+  means "follow the layer's" — a chamfered layer gets a chamfered clip.
 - Verify renderer work by rendering and looking, in BOTH backends. Two real
   bugs in the mask pass — the ellipse divergence and a stale simulator
   binary reading as "masks don't work" — were invisible to a green suite.
