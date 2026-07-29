@@ -33,6 +33,9 @@ struct InspectorView: View {
     @State private var showingAppPicker = false
     @State private var showingShapeStudio = false
     @State private var fontEditTarget: FontEditTarget?
+    /// Whether the four corner radii move together. Derived from the layer in
+    /// `load()`, not stored on disk.
+    @State private var cornersLinked = true
 
     /// Carries the token being edited plus the closure that writes it back, so
     /// one sheet can serve every font field in the inspector.
@@ -46,6 +49,7 @@ struct InspectorView: View {
         Form {
                 Group {
                     genericSection
+                    cornersSection
                     layoutSection
                     contentSection
                     effectsSection
@@ -130,6 +134,7 @@ struct InspectorView: View {
 
     private func load() {
         name = layer.name
+        cornersLinked = layer.style.corners.radii.uniform != nil
         visibleWhenText = layer.visibleWhen ?? ""
         tapURLText = layer.tapAction?.urlTemplate ?? ""
         switch layer.content {
@@ -219,6 +224,18 @@ struct InspectorView: View {
                 if mask.shape == .rectangle {
                     sliderRow("Corner radius", value: mask.cornerRadius, range: 0...80, format: { "\(Int($0))" }) { value in
                         apply { $0.style.mask?.cornerRadius = value }
+                    }
+                    // "Follow layer" is the default and stays nil on disk, so
+                    // a chamfered layer gets a chamfered window without anyone
+                    // having to think about it.
+                    Picker("Corner style", selection: Binding(
+                        get: { mask.cornerStyle },
+                        set: { value in apply { $0.style.mask?.cornerStyle = value } }
+                    )) {
+                        Text("Follow layer").tag(CornerStyle?.none)
+                        ForEach(CornerStyle.allCases, id: \.self) { style in
+                            Text(style.displayName).tag(CornerStyle?.some(style))
+                        }
                     }
                 }
 
@@ -549,9 +566,62 @@ struct InspectorView: View {
             sliderRow("Rotation", value: layer.style.rotation, range: -180...180, format: { "\(Int($0))°" }) { value in
                 apply { $0.style.rotation = value }
             }
-            sliderRow("Corner radius", value: layer.style.cornerRadius, range: 0...60, format: { "\(Int($0))" }) { value in
-                apply { $0.style.cornerRadius = value }
+        }
+    }
+
+    // MARK: - Corners
+
+    /// Corner style plus radii. Linked is the default and the common case —
+    /// one slider, exactly the control this used to be — and unlinking swaps
+    /// it for four. The link state is derived from the values on appear rather
+    /// than stored in the document: four equal radii *are* a linked profile,
+    /// and a flag that could disagree with them is a flag that will.
+    private var cornersSection: some View {
+        Section {
+            Picker("Style", selection: Binding(
+                get: { layer.style.corners.style },
+                set: { value in apply { $0.style.corners.style = value } }
+            )) {
+                ForEach(CornerStyle.allCases, id: \.self) { style in
+                    Text(style.displayName).tag(style)
+                }
             }
+
+            if cornersLinked {
+                sliderRow("Radius", value: layer.style.corners.radii.maximum, range: 0...60, format: { "\(Int($0))" }) { value in
+                    apply { $0.style.corners.radii = CornerRadii(value) }
+                }
+            } else {
+                cornerSlider("Top left", \.topLeading)
+                cornerSlider("Top right", \.topTrailing)
+                cornerSlider("Bottom left", \.bottomLeading)
+                cornerSlider("Bottom right", \.bottomTrailing)
+            }
+
+            Toggle("Link all four", isOn: Binding(
+                get: { cornersLinked },
+                set: { on in
+                    cornersLinked = on
+                    // Re-linking has to pick a number; the largest is the one
+                    // you were most likely looking at when you decided to.
+                    if on { apply { $0.style.corners.radii = CornerRadii(layer.style.corners.radii.maximum) } }
+                }
+            ))
+            .font(FacetUI.caption)
+        } header: {
+            Text("Corners").facetEyebrow()
+        } footer: {
+            Text(layer.style.corners.style == .rounded
+                 ? "Radii are in points, and stay circular however the layer is sized."
+                 : "\(layer.style.corners.style.displayName) corners cut the same silhouette everywhere the layer is drawn — its border, its clip, and the dent an inset shadow leaves.")
+                .font(FacetUI.caption)
+                .foregroundStyle(FacetUI.inkTertiary)
+        }
+    }
+
+    private func cornerSlider(_ title: String, _ corner: WritableKeyPath<CornerRadii, Double>) -> some View {
+        sliderRow(title, value: layer.style.corners.radii[keyPath: corner], range: 0...60, format: { "\(Int($0))" }) { value in
+            apply { $0.style.corners.radii[keyPath: corner] = value }
         }
     }
 
