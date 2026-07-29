@@ -88,7 +88,7 @@ final class ResolverTests: XCTestCase {
             return XCTFail("Percent layer missing")
         }
         XCTAssertEqual(text.text, "82%")
-        XCTAssertEqual(text.color.hexString, "#34C759")
+        XCTAssertEqual(text.fill, .solid(ColorValue(hex: "#34C759")!))
         XCTAssertEqual(text.font.size, 28)
 
         guard case .gauge(let gauge)? = findNode(widget.root, named: "Ring")?.kind else {
@@ -102,7 +102,7 @@ final class ResolverTests: XCTestCase {
         guard case .text(let text)? = findNode(widget.root, named: "Percent")?.kind else {
             return XCTFail("Percent layer missing")
         }
-        XCTAssertEqual(text.color.hexString, "#30D158")
+        XCTAssertEqual(text.fill, .solid(ColorValue(hex: "#30D158")!))
         guard case .group(let background) = widget.root.kind else {
             return XCTFail("Root should be a group")
         }
@@ -154,9 +154,7 @@ final class ResolverTests: XCTestCase {
         guard case .text(let text)? = findNode(widget.root, named: "Percent")?.kind else {
             return XCTFail("Percent layer missing")
         }
-        XCTAssertEqual(text.color.red, 1)
-        XCTAssertEqual(text.color.green, 1)
-        XCTAssertEqual(text.color.blue, 1)
+        XCTAssertEqual(text.fill, .solid(.white), "Accessory text goes vibrant monochrome")
     }
 
     func testBadExpressionDegradesWithDiagnostic() {
@@ -179,7 +177,7 @@ final class ResolverTests: XCTestCase {
         guard case .text(let text)? = findNode(widget.root, named: "Percent")?.kind else {
             return XCTFail("Percent layer missing")
         }
-        XCTAssertEqual(text.color.hexString, "#FF00FF")
+        XCTAssertEqual(text.fill, .solid(ColorValue(red: 1, green: 0, blue: 1)))
     }
 
     func testGaugeFractionClamped() {

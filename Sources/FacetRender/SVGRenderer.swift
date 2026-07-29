@@ -109,14 +109,18 @@ public enum SVGRenderer {
         case .chart(let chart):
             output += chartElements(chart, in: node.rect, indent: indent + "  ")
         case .text(let text):
-            output += indent + "  " + textElement(text, in: node.rect) + "\n"
+            output += indent + "  " + textElement(text, in: node.rect, defs: &defs) + "\n"
         case .symbol(let symbol):
             // Placeholder glyph: a soft square marked with the symbol name.
             let side = symbol.size
             let x = node.rect.midX - side / 2
             let y = node.rect.midY - side / 2
-            output += "\(indent)  <rect x=\"\(format(x))\" y=\"\(format(y))\" width=\"\(format(side))\" height=\"\(format(side))\" rx=\"\(format(side * 0.22))\" fill=\"\(cssColor(symbol.color))\" fill-opacity=\"0.25\"/>\n"
-            output += "\(indent)  <text x=\"\(format(node.rect.midX))\" y=\"\(format(node.rect.midY))\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"system-ui\" font-size=\"\(format(side * 0.42))\" fill=\"\(cssColor(symbol.color))\">\(escape(shortSymbolLabel(symbol.systemName)))</text>\n"
+            // One paint for both elements. Gradient units are per-element, so
+            // the tile ramps across the tile and the label across the label —
+            // which is what SwiftUI does to a symbol's glyph.
+            let fill = paint(symbol.fill, defs: &defs)
+            output += "\(indent)  <rect x=\"\(format(x))\" y=\"\(format(y))\" width=\"\(format(side))\" height=\"\(format(side))\" rx=\"\(format(side * 0.22))\" fill=\"\(fill)\" fill-opacity=\"0.25\"/>\n"
+            output += "\(indent)  <text x=\"\(format(node.rect.midX))\" y=\"\(format(node.rect.midY))\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"system-ui\" font-size=\"\(format(side * 0.42))\" fill=\"\(fill)\">\(escape(shortSymbolLabel(symbol.systemName)))</text>\n"
         case .image(let image):
             output += "\(indent)  <rect x=\"\(format(node.rect.x))\" y=\"\(format(node.rect.y))\" width=\"\(format(node.rect.width))\" height=\"\(format(node.rect.height))\" rx=\"\(format(node.cornerRadius))\" fill=\"#8884\" stroke=\"#8888\" stroke-dasharray=\"4 3\"/>\n"
             output += "\(indent)  <text x=\"\(format(node.rect.midX))\" y=\"\(format(node.rect.midY))\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"system-ui\" font-size=\"10\" fill=\"#888\">\(escape(image.assetName))</text>\n"
@@ -431,7 +435,12 @@ public enum SVGRenderer {
         return output
     }
 
-    private static func textElement(_ text: ResolvedText, in rect: Rect) -> String {
+    /// Gradient text needs `defs`: the paint is a `url(#…)` reference whose
+    /// definition has to be emitted alongside it. Left in the default
+    /// `objectBoundingBox` units, so the ramp spans the glyphs' own bounding
+    /// box — a gradient *on the text*, not a slice of a canvas-wide one, which
+    /// would read as a flat colour on a short label.
+    private static func textElement(_ text: ResolvedText, in rect: Rect, defs: inout [String]) -> String {
         let anchor: String
         let x: Double
         switch text.alignment {
@@ -457,7 +466,7 @@ public enum SVGRenderer {
             family = designStack
         }
         let spacing = text.letterSpacing != 0 ? " letter-spacing=\"\(format(text.letterSpacing))\"" : ""
-        return "<text x=\"\(format(x))\" y=\"\(format(rect.midY))\" text-anchor=\"\(anchor)\" dominant-baseline=\"central\" font-family=\"\(family)\" font-size=\"\(format(text.font.size))\" font-weight=\"\(cssWeight(text.font.weight))\"\(spacing) fill=\"\(cssColor(text.color))\">\(escape(text.text))</text>"
+        return "<text x=\"\(format(x))\" y=\"\(format(rect.midY))\" text-anchor=\"\(anchor)\" dominant-baseline=\"central\" font-family=\"\(family)\" font-size=\"\(format(text.font.size))\" font-weight=\"\(cssWeight(text.font.weight))\"\(spacing) fill=\"\(paint(text.fill, defs: &defs))\">\(escape(text.text))</text>"
     }
 
     private static func gaugeElements(_ gauge: ResolvedGauge, in rect: Rect, indent: String) -> String {

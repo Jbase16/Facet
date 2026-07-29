@@ -363,7 +363,12 @@ public enum TextCase: String, Codable, Sendable {
 public struct TextContent: Codable, Hashable, Sendable {
     public var text: String
     public var font: FontRef
-    public var color: ColorRef
+    /// The paint the glyphs are drawn with: a solid colour or a gradient,
+    /// exactly like `ShapeContent.fill`. A solid paint serializes as the same
+    /// plain string a `ColorRef` does and keeps the legacy `color` key, so
+    /// every document written before this existed round-trips byte-identical
+    /// and needs no migration. Only a gradient writes `fill`.
+    public var fill: Fill
     public var alignment: TextAlignment
     public var maxLines: Int?
     /// Tracking in points. Optional so v1 documents decode unchanged.
@@ -373,7 +378,7 @@ public struct TextContent: Codable, Hashable, Sendable {
     public init(
         text: String,
         font: FontRef,
-        color: ColorRef,
+        fill: Fill,
         alignment: TextAlignment = .center,
         maxLines: Int? = nil,
         letterSpacing: Double? = nil,
@@ -381,27 +386,110 @@ public struct TextContent: Codable, Hashable, Sendable {
     ) {
         self.text = text
         self.font = font
-        self.color = color
+        self.fill = fill
         self.alignment = alignment
         self.maxLines = maxLines
         self.letterSpacing = letterSpacing
         self.textCase = textCase
+    }
+
+    /// Solid-colour convenience, mirroring the one `ShapeContent` kept when
+    /// shapes gained gradients.
+    public init(
+        text: String,
+        font: FontRef,
+        color: ColorRef,
+        alignment: TextAlignment = .center,
+        maxLines: Int? = nil,
+        letterSpacing: Double? = nil,
+        textCase: TextCase? = nil
+    ) {
+        self.init(
+            text: text,
+            font: font,
+            fill: .color(color),
+            alignment: alignment,
+            maxLines: maxLines,
+            letterSpacing: letterSpacing,
+            textCase: textCase
+        )
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case text, font, color, fill, alignment, maxLines, letterSpacing, textCase
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        text = try container.decode(String.self, forKey: .text)
+        font = try container.decode(FontRef.self, forKey: .font)
+        // `fill` is the gradient-capable form; `color` is what every document
+        // written before this carries — and what a solid paint still writes.
+        if let paint = try container.decodeIfPresent(Fill.self, forKey: .fill) {
+            fill = paint
+        } else {
+            fill = try container.decode(Fill.self, forKey: .color)
+        }
+        alignment = try container.decode(TextAlignment.self, forKey: .alignment)
+        maxLines = try container.decodeIfPresent(Int.self, forKey: .maxLines)
+        letterSpacing = try container.decodeIfPresent(Double.self, forKey: .letterSpacing)
+        textCase = try container.decodeIfPresent(TextCase.self, forKey: .textCase)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(text, forKey: .text)
+        try container.encode(font, forKey: .font)
+        try container.encode(fill, forKey: fill.isSolid ? .color : .fill)
+        try container.encode(alignment, forKey: .alignment)
+        try container.encodeIfPresent(maxLines, forKey: .maxLines)
+        try container.encodeIfPresent(letterSpacing, forKey: .letterSpacing)
+        try container.encodeIfPresent(textCase, forKey: .textCase)
     }
 }
 
 /// An SF Symbol.
 public struct SymbolContent: Codable, Hashable, Sendable {
     public var systemName: String
-    public var color: ColorRef
+    /// Solid colour or gradient, on the same terms as `TextContent.fill`.
+    public var fill: Fill
     /// Point size of the symbol.
     public var size: Double
     public var weight: FontWeight
 
-    public init(systemName: String, color: ColorRef, size: Double, weight: FontWeight = .regular) {
+    public init(systemName: String, fill: Fill, size: Double, weight: FontWeight = .regular) {
         self.systemName = systemName
-        self.color = color
+        self.fill = fill
         self.size = size
         self.weight = weight
+    }
+
+    public init(systemName: String, color: ColorRef, size: Double, weight: FontWeight = .regular) {
+        self.init(systemName: systemName, fill: .color(color), size: size, weight: weight)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case systemName, color, fill, size, weight
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        systemName = try container.decode(String.self, forKey: .systemName)
+        if let paint = try container.decodeIfPresent(Fill.self, forKey: .fill) {
+            fill = paint
+        } else {
+            fill = try container.decode(Fill.self, forKey: .color)
+        }
+        size = try container.decode(Double.self, forKey: .size)
+        weight = try container.decode(FontWeight.self, forKey: .weight)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(systemName, forKey: .systemName)
+        try container.encode(fill, forKey: fill.isSolid ? .color : .fill)
+        try container.encode(size, forKey: .size)
+        try container.encode(weight, forKey: .weight)
     }
 }
 

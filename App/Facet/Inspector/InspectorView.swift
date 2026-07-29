@@ -725,9 +725,9 @@ struct InspectorView: View {
                     }
                 }
             }
-            ColorRefPicker(
-                label: "Color", tokens: tokens.colors, scheme: scheme,
-                selection: contentBinding(get: content.color, set: { (value, text: inout TextContent) in text.color = value })
+            FillPicker(
+                label: "Fill", tokens: tokens.colors, scheme: scheme,
+                selection: contentBinding(get: content.fill, set: { (value, text: inout TextContent) in text.fill = value })
             )
         }
     }
@@ -770,9 +770,9 @@ struct InspectorView: View {
                     }
                 }
             }
-            ColorRefPicker(
-                label: "Color", tokens: tokens.colors, scheme: scheme,
-                selection: contentBinding(get: content.color, set: { (value, symbol: inout SymbolContent) in symbol.color = value })
+            FillPicker(
+                label: "Fill", tokens: tokens.colors, scheme: scheme,
+                selection: contentBinding(get: content.fill, set: { (value, symbol: inout SymbolContent) in symbol.fill = value })
             )
         }
     }

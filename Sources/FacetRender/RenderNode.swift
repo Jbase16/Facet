@@ -119,7 +119,10 @@ public enum ResolvedFill: Sendable, Equatable {
 public struct ResolvedText: Sendable, Equatable {
     public var text: String
     public var font: FontToken
-    public var color: ColorValue
+    /// Glyph paint. A gradient resolves against the drawn text's own bounds in
+    /// both backends, not the layer's frame, so it reads as gradient *text*
+    /// rather than a gradient the text happens to sample a slice of.
+    public var fill: ResolvedFill
     public var alignment: TextAlignment
     public var maxLines: Int?
     public var letterSpacing: Double
@@ -127,7 +130,7 @@ public struct ResolvedText: Sendable, Equatable {
 
 public struct ResolvedSymbol: Sendable, Equatable {
     public var systemName: String
-    public var color: ColorValue
+    public var fill: ResolvedFill
     public var size: Double
     public var weight: FontWeight
 }

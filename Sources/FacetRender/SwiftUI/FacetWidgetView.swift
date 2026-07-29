@@ -122,10 +122,15 @@ private struct NodeView: View {
                 }
             }
         case .text(let text):
+            // `foregroundStyle` before `frame`, so a gradient resolves against
+            // the glyphs' own bounds rather than the layer's box — the same
+            // bounding box SVG's `objectBoundingBox` gradient units use on a
+            // `<text>` element. Styling after the frame would stretch the ramp
+            // across the whole layer and a short label would read as flat.
             Text(text.text)
                 .font(font(for: text.font))
                 .kerning(text.letterSpacing)
-                .foregroundStyle(Color(text.color))
+                .foregroundStyle(shapeStyle(text.fill))
                 .multilineTextAlignment(alignment(text.alignment))
                 .lineLimit(text.maxLines)
                 .minimumScaleFactor(0.5)
@@ -134,7 +139,7 @@ private struct NodeView: View {
         case .symbol(let symbol):
             Image(systemName: symbol.systemName)
                 .font(.system(size: symbol.size, weight: weight(symbol.weight)))
-                .foregroundStyle(Color(symbol.color))
+                .foregroundStyle(shapeStyle(symbol.fill))
                 .frame(width: node.rect.width, height: node.rect.height)
                 .offset(x: node.rect.x, y: node.rect.y)
         case .shape(let shape):
@@ -220,6 +225,10 @@ private struct NodeView: View {
         }
     }
 
+    /// Every unit here is a *fraction* of whatever the style is applied to, so
+    /// one paint serves a shape filling the layer's rect and a line of text
+    /// occupying a fraction of it — which is the only way the SVG backend's
+    /// per-element `objectBoundingBox` gradients can be matched.
     private func shapeStyle(_ fill: ResolvedFill) -> AnyShapeStyle {
         switch fill {
         case .solid(let color):
@@ -234,11 +243,17 @@ private struct NodeView: View {
                 endPoint: UnitPoint(x: 0.5 + dx, y: 0.5 + dy)
             ))
         case .radialGradient(let stops):
-            return AnyShapeStyle(RadialGradient(
+            // Elliptical, not circular. SVG's `objectBoundingBox` radial maps a
+            // unit circle through the element's bounding box, so on a
+            // non-square box it *stretches*; `RadialGradient(endRadius:)` takes
+            // points and stays round, which put the two backends visibly out of
+            // step on every wide or tall layer. `endRadiusFraction: 0.5` is
+            // exactly SVG's default `r="50%"`.
+            return AnyShapeStyle(EllipticalGradient(
                 stops: stops.map { .init(color: Color($0.color), location: $0.position) },
                 center: .center,
-                startRadius: 0,
-                endRadius: max(node.rect.width, node.rect.height) / 2
+                startRadiusFraction: 0,
+                endRadiusFraction: 0.5
             ))
         }
     }
