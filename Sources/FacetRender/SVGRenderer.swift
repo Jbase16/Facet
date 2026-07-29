@@ -389,7 +389,7 @@ public enum SVGRenderer {
             let radius = min(rect.width, rect.height) / 2
             return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(radius))\" fill=\"\(fill)\"/>"
         case .rectangle:
-            return "<rect x=\"\(format(rect.x))\" y=\"\(format(rect.y))\" width=\"\(format(rect.width))\" height=\"\(format(rect.height))\" rx=\"\(format(mask.cornerRadius))\" fill=\"\(fill)\"/>"
+            return outlineElement(mask.corners, in: rect, attributes: " fill=\"\(fill)\"")
         case .path:
             let commands = mask.path ?? []
             return "<path d=\"\(pathDescription(commands, in: rect))\" fill=\"\(fill)\"/>"

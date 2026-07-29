@@ -112,7 +112,7 @@ private struct NodeView: View {
         case .group(let background):
             ZStack(alignment: .topLeading) {
                 if let background {
-                    RoundedRectangle(cornerRadius: node.cornerRadius, style: .continuous)
+                    CornerShape(profile: node.corners)
                         .fill(shapeStyle(background))
                         .frame(width: node.rect.width, height: node.rect.height)
                         .offset(x: node.rect.x, y: node.rect.y)
@@ -145,7 +145,7 @@ private struct NodeView: View {
             // Asset loading is provided by the host app via ImageAssetProvider.
             ImageAssetView(assetName: image.assetName, contentMode: image.contentMode)
                 .frame(width: node.rect.width, height: node.rect.height)
-                .clipShape(RoundedRectangle(cornerRadius: node.cornerRadius, style: .continuous))
+                .clipShape(CornerShape(profile: node.corners))
                 .offset(x: node.rect.x, y: node.rect.y)
         case .gauge(let gauge):
             gaugeView(gauge)
@@ -249,12 +249,12 @@ private struct NodeView: View {
         let stroke = shape.strokeColor.map(Color.init)
         switch shape.kind {
         case .rectangle:
-            RoundedRectangle(cornerRadius: node.cornerRadius, style: .continuous)
+            let outline = CornerShape(profile: node.corners)
+            outline
                 .fill(fill)
                 .overlay {
                     if let stroke, shape.strokeWidth > 0 {
-                        RoundedRectangle(cornerRadius: node.cornerRadius, style: .continuous)
-                            .strokeBorder(stroke, lineWidth: shape.strokeWidth)
+                        outline.strokeBorder(stroke, lineWidth: shape.strokeWidth)
                     }
                 }
         case .circle:
@@ -442,27 +442,28 @@ private struct InnerShadowsModifier: ViewModifier {
 
     /// The layer's own outline. Uses the mask's shape when there is one, so a
     /// blob-clipped layer gets a blob-shaped dent rather than a rounded-rect
-    /// one floating inside it.
+    /// one floating inside it — and a chamfered layer gets a chamfered dent,
+    /// because the profile is the same one everything else draws from.
     private var silhouette: some InsettableShape {
-        MaskOutline(mask: node.mask, cornerRadius: node.cornerRadius)
+        MaskOutline(mask: node.mask, corners: node.corners)
     }
 }
 
 /// The shape an inset shadow hugs: the mask if the layer has one, otherwise
-/// the layer's rounded bounds. `InsettableShape` so it can be stroked.
+/// the layer's own corner profile. `InsettableShape` so it can be stroked.
 private struct MaskOutline: InsettableShape {
     let mask: ResolvedMask?
-    let cornerRadius: Double
+    let corners: CornerProfile
     var insetAmount: Double = 0
 
     func path(in rect: CGRect) -> Path {
         let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
         guard let mask, !mask.invert else {
-            return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).path(in: r)
+            return CornerShape(profile: corners).path(in: r)
         }
         switch mask.shape {
         case .rectangle:
-            return RoundedRectangle(cornerRadius: mask.cornerRadius, style: .continuous).path(in: r)
+            return CornerShape(profile: mask.corners).path(in: r)
         case .circle:
             return Circle().path(in: r)
         case .capsule:
@@ -572,7 +573,9 @@ private struct BorderModifier: ViewModifier {
     func body(content: Content) -> some View {
         if let border = node.border {
             content.overlay(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: max(0, node.cornerRadius - border.inset), style: .continuous)
+                // `strokeBorder` insets the shape by half the line width on
+                // its own, so only the border's own inset is applied here.
+                CornerShape(profile: node.corners.inset(by: border.inset))
                     .strokeBorder(Color(border.color), lineWidth: border.width)
                     .frame(
                         width: max(0, node.rect.width - border.inset * 2),
@@ -628,7 +631,7 @@ private struct MaskModifier: ViewModifier {
     /// the SVG backend's `objectBoundingBox` radial does.
     @ViewBuilder
     private func maskShape(_ mask: ResolvedMask) -> some View {
-        let shape = MaskShapeView(shape: mask.shape, path: mask.path, cornerRadius: mask.cornerRadius)
+        let shape = MaskShapeView(shape: mask.shape, path: mask.path, corners: mask.corners)
         Group {
             if let fade = mask.fade {
                 shape.foregroundStyle(fadeStyle(fade, in: mask.rect))
@@ -672,12 +675,12 @@ private struct MaskModifier: ViewModifier {
 private struct MaskShapeView: View {
     let shape: ShapeKind
     let path: [PathCommand]?
-    let cornerRadius: Double
+    let corners: CornerProfile
 
     var body: some View {
         switch shape {
         case .rectangle:
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            CornerShape(profile: corners)
         case .circle:
             // `Circle`, not `Ellipse` — inscribed, matching both the shape
             // renderer above and SVG's `r = min(width, height) / 2`. An
@@ -718,6 +721,43 @@ private struct TransformModifier: ViewModifier {
                     .translatedBy(x: -centerX, y: -centerY)
             )
         }
+    }
+}
+
+/// A layer's outline, from its corner profile. The one place this backend
+/// turns corners into geometry: the group background, an image's clip, a
+/// rectangle shape's fill and stroke, the border, the mask, and the dent an
+/// inset shadow hugs all draw this, so they cannot drift apart the way nine
+/// separately-reconstructed rounded rectangles did.
+///
+/// A plain uniform rounded profile stays a `RoundedRectangle` — same
+/// `.continuous` squircle the app has always drawn, so the common case is
+/// pixel-identical and costs no path generation. Everything else comes from
+/// `CornerProfile.outline`, which is also what the SVG backend emits, so the
+/// two agree by construction rather than by review.
+///
+/// `InsettableShape` so `strokeBorder` can pull it in, and so it can stand in
+/// for the `RoundedRectangle` the border and inset-shadow code used to stroke.
+struct CornerShape: InsettableShape {
+    let profile: CornerProfile
+    var insetAmount: Double = 0
+
+    func path(in rect: CGRect) -> Path {
+        let bounds = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        let inset = profile.inset(by: insetAmount)
+        if let radius = inset.simpleRadius {
+            return RoundedRectangle(cornerRadius: radius, style: .continuous).path(in: bounds)
+        }
+        // Generated against the rect actually being drawn, not the layer's
+        // nominal size, so an inset border's corners stay circular in points.
+        let commands = inset.outline(width: bounds.width, height: bounds.height)
+        return NormalizedPath(commands: commands).path(in: bounds)
+    }
+
+    func inset(by amount: CGFloat) -> CornerShape {
+        var copy = self
+        copy.insetAmount += amount
+        return copy
     }
 }
 
@@ -806,3 +846,4 @@ public extension Color {
     }
 }
 #endif
+
