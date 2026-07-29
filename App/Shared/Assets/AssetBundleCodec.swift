@@ -9,6 +9,12 @@ import ImageIO
 /// document, and whoever welds the two together (export as a package, a
 /// zip, an appended section) owns that container's versioning. The payload
 /// here is exactly `{assetName: base64}`, nothing more.
+///
+/// `SceneBundle` is the container that welds them together for a whole
+/// screen; it reuses the read/validate/write halves below (`gather`,
+/// `install`) rather than growing a second encoder, so there is exactly one
+/// place that decides what a `.facet` or a `.facetscene` is allowed to drop
+/// into the App Group.
 enum AssetBundleCodec {
     /// Every asset for `documentID`, or nil when there are none — callers
     /// skip writing an empty sidecar rather than shipping `{}`.
@@ -46,25 +52,86 @@ enum AssetBundleCodec {
         } catch {
             throw AssetBundleError.malformedPayload
         }
+        try install([documentID: payload])
+    }
 
+    // MARK: - Many owners at once
+
+    /// What a set of owners has on disk, as `(deduplicated bytes, names per
+    /// owner)` — the shape `SceneBundle` stores.
+    ///
+    /// `names` nil means "everything this owner has", which is what a document
+    /// wants: its images are curated (the picker deletes them), so the
+    /// directory *is* the answer and walking the layer tree could only lose a
+    /// reference. Pass an explicit list where the directory is not curated —
+    /// a scene accumulates every wallpaper it has ever worn.
+    ///
+    /// Bytes are keyed by name, not by owner: `AssetStore` names assets by
+    /// content hash, so the same photo in two widgets has one name and gets
+    /// carried once.
+    static func gather(
+        _ owners: [(id: UUID, names: [String]?)]
+    ) -> (blobs: [String: String], assets: [UUID: [String]]) {
         let store = AssetStore()
-        for (name, base64) in payload {
-            guard AssetStore.isValidAssetName(name) else {
-                throw AssetBundleError.invalidAssetName(name)
+        var blobs: [String: String] = [:]
+        var assets: [UUID: [String]] = [:]
+
+        for owner in owners {
+            let names = owner.names ?? store.list(for: owner.id)
+            var carried: [String] = []
+            for name in names {
+                if blobs[name] == nil {
+                    guard let data = store.data(for: name, in: owner.id) else { continue }
+                    blobs[name] = data.base64EncodedString()
+                }
+                carried.append(name)
             }
-            guard let bytes = Data(base64Encoded: base64) else {
-                throw AssetBundleError.malformedPayload
-            }
-            guard CGImageSourceCreateWithData(bytes as CFData, nil).map({
-                CGImageSourceGetType($0) != nil
-            }) == true else {
-                throw AssetBundleError.notAnImage(name)
-            }
-            try store.write(bytes, named: name, for: documentID)
-            // The in-memory cache is keyed by name, and an import can
-            // legitimately replace bytes under an existing name.
-            FacetImageProviderFactory.invalidate(assetName: name, documentID: documentID)
+            guard !carried.isEmpty else { continue }
+            // Sorted so the same scene exports to the same bytes twice running.
+            assets[owner.id] = carried.sorted()
         }
+        return (blobs, assets)
+    }
+
+    /// Writes incoming bytes into the store under their original names, for
+    /// any number of owners.
+    ///
+    /// Names are kept because the layers already reference them — re-hashing on
+    /// import would orphan every image in the document. The *owner* ids, on the
+    /// other hand, are the caller's to choose, and for an import they are always
+    /// fresh (see `SceneBundle.imported`), so this can only ever add files.
+    ///
+    /// Bundles arrive from outside the device, so every entry is validated: the
+    /// name must match the store's generated shape (blocking `../` path escapes)
+    /// and the bytes must actually decode as an image. A shared file is not
+    /// permitted to drop arbitrary files into the App Group.
+    static func install(_ assets: [UUID: [String: String]]) throws {
+        let store = AssetStore()
+        for (owner, payload) in assets {
+            for (name, base64) in payload {
+                let bytes = try decoded(name: name, base64: base64)
+                try store.write(bytes, named: name, for: owner)
+                // The in-memory cache is keyed by name, and an import can
+                // legitimately replace bytes under an existing name.
+                FacetImageProviderFactory.invalidate(assetName: name, documentID: owner)
+            }
+        }
+    }
+
+    /// Validated bytes for one entry, or a throw naming what was wrong with it.
+    private static func decoded(name: String, base64: String) throws -> Data {
+        guard AssetStore.isValidAssetName(name) else {
+            throw AssetBundleError.invalidAssetName(name)
+        }
+        guard let bytes = Data(base64Encoded: base64) else {
+            throw AssetBundleError.malformedPayload
+        }
+        guard CGImageSourceCreateWithData(bytes as CFData, nil).map({
+            CGImageSourceGetType($0) != nil
+        }) == true else {
+            throw AssetBundleError.notAnImage(name)
+        }
+        return bytes
     }
 }
 

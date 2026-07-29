@@ -21,9 +21,16 @@ struct GalleryView: View {
     @State private var showingGenerate = false
     @State private var showingPlayground = false
     @State private var path: [UUID] = []
+    /// `onAppear` can fire more than once for the same screen; a second run of
+    /// the import hook would land a second copy of the scene.
+    @State private var handledLaunchImport = false
 
     private let columns = [GridItem(.adaptive(minimum: 158), spacing: 18)]
     private static let facetType = UTType(filenameExtension: "facet", conformingTo: .json) ?? .json
+    private static let sceneType = UTType(
+        filenameExtension: SceneBundleFile.fileExtension,
+        conformingTo: .json
+    ) ?? .json
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -129,8 +136,11 @@ struct GalleryView: View {
             } message: {
                 Text(importError ?? "")
             }
-            .fileImporter(isPresented: $importing, allowedContentTypes: [Self.facetType, .json]) { result in
-                importDocument(result)
+            .fileImporter(
+                isPresented: $importing,
+                allowedContentTypes: [Self.facetType, Self.sceneType, .json]
+            ) { result in
+                importFile(result)
             }
             .sheet(isPresented: $showingSources) {
                 DataSourcesView()
@@ -190,6 +200,18 @@ struct GalleryView: View {
                         // want when checking a saved palette or layout;
                         // otherwise a throwaway laid out from the library.
                         editingScene = scenes.scenes.first ?? Self.demoScene(from: store.documents)
+                    }
+                }
+                // Import a bundle without going through the file picker, which
+                // is the only way to smoke-test the receiving side:
+                //   simctl launch booted com.JasonPhillips.app \
+                //     -facet-import-scene /path/to/Dusk.facetscene
+                if let path = Self.launchArgument("-facet-import-scene"), !handledLaunchImport {
+                    handledLaunchImport = true
+                    do {
+                        try importScene(try Data(contentsOf: URL(fileURLWithPath: path)))
+                    } catch {
+                        importError = "Import failed: \(error.localizedDescription)"
                     }
                 }
                 // Likewise for the editor (first document), after seeding.
@@ -312,9 +334,15 @@ struct GalleryView: View {
         } label: {
             Label("Duplicate", systemImage: "plus.square.on.square")
         }
-        // No Share yet, deliberately: a `.facetscene` stores document *ids*, so
-        // on someone else's device it would open as a screen of empty slots.
-        // Sharing needs a bundle carrying the referenced widgets with it.
+        // A scene stores document *ids*, so the file has to carry the widgets
+        // and their photos with it or it opens elsewhere as a screen of empty
+        // slots. `SceneBundleIO` builds that bundle; the extension is still
+        // `.facetscene`, because to whoever receives it this is just the scene.
+        if let url = SceneBundleIO.exportURL(for: scene, library: store.documents) {
+            ShareLink(item: url) {
+                Label("Share Scene", systemImage: "square.and.arrow.up")
+            }
+        }
         Button(role: .destructive) {
             scenes.delete(scene)
         } label: {
@@ -365,7 +393,9 @@ struct GalleryView: View {
         return url
     }
 
-    private func importDocument(_ result: Result<URL, Error>) {
+    /// One Import button for both formats — a `.facet` widget and a
+    /// `.facetscene` whole screen — because "import" is one intent to the user.
+    private func importFile(_ result: Result<URL, Error>) {
         switch result {
         case .failure(let error):
             importError = error.localizedDescription
@@ -373,14 +403,49 @@ struct GalleryView: View {
             let accessing = url.startAccessingSecurityScopedResource()
             defer { if accessing { url.stopAccessingSecurityScopedResource() } }
             do {
-                var document = try FacetFile.decode(try Data(contentsOf: url))
-                // Fresh identity: importing twice shouldn't overwrite.
-                document.id = UUID()
-                store.save(document)
+                let data = try Data(contentsOf: url)
+                if url.pathExtension.lowercased() == SceneBundleFile.fileExtension {
+                    try importScene(data)
+                } else {
+                    do {
+                        try importWidget(data)
+                    } catch {
+                        // A bare `.json` could be either. Only report the
+                        // document failure once it has failed as a scene too.
+                        guard (try? importScene(data)) != nil else { throw error }
+                    }
+                }
             } catch {
-                importError = "Not a valid .facet file (\(error.localizedDescription))"
+                importError = "Not a valid Facet file (\(error.localizedDescription))"
             }
         }
+    }
+
+    private func importWidget(_ data: Data) throws {
+        var document = try FacetFile.decode(data)
+        // Fresh identity: importing twice shouldn't overwrite.
+        document.id = UUID()
+        store.save(document)
+    }
+
+    /// The widgets land first so the scene never appears referencing designs
+    /// that aren't in the library yet. Every id in here is fresh (see
+    /// `SceneBundle.imported`), so none of these saves can replace anything.
+    private func importScene(_ data: Data) throws {
+        let installed = try SceneBundleIO.install(data)
+        for document in installed.documents {
+            store.save(document)
+        }
+        scenes.save(installed.scene)
+    }
+
+    /// The value following a launch flag, for smoke-test hooks that take one.
+    private static func launchArgument(_ flag: String) -> String? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: flag), index + 1 < arguments.count else {
+            return nil
+        }
+        return arguments[index + 1]
     }
 
     /// A scene laid out by `freeSlot` itself, so the smoke test exercises the

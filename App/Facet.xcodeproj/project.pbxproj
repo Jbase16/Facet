@@ -22,6 +22,7 @@
 		265D9B1D87919D6A53280A58 /* ThemeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493883341D6B22D1F294A1E /* ThemeEditorView.swift */; };
 		2867A9D383219166875CEDF8 /* DataSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */; };
 		2F2B009BD21403FBC863F968 /* AssetPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAABD07F00F6A8557E4248C /* AssetPickerView.swift */; };
+		3673020A9461FCD5C3514AE7 /* SceneBundleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4D2A424FC09BB6CDD45477 /* SceneBundleIO.swift */; };
 		3AFAA2AEA3BD7B4E32279EE5 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E1F7508053F63AC77BC8A0 /* EditorView.swift */; };
 		4908BC9E49EA2674F52E0AB5 /* SceneEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */; };
 		49F0A851E07FBEF658AAE78E /* AppCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED98CA53137812BF667A5C2 /* AppCatalog.swift */; };
@@ -98,7 +99,6 @@
 		300EA7F9777FA904C95B04B9 /* CustomSourceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceStore.swift; sourceTree = "<group>"; };
 		3493883341D6B22D1F294A1E /* ThemeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeEditorView.swift; sourceTree = "<group>"; };
 		36A1F7ABAABAF4E93AD75506 /* ColorRefPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorRefPicker.swift; sourceTree = "<group>"; };
-		38EB12343C6EBC8EC972617E /* Facet */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Facet; path = ..; sourceTree = SOURCE_ROOT; };
 		3D11BEAA5F529E0BE4D869DC /* WidgetGeneratorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGeneratorService.swift; sourceTree = "<group>"; };
 		402DA8915E10ABBF586F49CD /* FacetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetApp.swift; sourceTree = "<group>"; };
 		4F65EECCECD21777DA3ABDB4 /* FacetImageProviderFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacetImageProviderFactory.swift; sourceTree = "<group>"; };
@@ -132,6 +132,8 @@
 		C6854C50362FD9A914BBADA2 /* DataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSourcesView.swift; sourceTree = "<group>"; };
 		CA0EC38048422CF8D82A9B9C /* HomeScreenPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenPreview.swift; sourceTree = "<group>"; };
 		CAEBEADC60946A4516B04197 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
+		CE4D2A424FC09BB6CDD45477 /* SceneBundleIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneBundleIO.swift; sourceTree = "<group>"; };
+		D1786322E98FB35CB04A7ADA /* scenebundle */ = {isa = PBXFileReference; lastKnownFileType = folder; name = scenebundle; path = ..; sourceTree = SOURCE_ROOT; };
 		D2C1B83DA33AFAB96B025941 /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		D5F85CFBBD495F765805E1BF /* FacetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FacetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenePaletteView.swift; sourceTree = "<group>"; };
@@ -194,7 +196,7 @@
 		25C8F9F9D24BB793C165D9EB /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				38EB12343C6EBC8EC972617E /* Facet */,
+				D1786322E98FB35CB04A7ADA /* scenebundle */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -285,6 +287,7 @@
 		A622D43E477BE4714954BA6F /* Scenes */ = {
 			isa = PBXGroup;
 			children = (
+				CE4D2A424FC09BB6CDD45477 /* SceneBundleIO.swift */,
 				B7B965F6BE7B89DCB96BF3A0 /* SceneEditorView.swift */,
 				D766719C009E3E9A052B4B11 /* ScenePaletteView.swift */,
 			);
@@ -457,6 +460,7 @@
 				B90EB3F934F7C63F865217DC /* InspectorView.swift in Sources */,
 				B80C76B1CC43E26B01BC8D60 /* LayerListView.swift in Sources */,
 				F9A047E42D5089BC846DA641 /* RemindersSource.swift in Sources */,
+				3673020A9461FCD5C3514AE7 /* SceneBundleIO.swift in Sources */,
 				4908BC9E49EA2674F52E0AB5 /* SceneEditorView.swift in Sources */,
 				5378697F6274C3D2BCEFA69E /* ScenePaletteView.swift in Sources */,
 				7DBA2DF9407F2F01D91FAAFC /* SceneRepository.swift in Sources */,
