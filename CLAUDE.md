@@ -120,6 +120,24 @@ README.md has the current status and build instructions.
   `ColorRef`: they are STROKES, where the two backends resolve gradient
   geometry against different boxes (SVG the path bbox, SwiftUI the view
   bounds) and a horizontal line's bbox is degenerate in SVG.
+- A layer's outline comes from `CornerProfile` (FacetCore/Geometry) and
+  NOWHERE else. Four radii in points plus a style (`rounded`, `chamfered`,
+  `inverted`, `scalloped`); `outline(width:height:)` returns normalized
+  `[PathCommand]`, which is why it needs the size — a corner is circular in
+  points, so it is elliptical in a non-square layer's 0...1 space. Both
+  backends have exactly one site that turns a profile into geometry —
+  `CornerShape` in SwiftUI, `outlineElement` in SVG — and every background,
+  fill, clip, border, mask and inset-shadow dent goes through it. Do not
+  reconstruct a rounded rectangle anywhere else; nine hand-rolled copies is
+  what this replaced. A uniform `.rounded` profile keeps the native fast path
+  (`RoundedRectangle(style: .continuous)` / `rx=`), so the backends still
+  differ there exactly as much as they always have — squircle vs circular arc,
+  invisible at widget radii, obvious at half the edge.
+- On disk, `LayerStyle` still writes the singular `cornerRadius` whenever the
+  profile is a plain uniform rounded one, so every pre-profile document round
+  trips byte-identical; anything styled or unlinked writes `corners` instead.
+  `LayerMask` follows the same rule and adds `cornerStyle`, whose absence
+  means "follow the layer's" — a chamfered layer gets a chamfered clip.
 - Verify renderer work by rendering and looking, in BOTH backends. Two real
   bugs in the mask pass — the ellipse divergence and a stale simulator
   binary reading as "masks don't work" — were invisible to a green suite.
@@ -136,8 +154,14 @@ README.md has the current status and build instructions.
   drawn at reduced scale needs `.frame(w*scale, h*scale, alignment:
   .topLeading)` after it, or SwiftUI centres the shrunken render in a
   full-size box and the widget lands offset by half its slack.
-- `.facetscene` files store document *ids*, so a scene is not shareable on
-  its own yet — it would open elsewhere as a screen of empty slots.
+- A `.facetscene` stores document *ids*, so sharing carries a `SceneBundle`:
+  the scene plus every document it references plus their assets and the
+  wallpaper. One extension serves both — decode tries the bundle and falls
+  back to a bare scene. Import mints fresh ids for everything and remaps the
+  placements, so importing a scene whose widgets you already have cannot
+  overwrite them. Asset names in a bundle are untrusted input;
+  `AssetStore.isValidAssetName` is the allowlist that makes traversal
+  impossible.
 - Xcode 27 quirk: don't store bare closures via @Entry (comparability
   diagnostic) — see FacetImageProvider for the wrapper pattern.
 

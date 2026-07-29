@@ -262,23 +262,28 @@ public struct ResolvedMask: Sendable, Equatable {
     /// malformed outline is diagnosed in one place and neither renderer has
     /// to know the path grammar.
     public var path: [PathCommand]?
-    public var cornerRadius: Double
+    /// The clip's corner profile for `.rectangle` masks. Its style has already
+    /// been resolved against the layer's own, so the renderers never have to
+    /// ask which one wins.
+    public var corners: CornerProfile
     /// Absolute canvas coordinates, already offset by the layer's own rect.
     public var rect: Rect
     public var fade: Fade?
     public var invert: Bool
 
+    public var cornerRadius: Double { corners.radii.maximum }
+
     public init(
         shape: ShapeKind,
         path: [PathCommand]? = nil,
-        cornerRadius: Double = 0,
+        corners: CornerProfile = .square,
         rect: Rect,
         fade: Fade? = nil,
         invert: Bool = false
     ) {
         self.shape = shape
         self.path = path
-        self.cornerRadius = cornerRadius
+        self.corners = corners
         self.rect = rect
         self.fade = fade
         self.invert = invert
@@ -302,8 +307,15 @@ public struct RenderNode: Sendable, Equatable {
     public var rect: Rect
     public var opacity: Double
     public var rotation: Double
-    public var cornerRadius: Double
+    /// The layer's outline: four radii and a corner style, already sanitized.
+    /// Both backends draw every silhouette they need from this one value —
+    /// background, clip, fill, border, mask, inset-shadow dent — rather than
+    /// each rebuilding a rounded rectangle of its own.
+    public var corners: CornerProfile
     public var shadows: [ResolvedShadow]
+
+    /// The largest of the four radii, for call sites that only want a number.
+    public var cornerRadius: Double { corners.radii.maximum }
 
     /// Outer shadows fall behind the layer; inset ones are drawn over it.
     /// Split here so neither renderer has to filter the list twice.
@@ -333,7 +345,7 @@ public struct RenderNode: Sendable, Equatable {
         rect: Rect,
         opacity: Double = 1,
         rotation: Double = 0,
-        cornerRadius: Double = 0,
+        corners: CornerProfile = .square,
         shadows: [ResolvedShadow] = [],
         blendMode: BlendMode = .normal,
         blur: Double = 0,
@@ -353,7 +365,7 @@ public struct RenderNode: Sendable, Equatable {
         self.rect = rect
         self.opacity = opacity
         self.rotation = rotation
-        self.cornerRadius = cornerRadius
+        self.corners = corners
         self.shadows = shadows
         self.blendMode = blendMode
         self.blur = blur
